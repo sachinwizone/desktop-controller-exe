@@ -12,6 +12,16 @@
     <Company>Wizone AI Labs</Company>
     <Product>Employee Attendance System</Product>
     <Description>Employee Attendance Tracking Application with Audit Logging</Description>
+    
+    <!-- Self-contained single-file executable -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    
+    <!-- Application icon -->
+    <ApplicationIcon>..\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
