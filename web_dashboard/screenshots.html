@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screenshots - Desktop Controller</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1e1e1e; padding: 20px; overflow-y: auto; }
+        .logo-section { text-align: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .admin-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-bottom: 10px; display: inline-block; }
+        .app-title { color: #fff; font-size: 18px; font-weight: 600; }
+        .menu-header { color: #666; font-size: 11px; text-transform: uppercase; padding: 10px 15px; letter-spacing: 1px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: all 0.3s ease; }
+        .menu-item:hover, .menu-item.active { background: #2a2a2a; color: #f59e0b; }
+        .main-content { margin-left: 260px; padding: 20px; }
+        .header { background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 24px; font-weight: 700; color: #1e1e1e; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .btn-secondary { background: #e5e7eb; color: #333; }
+        .btn-group { display: flex; gap: 5px; }
+        .btn-group .btn { padding: 8px 15px; }
+        .btn-group .btn.active { background: #f59e0b; color: white; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-label { font-size: 12px; font-weight: 600; color: #666; }
+        .form-control { padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: #f59e0b; }
+        
+        /* Grid View */
+        .screenshots-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+        .screenshot-card { background: #f8fafc; border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .screenshot-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
+        .screenshot-preview { width: 100%; height: 180px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #999; overflow: hidden; }
+        .screenshot-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .screenshot-info { padding: 15px; }
+        .screenshot-user { font-weight: 600; color: #1e1e1e; margin-bottom: 5px; }
+        .screenshot-meta { font-size: 12px; color: #666; display: flex; gap: 15px; }
+        
+        /* List View */
+        .screenshots-list { display: none; }
+        .screenshots-list.active { display: block; }
+        .screenshots-grid.hidden { display: none; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; }
+        th { padding: 12px 15px; text-align: left; font-weight: 600; color: #1e1e1e; font-size: 12px; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; color: #666; font-size: 13px; }
+        tbody tr:hover { background: #f8fafc; cursor: pointer; }
+        .thumb-img { width: 80px; height: 50px; object-fit: cover; border-radius: 6px; background: #e5e7eb; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; color: #1e1e1e; }
+        .user-id { font-size: 11px; color: #999; }
+        
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .no-data { text-align: center; padding: 40px; color: #999; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; align-items: center; justify-content: center; flex-direction: column; }
+        .modal.active { display: flex; }
+        .modal-content { max-width: 95%; max-height: 85vh; position: relative; }
+        .modal-content img { max-width: 100%; max-height: 80vh; border-radius: 8px; }
+        .modal-close { position: absolute; top: 20px; right: 30px; color: white; font-size: 40px; cursor: pointer; z-index: 1001; }
+        .modal-info { color: white; text-align: center; margin-top: 15px; font-size: 14px; }
+        .modal-nav { display: flex; gap: 20px; margin-top: 15px; }
+        .modal-nav button { padding: 10px 25px; background: #f59e0b; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .modal-nav button:disabled { background: #666; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="admin-badge">ADMIN</div>
+            <div class="app-title">Desktop Controller</div>
+        </div>
+        <nav>
+            <a class="menu-item" href="admin_dashboard.html">📊 Dashboard</a>
+            <a class="menu-item" href="employee_management.html">👥 Employees</a>
+            <a class="menu-item" href="attendance_report.html">📋 Attendance Reports</a>
+            <a class="menu-item" href="leave_management.html">🗓️ Leave Management</a>
+            <div class="menu-header">CORE MONITORING</div>
+            <a class="menu-item" href="web_logs.html">🌐 Web Browsing Logs</a>
+            <a class="menu-item" href="application_logs.html">💻 Application Usage</a>
+            <a class="menu-item" href="inactivity_logs.html">⏸️ Inactivity Logs</a>
+            <a class="menu-item active">📸 Screenshots</a>
+            <div class="menu-header">SYSTEM</div>
+            <a class="menu-item" href="live_systems.html">🖥️ Live Systems</a>
+            <a class="menu-item" href="settings.html">⚙️ Settings</a>
+            <a class="menu-item" href="admin_login.html">🚪 Logout</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">📸 Screenshots</h1>
+            <div class="btn-group">
+                <button class="btn active" id="gridViewBtn" onclick="setView('grid')">🔲 Grid</button>
+                <button class="btn btn-secondary" id="listViewBtn" onclick="setView('list')">📋 List</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="dateFilter" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Employee</label>
+                    <select id="employeeFilter" class="form-control">
+                        <option value="">All Employees</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary" onclick="loadScreenshots()">🔍 Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshots Container -->
+        <div class="card">
+            <h3 style="margin-bottom: 15px; color: #1e1e1e;">Captured Screenshots <span id="screenshotCount" style="font-weight: normal; color: #666;"></span></h3>
+            <div id="screenshotsGrid" class="screenshots-grid"></div>
+            <div id="screenshotsList" class="screenshots-list"></div>
+        </div>
+    </div>
+
+    <!-- Modal for full screenshot view -->
+    <div id="screenshotModal" class="modal">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="Screenshot">
+        </div>
+        <div class="modal-info" id="modalInfo"></div>
+        <div class="modal-nav">
+            <button onclick="navigateScreenshot(-1)" id="prevBtn">◀ Previous</button>
+            <button onclick="navigateScreenshot(1)" id="nextBtn">Next ▶</button>
+        </div>
+    </div>
+
+    <script>
+        const companyName = localStorage.getItem('company_name') || 'WIZONE IT NETWORK INDIA PVT LTD';
+        document.getElementById('dateFilter').valueAsDate = new Date();
+        
+        let currentView = 'grid';
+        let screenshotsList = [];
+        let currentIndex = 0;
+
+        async function apiCall(action, params = {}) {
+            const query = new URLSearchParams({ action, company_name: companyName, ...params }).toString();
+            const response = await fetch(`/api.php?${query}`);
+            return await response.json();
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '--:--';
+            const d = new Date(dateStr);
+            return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
+        }
+
+        function formatDateTime(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            return d.toLocaleString('en-IN', { 
+                month: 'short', day: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit', hour12: true,
+                timeZone: 'Asia/Kolkata'
+            });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' });
+        }
+
+        function setView(view) {
+            currentView = view;
+            document.getElementById('gridViewBtn').className = view === 'grid' ? 'btn active' : 'btn btn-secondary';
+            document.getElementById('listViewBtn').className = view === 'list' ? 'btn active' : 'btn btn-secondary';
+            
+            if (view === 'grid') {
+                document.getElementById('screenshotsGrid').classList.remove('hidden');
+                document.getElementById('screenshotsList').classList.remove('active');
+            } else {
+                document.getElementById('screenshotsGrid').classList.add('hidden');
+                document.getElementById('screenshotsList').classList.add('active');
+            }
+        }
+
+        async function loadFilters() {
+            const empResult = await apiCall('get_log_employees', { log_type: 'screenshot' });
+            if (empResult.success && empResult.data) {
+                const select = document.getElementById('employeeFilter');
+                empResult.data.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.employee_id;
+                    opt.textContent = `${e.display_name} (${e.employee_id})`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        async function loadScreenshots() {
+            const gridContainer = document.getElementById('screenshotsGrid');
+            const listContainer = document.getElementById('screenshotsList');
+            gridContainer.innerHTML = '<div class="loading">Loading screenshots...</div>';
+            listContainer.innerHTML = '';
+
+            const params = {};
+            const date = document.getElementById('dateFilter').value;
+            const employee = document.getElementById('employeeFilter').value;
+
+            if (date) params.date = date;
+            if (employee) params.employee_id = employee;
+
+            const result = await apiCall('get_screenshots', params);
+
+            if (!result.success || !result.data || result.data.length === 0) {
+                gridContainer.innerHTML = '<div class="no-data">No screenshots found for the selected criteria.</div>';
+                listContainer.innerHTML = '<div class="no-data">No screenshots found for the selected criteria.</div>';
+                document.getElementById('screenshotCount').textContent = '';
+                return;
+            }
+
+            screenshotsList = result.data;
+            document.getElementById('screenshotCount').textContent = `(${screenshotsList.length} screenshots)`;
+
+            // Grid View
+            let gridHtml = '';
+            result.data.forEach((ss, index) => {
+                const userName = ss.display_user_name || ss.username;
+                const resolution = ss.screen_width && ss.screen_height ? `${ss.screen_width}x${ss.screen_height}` : 'Unknown';
+                
+                gridHtml += `
+                    <div class="screenshot-card" onclick="viewScreenshot(${index})">
+                        <div class="screenshot-preview" id="preview-${ss.id}">
+                            📷 Loading...
+                        </div>
+                        <div class="screenshot-info">
+                            <div class="screenshot-user">${userName}</div>
+                            <div class="screenshot-meta">
+                                <span>🕐 ${formatTime(ss.capture_time)}</span>
+                                <span>📐 ${resolution}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            gridContainer.innerHTML = gridHtml;
+
+            // List View
+            let listHtml = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Preview</th>
+                            <th>Employee</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>System</th>
+                            <th>Resolution</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            result.data.forEach((ss, index) => {
+                const userName = ss.display_user_name || ss.username;
+                const resolution = ss.screen_width && ss.screen_height ? `${ss.screen_width}x${ss.screen_height}` : 'Unknown';
+                
+                listHtml += `
+                    <tr onclick="viewScreenshot(${index})">
+                        <td><div class="thumb-img" id="thumb-${ss.id}" style="display:flex;align-items:center;justify-content:center;">📷</div></td>
+                        <td>
+                            <div class="user-info">
+                                <span class="user-name">${userName}</span>
+                                <span class="user-id">${ss.username}</span>
+                            </div>
+                        </td>
+                        <td>${formatDate(ss.capture_time)}</td>
+                        <td>${formatTime(ss.capture_time)}</td>
+                        <td>${ss.system_name || '--'}</td>
+                        <td>${resolution}</td>
+                        <td>${ss.ip_address || '--'}</td>
+                    </tr>
+                `;
+            });
+            listHtml += '</tbody></table>';
+            listContainer.innerHTML = listHtml;
+
+            // Load thumbnails for first 10 screenshots
+            loadThumbnails(result.data.slice(0, 10));
+        }
+
+        async function loadThumbnails(screenshots) {
+            for (const ss of screenshots) {
+                try {
+                    const result = await apiCall('get_screenshot_image', { id: ss.id });
+                    if (result.success && result.data && result.data.screenshot_data) {
+                        const imgSrc = result.data.screenshot_data.startsWith('data:') 
+                            ? result.data.screenshot_data 
+                            : `data:image/jpeg;base64,${result.data.screenshot_data}`;
+                        
+                        // Update grid preview
+                        const previewEl = document.getElementById(`preview-${ss.id}`);
+                        if (previewEl) {
+                            previewEl.innerHTML = `<img src="${imgSrc}" alt="Screenshot">`;
+                        }
+                        
+                        // Update list thumbnail
+                        const thumbEl = document.getElementById(`thumb-${ss.id}`);
+                        if (thumbEl) {
+                            thumbEl.innerHTML = `<img src="${imgSrc}" class="thumb-img" alt="Thumb">`;
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading thumbnail:', e);
+                }
+            }
+        }
+
+        async function viewScreenshot(index) {
+            currentIndex = index;
+            const ss = screenshotsList[index];
+            
+            const modal = document.getElementById('screenshotModal');
+            const modalImage = document.getElementById('modalImage');
+            const modalInfo = document.getElementById('modalInfo');
+            
+            modalImage.src = '';
+            modalInfo.innerHTML = 'Loading...';
+            modal.classList.add('active');
+            
+            const result = await apiCall('get_screenshot_image', { id: ss.id });
+            if (result.success && result.data && result.data.screenshot_data) {
+                const imgSrc = result.data.screenshot_data.startsWith('data:') 
+                    ? result.data.screenshot_data 
+                    : `data:image/jpeg;base64,${result.data.screenshot_data}`;
+                
+                modalImage.src = imgSrc;
+                modalInfo.innerHTML = `
+                    <strong>${ss.display_user_name || ss.username}</strong> | 
+                    ${ss.system_name} | 
+                    ${formatDateTime(ss.capture_time)} |
+                    ${ss.screen_width}x${ss.screen_height}
+                `;
+            } else {
+                modalInfo.innerHTML = 'Error loading screenshot';
+            }
+            
+            updateNavButtons();
+        }
+
+        function navigateScreenshot(direction) {
+            const newIndex = currentIndex + direction;
+            if (newIndex >= 0 && newIndex < screenshotsList.length) {
+                viewScreenshot(newIndex);
+            }
+        }
+
+        function updateNavButtons() {
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').disabled = currentIndex === screenshotsList.length - 1;
+        }
+
+        function closeModal() {
+            document.getElementById('screenshotModal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft' && document.getElementById('screenshotModal').classList.contains('active')) {
+                navigateScreenshot(-1);
+            }
+            if (e.key === 'ArrowRight' && document.getElementById('screenshotModal').classList.contains('active')) {
+                navigateScreenshot(1);
+            }
+        });
+
+        // Load data on page load
+        loadFilters();
+        loadScreenshots();
+    </script>
+</body>
+</html>

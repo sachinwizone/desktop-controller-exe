@@ -1,0 +1,26 @@
+# Build outputs
+bin/
+obj/
+publish/
+publish_*/
+installer_output/
+
+# Large files
+*.exe
+*.msi
+*.dll
+*.pdb
+
+# Node modules
+node_modules/
+
+# Visual Studio
+.vs/
+*.user
+
+# Packages
+*.nupkg
+
+# WiX outputs
+*.wixpdb
+*.wixobj

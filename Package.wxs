@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Package Name="Desktop Controller Pro" Manufacturer="Wizone IT" Version="1.0.0.0" Language="1033" UpgradeCode="12345678-1234-1234-1234-123456789012" Scope="perMachine" Compressed="yes">
+        
+        <Media Id="1" Cabinet="DesktopController.cab" EmbedCab="yes" />
+
+        <StandardDirectory Id="ProgramFilesFolder">
+            <Directory Id="INSTALLFOLDER" Name="Desktop Controller Pro" />
+        </StandardDirectory>
+
+        <StandardDirectory Id="ProgramMenuFolder">
+            <Directory Id="ApplicationProgramsFolder" Name="Desktop Controller Pro" />
+        </StandardDirectory>
+
+        <StandardDirectory Id="DesktopFolder" />
+        
+        <StandardDirectory Id="StartupFolder" />
+
+        <Feature Id="ProductFeature" Title="Desktop Controller Pro" Level="1">
+            <ComponentRef Id="DesktopControllerEXE" />
+            <ComponentRef Id="StartMenuShortcut" />
+            <ComponentRef Id="DesktopShortcut" />
+            <ComponentRef Id="AutoStartShortcut" />
+            <ComponentRef Id="AutoStartRegistry" />
+        </Feature>
+
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Component Id="DesktopControllerEXE" Guid="87654321-4321-4321-4321-210987654321">
+                <File Id="DesktopControllerExe" Name="DesktopController.exe" Source="$(var.PublishDir)DesktopController.exe" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="ApplicationProgramsFolder">
+            <Component Id="StartMenuShortcut" Guid="11111111-2222-3333-4444-555555555555">
+                <Shortcut Id="DesktopControllerMenuShortcut" Name="Desktop Controller Pro" Target="[INSTALLFOLDER]DesktopController.exe" WorkingDirectory="INSTALLFOLDER" />
+                <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall" />
+                <RegistryValue Root="HKCU" Key="Software\Wizone\DesktopController" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+
+        <DirectoryRef Id="DesktopFolder">
+            <Component Id="DesktopShortcut" Guid="22222222-3333-4444-5555-666666666666">
+                <Shortcut Id="DesktopControllerDesktopShortcut" Name="Desktop Controller Pro" Target="[INSTALLFOLDER]DesktopController.exe" WorkingDirectory="INSTALLFOLDER" />
+                <RegistryValue Root="HKCU" Key="Software\Wizone\DesktopController" Name="DesktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+        
+        <!-- Auto-start shortcut in Windows Startup folder -->
+        <DirectoryRef Id="StartupFolder">
+            <Component Id="AutoStartShortcut" Guid="33333333-4444-5555-6666-777777777777">
+                <Shortcut Id="DesktopControllerStartupShortcut" Name="Desktop Controller Pro" Target="[INSTALLFOLDER]DesktopController.exe" Arguments="--autostart" WorkingDirectory="INSTALLFOLDER" />
+                <RegistryValue Root="HKCU" Key="Software\Wizone\DesktopController" Name="AutoStartShortcut" Type="integer" Value="1" KeyPath="yes" />
+            </Component>
+        </DirectoryRef>
+        
+        <!-- Auto-start registry entry (backup method) -->
+        <Component Id="AutoStartRegistry" Directory="INSTALLFOLDER" Guid="44444444-5555-6666-7777-888888888888">
+            <RegistryValue Root="HKCU" Key="Software\Microsoft\Windows\CurrentVersion\Run" Name="DesktopControllerPro" Type="string" Value="&quot;[INSTALLFOLDER]DesktopController.exe&quot; --autostart" KeyPath="yes" />
+        </Component>
+    </Package>
+</Wix>

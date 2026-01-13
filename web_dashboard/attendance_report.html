@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Reports - Desktop Controller</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1e1e1e; padding: 20px; overflow-y: auto; }
+        .logo-section { text-align: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .admin-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-bottom: 10px; display: inline-block; }
+        .app-title { color: #fff; font-size: 18px; font-weight: 600; }
+        .company-name { color: #888; font-size: 11px; margin-top: 5px; }
+        .menu-section { margin-bottom: 20px; }
+        .menu-header { color: #666; font-size: 11px; text-transform: uppercase; padding: 10px 15px; letter-spacing: 1px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: all 0.3s ease; }
+        .menu-item:hover, .menu-item.active { background: #2a2a2a; color: #f59e0b; }
+        .main-content { margin-left: 260px; padding: 20px; }
+        .header { background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 24px; font-weight: 700; color: #1e1e1e; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .btn-export { background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%); color: white; margin-left: 10px; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-label { font-size: 12px; font-weight: 600; color: #666; }
+        .form-control { padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: #f59e0b; }
+        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .stat-box { color: white; padding: 20px 25px; border-radius: 12px; }
+        .stat-box.blue { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .stat-box.green { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-box.orange { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-box.purple { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+        .stat-number { font-size: 36px; font-weight: 700; margin-bottom: 5px; }
+        .stat-label { font-size: 13px; opacity: 0.9; display: flex; align-items: center; gap: 8px; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; }
+        th { padding: 14px 15px; text-align: left; font-weight: 600; color: #1e1e1e; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #e5e7eb; }
+        td { padding: 14px 15px; border-bottom: 1px solid #f1f1f1; color: #374151; font-size: 14px; }
+        tbody tr:hover { background: #f8fafc; }
+        .status-badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; }
+        .status-working { background: #dbeafe; color: #2563eb; }
+        .status-completed { background: #dcfce7; color: #16a34a; }
+        .status-break { background: #fef3c7; color: #d97706; }
+        .export-options { display: flex; gap: 10px; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .employee-info { display: flex; flex-direction: column; }
+        .employee-name { font-weight: 600; color: #1e1e1e; }
+        .employee-id { font-size: 12px; color: #9ca3af; }
+        .no-data { text-align: center; padding: 60px; color: #9ca3af; }
+        .no-data-icon { font-size: 48px; margin-bottom: 15px; }
+        .time-cell { font-family: 'Consolas', monospace; font-weight: 500; }
+        .duration-cell { font-weight: 600; color: #059669; }
+        .break-cell { color: #d97706; }
+        .quick-filters { display: flex; gap: 10px; margin-bottom: 15px; }
+        .quick-btn { padding: 8px 16px; border: 2px solid #e5e7eb; background: white; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; }
+        .quick-btn:hover, .quick-btn.active { border-color: #f59e0b; background: #fef3c7; color: #d97706; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="admin-badge">ADMIN PANEL</div>
+            <div class="app-title">Desktop Controller</div>
+            <div class="company-name" id="companyDisplay">WIZONE IT NETWORK</div>
+        </div>
+        <nav>
+            <a class="menu-item" href="admin_dashboard.html">📊 Dashboard</a>
+            <a class="menu-item" href="live_systems.html">🖥️ Live Systems</a>
+            <a class="menu-item" href="employee_management.html">👥 Employees</a>
+            <a class="menu-item active">📋 Attendance Reports</a>
+            <a class="menu-item" href="leave_management.html">🗓️ Leave Management</a>
+            <div class="menu-header">CORE MONITORING</div>
+            <a class="menu-item" href="web_logs.html">🌐 Web Browsing Logs</a>
+            <a class="menu-item" href="application_logs.html">💻 Application Usage</a>
+            <a class="menu-item" href="inactivity_logs.html">⏸️ Inactivity Logs</a>
+            <a class="menu-item" href="screenshots.html">📸 Screenshots</a>
+            <div class="menu-header">SYSTEM</div>
+            <a class="menu-item" href="settings.html">⚙️ Settings</a>
+            <a class="menu-item" href="admin_login.html">🚪 Logout</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div>
+                <h1 class="page-title">📋 Punch In/Out Records</h1>
+                <p style="color: #666; margin-top: 5px;">Track employee attendance with real-time punch data</p>
+            </div>
+            <div class="export-options">
+                <button class="btn btn-primary" onclick="loadAttendance()">🔄 Refresh</button>
+                <button class="btn btn-export" onclick="exportToCSV()">📊 Export CSV</button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="quick-filters">
+                <button class="quick-btn active" onclick="setDateRange('all', this)">All Records</button>
+                <button class="quick-btn" onclick="setDateRange('today', this)">Today</button>
+                <button class="quick-btn" onclick="setDateRange('week', this)">This Week</button>
+                <button class="quick-btn" onclick="setDateRange('month', this)">This Month</button>
+            </div>
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label class="form-label">📅 Start Date</label>
+                    <input type="date" id="startDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">📅 End Date</label>
+                    <input type="date" id="endDate" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">👤 Employee</label>
+                    <select id="employeeFilter" class="form-control" onchange="loadAttendance()">
+                        <option value="">All Employees</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary" onclick="loadAttendance()">🔍 Generate Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-row">
+            <div class="stat-box blue">
+                <div class="stat-number" id="totalRecords">0</div>
+                <div class="stat-label">👥 Total Records</div>
+            </div>
+            <div class="stat-box green">
+                <div class="stat-number" id="totalHours">0h</div>
+                <div class="stat-label">⏱️ Total Hours</div>
+            </div>
+            <div class="stat-box orange">
+                <div class="stat-number" id="totalBreak">0m</div>
+                <div class="stat-label">☕ Total Break Time</div>
+            </div>
+            <div class="stat-box purple">
+                <div class="stat-number" id="activeNow">0</div>
+                <div class="stat-label">🟢 Currently Working</div>
+            </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="card">
+            <h3 style="margin-bottom: 20px; color: #1e1e1e; display: flex; align-items: center; gap: 10px;">
+                ⏰ Punch In/Out Records
+                <span id="recordCount" style="font-size: 14px; font-weight: normal; color: #666;"></span>
+            </h3>
+            <div id="attendanceTable">
+                <div class="loading">Loading attendance data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const companyName = localStorage.getItem('company_name') || 'WIZONE IT NETWORK INDIA PVT LTD';
+        console.log('Company Name:', companyName);
+        document.getElementById('companyDisplay').textContent = companyName;
+        
+        // Leave dates empty initially to load all data
+        // User can set specific dates to filter
+        document.getElementById('startDate').value = '';
+        document.getElementById('endDate').value = '';
+
+        function setDateRange(range, btn) {
+            const now = new Date();
+            let start = new Date();
+            
+            document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
+            if (range === 'today') {
+                start = now;
+            } else if (range === 'week') {
+                start.setDate(now.getDate() - 7);
+            } else if (range === 'month') {
+                start.setDate(1);
+            } else if (range === 'all') {
+                // Clear date filters to show all data
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                loadAttendance();
+                return;
+            }
+            
+            document.getElementById('startDate').value = start.toISOString().split('T')[0];
+            document.getElementById('endDate').value = now.toISOString().split('T')[0];
+            loadAttendance();
+        }
+
+        async function apiCall(action, params = {}) {
+            const timestamp = Date.now(); // Cache buster
+            const query = new URLSearchParams({ action, company_name: companyName, ...params, _t: timestamp }).toString();
+            const url = `/api.php?${query}`;
+            console.log('API Call URL:', url);
+            console.log('Full URL:', window.location.origin + url);
+            try {
+                const response = await fetch(url, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                console.log('Response status:', response.status);
+                const text = await response.text();
+                console.log('Raw response:', text.substring(0, 500));
+                const result = JSON.parse(text);
+                console.log('Parsed response:', result);
+                return result;
+            } catch (err) {
+                console.error('API Error:', err);
+                return { success: false, error: err.message, data: [] };
+            }
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '--:--';
+            const d = new Date(dateStr);
+            return d.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true, timeZone: 'Asia/Kolkata' });
+        }
+
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const d = new Date(dateStr);
+            return d.toLocaleDateString('en-IN', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Kolkata' });
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds || seconds <= 0) return '0h 0m';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            return `${hours}h ${mins}m`;
+        }
+
+        function formatBreakTime(seconds) {
+            if (!seconds || seconds <= 0) return '0m';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) return `${hours}h ${mins}m`;
+            return `${mins}m`;
+        }
+
+        async function loadFilters() {
+            // Load employees who have punch records
+            const empResult = await apiCall('get_punch_employees');
+            if (empResult.success && empResult.data) {
+                const select = document.getElementById('employeeFilter');
+                select.innerHTML = '<option value="">All Employees</option>';
+                empResult.data.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.employee_id;
+                    opt.textContent = `${e.display_name || e.employee_id}${e.department ? ' (' + e.department + ')' : ''}`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        async function loadAttendance() {
+            const container = document.getElementById('attendanceTable');
+            container.innerHTML = '<div class="loading">⏳ Loading punch records...</div>';
+
+            const params = {};
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const employee = document.getElementById('employeeFilter').value;
+
+            console.log('Loading attendance with dates:', startDate, 'to', endDate);
+
+            if (startDate) params.start_date = startDate;
+            if (endDate) params.end_date = endDate;
+            if (employee) params.employee_id = employee;
+
+            const result = await apiCall('get_attendance', params);
+            console.log('Attendance result:', result);
+
+            if (!result.success || !result.data || result.data.length === 0) {
+                console.log('No data found or error:', result);
+                container.innerHTML = `
+                    <div class="no-data">
+                        <div class="no-data-icon">📭</div>
+                        <p>No punch records found for the selected criteria.</p>
+                        <p style="font-size: 13px; margin-top: 10px;">Try adjusting the date range or employee filter.</p>
+                        <p style="font-size: 11px; color: #888; margin-top: 10px;">Debug: ${JSON.stringify(result).substring(0,200)}</p>
+                    </div>
+                `;
+                updateStats([]);
+                return;
+            }
+
+            const data = result.data;
+            updateStats(data);
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Date</th>
+                            <th>Punch In</th>
+                            <th>Punch Out</th>
+                            <th>Working Time</th>
+                            <th>Break Time</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach(record => {
+                const punchIn = formatTime(record.punch_in_time);
+                const punchOut = record.punch_out_time ? formatTime(record.punch_out_time) : '<span style="color: #3b82f6; font-weight: 600;">Working...</span>';
+                const workHours = record.punch_out_time ? formatDuration(record.total_work_duration_seconds) : '--';
+                const breakTime = formatBreakTime(record.break_duration_seconds);
+                const date = formatDate(record.punch_in_time);
+                const displayName = record.display_name || record.username;
+                const employeeId = record.username;
+                
+                let status, statusClass;
+                if (!record.punch_out_time) {
+                    status = '🟢 Active';
+                    statusClass = 'status-working';
+                } else {
+                    status = '✅ Completed';
+                    statusClass = 'status-completed';
+                }
+
+                html += `
+                    <tr>
+                        <td>
+                            <div class="employee-info">
+                                <span class="employee-name">${displayName}</span>
+                                <span class="employee-id">${employeeId}</span>
+                            </div>
+                        </td>
+                        <td>${date}</td>
+                        <td class="time-cell">${punchIn}</td>
+                        <td class="time-cell">${punchOut}</td>
+                        <td class="duration-cell">${workHours}</td>
+                        <td class="break-cell">${breakTime}</td>
+                        <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+            document.getElementById('recordCount').textContent = `(${data.length} records)`;
+        }
+
+        function updateStats(data) {
+            const totalRecords = data.length;
+            const activeNow = data.filter(r => !r.punch_out_time).length;
+            
+            let totalSeconds = 0;
+            let totalBreakSeconds = 0;
+            
+            data.forEach(r => {
+                if (r.total_work_duration_seconds) totalSeconds += r.total_work_duration_seconds;
+                if (r.break_duration_seconds) totalBreakSeconds += r.break_duration_seconds;
+            });
+            
+            const totalHours = Math.floor(totalSeconds / 3600);
+            const totalMins = Math.floor((totalSeconds % 3600) / 60);
+            const breakMins = Math.floor(totalBreakSeconds / 60);
+            
+            document.getElementById('totalRecords').textContent = totalRecords;
+            document.getElementById('totalHours').textContent = totalHours > 0 ? `${totalHours}h` : `${totalMins}m`;
+            document.getElementById('totalBreak').textContent = `${breakMins}m`;
+            document.getElementById('activeNow').textContent = activeNow;
+        }
+
+        function exportToCSV() {
+            const table = document.querySelector('#attendanceTable table');
+            if (!table) {
+                alert('No data to export');
+                return;
+            }
+
+            let csv = [];
+            const rows = table.querySelectorAll('tr');
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('th, td');
+                const rowData = [];
+                cols.forEach(col => rowData.push('"' + col.innerText.replace(/"/g, '""').replace(/\n/g, ' ') + '"'));
+                csv.push(rowData.join(','));
+            });
+
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `punch_report_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+        }
+
+        // Initialize
+        loadFilters();
+        loadAttendance();
+    </script>
+</body>
+</html>

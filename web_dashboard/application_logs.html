@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Usage - Desktop Controller</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
+        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1e1e1e; padding: 20px; overflow-y: auto; }
+        .logo-section { text-align: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
+        .admin-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-bottom: 10px; display: inline-block; }
+        .app-title { color: #fff; font-size: 18px; font-weight: 600; }
+        .menu-header { color: #666; font-size: 11px; text-transform: uppercase; padding: 10px 15px; letter-spacing: 1px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: all 0.3s ease; }
+        .menu-item:hover, .menu-item.active { background: #2a2a2a; color: #f59e0b; }
+        .main-content { margin-left: 260px; padding: 20px; }
+        .header { background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .page-title { font-size: 24px; font-weight: 700; color: #1e1e1e; }
+        .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        .btn-primary { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-label { font-size: 12px; font-weight: 600; color: #666; }
+        .form-control { padding: 10px 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 14px; outline: none; }
+        .form-control:focus { border-color: #f59e0b; }
+        table { width: 100%; border-collapse: collapse; }
+        thead { background: #f8fafc; }
+        th { padding: 12px 15px; text-align: left; font-weight: 600; color: #1e1e1e; font-size: 12px; text-transform: uppercase; }
+        td { padding: 12px 15px; border-bottom: 1px solid #f1f1f1; color: #666; font-size: 13px; }
+        tbody tr:hover { background: #f8fafc; }
+        .app-icon { width: 32px; height: 32px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .app-info { display: flex; align-items: center; gap: 12px; }
+        .app-name { font-weight: 600; color: #1e1e1e; }
+        .window-title { font-size: 12px; color: #999; max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .duration-badge { background: #dbeafe; color: #2563eb; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .no-data { text-align: center; padding: 40px; color: #999; }
+        .user-info { display: flex; flex-direction: column; }
+        .user-name { font-weight: 600; color: #1e1e1e; }
+        .user-id { font-size: 11px; color: #999; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="admin-badge">ADMIN</div>
+            <div class="app-title">Desktop Controller</div>
+        </div>
+        <nav>
+            <a class="menu-item" href="admin_dashboard.html">📊 Dashboard</a>
+            <a class="menu-item" href="employee_management.html">👥 Employees</a>
+            <a class="menu-item" href="attendance_report.html">📋 Attendance Reports</a>
+            <a class="menu-item" href="leave_management.html">🗓️ Leave Management</a>
+            <div class="menu-header">CORE MONITORING</div>
+            <a class="menu-item" href="web_logs.html">🌐 Web Browsing Logs</a>
+            <a class="menu-item active">💻 Application Usage</a>
+            <a class="menu-item" href="inactivity_logs.html">⏸️ Inactivity Logs</a>
+            <a class="menu-item" href="screenshots.html">📸 Screenshots</a>
+            <div class="menu-header">SYSTEM</div>
+            <a class="menu-item" href="live_systems.html">🖥️ Live Systems</a>
+            <a class="menu-item" href="settings.html">⚙️ Settings</a>
+            <a class="menu-item" href="admin_login.html">🚪 Logout</a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">💻 Application Usage Logs</h1>
+        </div>
+
+        <!-- Filters -->
+        <div class="card">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label class="form-label">Date</label>
+                    <input type="date" id="dateFilter" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Employee</label>
+                    <select id="employeeFilter" class="form-control">
+                        <option value="">All Employees</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Search</label>
+                    <input type="text" id="searchFilter" class="form-control" placeholder="App name or window title...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">&nbsp;</label>
+                    <button class="btn btn-primary" onclick="loadLogs()">🔍 Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="card">
+            <h3 style="margin-bottom: 15px; color: #1e1e1e;">Application Usage Records</h3>
+            <div id="logsTable">
+                <div class="loading">Loading application logs...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const companyName = localStorage.getItem('company_name') || 'WIZONE IT NETWORK INDIA PVT LTD';
+        document.getElementById('dateFilter').valueAsDate = new Date();
+
+        async function apiCall(action, params = {}) {
+            const query = new URLSearchParams({ action, company_name: companyName, ...params }).toString();
+            const response = await fetch(`/api.php?${query}`);
+            return await response.json();
+        }
+
+        function formatTime(dateStr) {
+            if (!dateStr) return '--:--';
+            const d = new Date(dateStr);
+            return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+        }
+
+        function formatDuration(seconds) {
+            if (!seconds || seconds <= 0) return '< 1m';
+            const hours = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            if (hours > 0) return `${hours}h ${mins}m`;
+            return `${mins}m`;
+        }
+
+        function getAppIcon(appName) {
+            const icons = {
+                'chrome': '🌐', 'firefox': '🦊', 'edge': '🌐', 'safari': '🧭',
+                'code': '💻', 'vscode': '💻', 'notepad': '📝', 'word': '📄',
+                'excel': '📊', 'powerpoint': '📑', 'outlook': '📧', 'teams': '👥',
+                'slack': '💬', 'discord': '🎮', 'spotify': '🎵', 'explorer': '📁'
+            };
+            const name = (appName || '').toLowerCase();
+            for (const [key, icon] of Object.entries(icons)) {
+                if (name.includes(key)) return icon;
+            }
+            return '📦';
+        }
+
+        async function loadFilters() {
+            const empResult = await apiCall('get_log_employees', { log_type: 'app' });
+            if (empResult.success && empResult.data) {
+                const select = document.getElementById('employeeFilter');
+                empResult.data.forEach(e => {
+                    const opt = document.createElement('option');
+                    opt.value = e.employee_id;
+                    opt.textContent = `${e.display_name} (${e.employee_id})`;
+                    select.appendChild(opt);
+                });
+            }
+        }
+
+        async function loadLogs() {
+            const container = document.getElementById('logsTable');
+            container.innerHTML = '<div class="loading">Loading application logs...</div>';
+
+            const params = {};
+            const date = document.getElementById('dateFilter').value;
+            const employee = document.getElementById('employeeFilter').value;
+            const search = document.getElementById('searchFilter').value;
+
+            if (date) params.date = date;
+            if (employee) params.employee_id = employee;
+            if (search) params.search = search;
+
+            const result = await apiCall('get_application_logs', params);
+
+            if (!result.success || !result.data || result.data.length === 0) {
+                container.innerHTML = '<div class="no-data">No application logs found for the selected criteria.</div>';
+                return;
+            }
+
+            let html = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Application</th>
+                            <th>User</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            result.data.forEach(log => {
+                const icon = getAppIcon(log.app_name);
+                const userName = log.display_user_name || log.username;
+                
+                html += `
+                    <tr>
+                        <td>
+                            <div class="app-info">
+                                <div class="app-icon">${icon}</div>
+                                <div>
+                                    <div class="app-name">${log.app_name || 'Unknown'}</div>
+                                    <div class="window-title">${log.window_title || ''}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-info">
+                                <span class="user-name">${userName}</span>
+                                <span class="user-id">${log.username}</span>
+                            </div>
+                        </td>
+                        <td>${formatTime(log.start_time)}</td>
+                        <td>${formatTime(log.end_time)}</td>
+                        <td><span class="duration-badge">${formatDuration(log.duration_seconds)}</span></td>
+                        <td>${log.is_active ? '🟢 Active' : '⚪ Closed'}</td>
+                    </tr>
+                `;
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Load data on page load
+        loadFilters();
+        loadLogs();
+    </script>
+</body>
+</html>

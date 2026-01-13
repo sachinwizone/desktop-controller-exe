@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Management - Desktop Controller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            height: 100vh;
+            background: #1e1e1e;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .logo-section {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .admin-badge {
+            background: #f59e0b;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .app-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            color: #a0a0a0;
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background: #2a2a2a;
+            color: #f59e0b;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e1e1e;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-card.yellow {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
+
+        .stat-card.green {
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .stat-card.red {
+            background: linear-gradient(135deg, #f87171 0%, #dc2626 100%);
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            color: #f59e0b;
+            border-bottom-color: #f59e0b;
+        }
+
+        .leave-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .leave-card:hover {
+            border-color: #f59e0b;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .leave-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .employee-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .leave-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #1e1e1e;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-approved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .leave-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-approve {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+
+        .btn-reject {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .btn-view {
+            background: #e0e7ff;
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo-section">
+            <div class="admin-badge">ADMIN</div>
+            <div class="app-title">Desktop Controller</div>
+        </div>
+
+        <nav>
+            <a class="menu-item" onclick="window.location.href='admin_dashboard.html'">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='employee_management.html'">
+                <span>👥</span>
+                <span>Employees</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='attendance_report.html'">
+                <span>📋</span>
+                <span>Attendance Reports</span>
+            </a>
+            <a class="menu-item active">
+                <span>🗓️</span>
+                <span>Leave Management</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='departments.html'">
+                <span>🏢</span>
+                <span>Departments</span>
+            </a>
+        </nav>
+        
+        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">Core Monitoring</div>
+        <nav>
+            <a class="menu-item" onclick="window.location.href='web_logs.html'">
+                <span>🌐</span>
+                <span>Web Browsing Logs</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='application_logs.html'">
+                <span>💻</span>
+                <span>Application Usage</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='inactivity_logs.html'">
+                <span>⏰</span>
+                <span>Inactivity Logs</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='screenshots.html'">
+                <span>📸</span>
+                <span>Screenshots</span>
+            </a>
+        </nav>
+        
+        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">System</div>
+        <nav>
+            <a class="menu-item" onclick="window.location.href='settings.html'">
+                <span>⚙️</span>
+                <span>System Settings</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='admin_login.html'">
+                <span>🚪</span>
+                <span>Logout</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <h1 class="page-title">🗓️ Leave Management</h1>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card yellow">
+                <div class="stat-number">5</div>
+                <div class="stat-label">Pending Requests</div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-number">12</div>
+                <div class="stat-label">Approved This Month</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Rejected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">3</div>
+                <div class="stat-label">On Leave Today</div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="card">
+            <div class="tab-container">
+                <button class="tab active">Pending Requests</button>
+                <button class="tab">Approved</button>
+                <button class="tab">Rejected</button>
+                <button class="tab">All Requests</button>
+            </div>
+
+            <!-- Pending Requests -->
+            <div class="leave-card">
+                <div class="leave-header">
+                    <div class="employee-info">
+                        <div class="avatar">PS</div>
+                        <div>
+                            <h3 style="margin-bottom: 5px;">Priya Singh</h3>
+                            <p style="font-size: 14px; color: #666;">WIZ003 • Sales Department</p>
+                        </div>
+                    </div>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+
+                <div class="leave-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Leave Type</span>
+                        <span class="detail-value">Casual Leave</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Start Date</span>
+                        <span class="detail-value">Jan 10, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">End Date</span>
+                        <span class="detail-value">Jan 12, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Days</span>
+                        <span class="detail-value">3 Days</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Applied On</span>
+                        <span class="detail-value">Jan 06, 2026</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong style="display: block; margin-bottom: 5px; color: #666;">Reason:</strong>
+                    <p style="color: #1e1e1e;">Family function in hometown. Will be back on Jan 13.</p>
+                </div>
+
+                <div class="leave-actions">
+                    <button class="action-btn btn-approve">✓ Approve</button>
+                    <button class="action-btn btn-reject">✕ Reject</button>
+                    <button class="action-btn btn-view">👁️ View Details</button>
+                </div>
+            </div>
+
+            <div class="leave-card">
+                <div class="leave-header">
+                    <div class="employee-info">
+                        <div class="avatar" style="background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);">VK</div>
+                        <div>
+                            <h3 style="margin-bottom: 5px;">Vikram Kumar</h3>
+                            <p style="font-size: 14px; color: #666;">WIZ006 • Development</p>
+                        </div>
+                    </div>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+
+                <div class="leave-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Leave Type</span>
+                        <span class="detail-value">Sick Leave</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Start Date</span>
+                        <span class="detail-value">Jan 08, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">End Date</span>
+                        <span class="detail-value">Jan 09, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Days</span>
+                        <span class="detail-value">2 Days</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Applied On</span>
+                        <span class="detail-value">Jan 07, 2026</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong style="display: block; margin-bottom: 5px; color: #666;">Reason:</strong>
+                    <p style="color: #1e1e1e;">Suffering from viral fever. Medical certificate attached.</p>
+                </div>
+
+                <div class="leave-actions">
+                    <button class="action-btn btn-approve">✓ Approve</button>
+                    <button class="action-btn btn-reject">✕ Reject</button>
+                    <button class="action-btn btn-view">👁️ View Details</button>
+                </div>
+            </div>
+
+            <div class="leave-card">
+                <div class="leave-header">
+                    <div class="employee-info">
+                        <div class="avatar" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">AV</div>
+                        <div>
+                            <h3 style="margin-bottom: 5px;">Anjali Verma</h3>
+                            <p style="font-size: 14px; color: #666;">WIZ007 • Sales</p>
+                        </div>
+                    </div>
+                    <span class="status-badge status-pending">Pending</span>
+                </div>
+
+                <div class="leave-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Leave Type</span>
+                        <span class="detail-value">Earned Leave</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Start Date</span>
+                        <span class="detail-value">Jan 15, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">End Date</span>
+                        <span class="detail-value">Jan 20, 2026</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Total Days</span>
+                        <span class="detail-value">6 Days</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Applied On</span>
+                        <span class="detail-value">Jan 05, 2026</span>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong style="display: block; margin-bottom: 5px; color: #666;">Reason:</strong>
+                    <p style="color: #1e1e1e;">Planned vacation to Goa with family.</p>
+                </div>
+
+                <div class="leave-actions">
+                    <button class="action-btn btn-approve">✓ Approve</button>
+                    <button class="action-btn btn-reject">✕ Reject</button>
+                    <button class="action-btn btn-view">👁️ View Details</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Balance Summary -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+            <div class="card">
+                <h3 style="margin-bottom: 20px; color: #1e1e1e;">Leave Balance by Type</h3>
+                <div style="display: flex; flex-direction: column; gap: 15px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600;">Casual Leave</span>
+                            <span>18/24 days</span>
+                        </div>
+                        <div style="height: 8px; background: #e5e7eb; border-radius: 4px;">
+                            <div style="width: 75%; height: 100%; background: linear-gradient(90deg, #667eea, #764ba2); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600;">Sick Leave</span>
+                            <span>10/12 days</span>
+                        </div>
+                        <div style="height: 8px; background: #e5e7eb; border-radius: 4px;">
+                            <div style="width: 83%; height: 100%; background: linear-gradient(90deg, #f59e0b, #d97706); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-weight: 600;">Earned Leave</span>
+                            <span>15/18 days</span>
+                        </div>
+                        <div style="height: 8px; background: #e5e7eb; border-radius: 4px;">
+                            <div style="width: 83%; height: 100%; background: linear-gradient(90deg, #4ade80, #22c55e); border-radius: 4px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3 style="margin-bottom: 20px; color: #1e1e1e;">Upcoming Leaves</h3>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <strong>Priya Singh</strong> - Jan 10-12, 2026
+                        <div style="font-size: 12px; color: #666; margin-top: 3px;">Casual Leave • Pending</div>
+                    </div>
+                    <div style="padding: 12px; background: #dcfce7; border-radius: 8px; border-left: 4px solid #22c55e;">
+                        <strong>Rahul Sharma</strong> - Jan 14-16, 2026
+                        <div style="font-size: 12px; color: #666; margin-top: 3px;">Earned Leave • Approved</div>
+                    </div>
+                    <div style="padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                        <strong>Anjali Verma</strong> - Jan 15-20, 2026
+                        <div style="font-size: 12px; color: #666; margin-top: 3px;">Earned Leave • Pending</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
