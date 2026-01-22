@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Leave Management - Desktop Controller</title>
+    <title>Leave Management - WIZONE AI LAB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -294,21 +297,41 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-section">
-            <div class="admin-badge">ADMIN</div>
-            <div class="app-title">Desktop Controller</div>
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" style="width: 50px; height: 32px;">
+                    <defs>
+                        <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                            <stop offset="30%" style="stop-color:#f8fafc;stop-opacity:0.8" />
+                            <stop offset="70%" style="stop-color:#e2e8f0;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:0.6" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M10 55 L30 15 L50 55 M20 42 L40 42" fill="none" stroke="url(#aiGradient)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="75" cy="20" r="3" fill="url(#aiGradient)"/>
+                    <rect x="72" y="30" width="6" height="20" rx="3" fill="url(#aiGradient)"/>
+                </svg>
+            </div>
+            <div class="admin-badge">🤖 AI ADMIN</div>
+            <div class="app-title">WIZONE AI LAB</div>
+            <div class="app-subtitle">Advanced Intelligence Platform</div>
         </div>
 
         <nav>
-            <a class="menu-item" onclick="window.location.href='admin_dashboard.html'">
-                <span>📊</span>
+            <a class="menu-item" onclick="window.location.href='index.html'">
+                <span>🏠</span>
                 <span>Dashboard</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='live_systems.html'">
+                <span>🔗</span>
+                <span>Live Systems</span>
             </a>
             <a class="menu-item" onclick="window.location.href='employee_management.html'">
                 <span>👥</span>
                 <span>Employees</span>
             </a>
             <a class="menu-item" onclick="window.location.href='attendance_report.html'">
-                <span>📋</span>
+                <span>📊</span>
                 <span>Attendance Reports</span>
             </a>
             <a class="menu-item active">
@@ -321,34 +344,34 @@
             </a>
         </nav>
         
-        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">Core Monitoring</div>
+        <div class="menu-section-title">AI Monitoring</div>
         <nav>
             <a class="menu-item" onclick="window.location.href='web_logs.html'">
                 <span>🌐</span>
-                <span>Web Browsing Logs</span>
+                <span>Web Activity</span>
             </a>
             <a class="menu-item" onclick="window.location.href='application_logs.html'">
                 <span>💻</span>
                 <span>Application Usage</span>
             </a>
             <a class="menu-item" onclick="window.location.href='inactivity_logs.html'">
-                <span>⏰</span>
-                <span>Inactivity Logs</span>
+                <span>⏱️</span>
+                <span>Activity Logs</span>
             </a>
             <a class="menu-item" onclick="window.location.href='screenshots.html'">
-                <span>📸</span>
+                <span>📷</span>
                 <span>Screenshots</span>
             </a>
         </nav>
         
-        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">System</div>
+        <div class="menu-section-title">System Control</div>
         <nav>
             <a class="menu-item" onclick="window.location.href='settings.html'">
                 <span>⚙️</span>
-                <span>System Settings</span>
+                <span>AI Settings</span>
             </a>
             <a class="menu-item" onclick="window.location.href='admin_login.html'">
-                <span>🚪</span>
+                <span>🔓</span>
                 <span>Logout</span>
             </a>
         </nav>

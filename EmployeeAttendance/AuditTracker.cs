@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data.SQLite;
 using System.Diagnostics;
 using System.Drawing;
@@ -17,6 +18,17 @@ namespace EmployeeAttendance
     /// </summary>
     public class AuditTracker : IDisposable
     {
+        // IST Timezone - India Standard Time (UTC+5:30)
+        private static readonly TimeZoneInfo IstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+        
+        /// <summary>
+        /// Get current time in IST (India Standard Time)
+        /// </summary>
+        private static DateTime GetIstNow()
+        {
+            return TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, IstTimeZone);
+        }
+        
         // Win32 APIs for idle time detection
         [DllImport("user32.dll")]
         private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
@@ -57,7 +69,7 @@ namespace EmployeeAttendance
         
         // Tracking state
         private bool isTracking = false;
-        private DateTime lastActivityTime = DateTime.Now;
+        private DateTime lastActivityTime;
         private Point lastMousePosition = Point.Empty;
         private bool isCurrentlyInactive = false;
         private DateTime? inactivityStartTime = null;
@@ -65,7 +77,7 @@ namespace EmployeeAttendance
         // Current app tracking
         private string lastTrackedApp = "";
         private string lastTrackedTitle = "";
-        private DateTime lastAppStartTime = DateTime.Now;
+        private DateTime lastAppStartTime;
         
         // Log storage (in-memory before sync)
         private List<AppUsageLog> appUsageLogs = new List<AppUsageLog>();
@@ -86,6 +98,10 @@ namespace EmployeeAttendance
             this.companyName = companyName;
             this.username = username;
             this.displayName = displayName;
+            
+            // Initialize IST timestamps
+            lastActivityTime = GetIstNow();
+            lastAppStartTime = GetIstNow();
             
             // Ensure audit tables exist
             DatabaseHelper.EnsureAuditTablesExist();
@@ -135,7 +151,7 @@ namespace EmployeeAttendance
             if (isTracking) return;
             isTracking = true;
             
-            lastActivityTime = DateTime.Now;
+            lastActivityTime = GetIstNow();
             lastMousePosition = Cursor.Position;
             
             // Register system for remote viewing
@@ -287,7 +303,7 @@ namespace EmployeeAttendance
                 // Log previous app if valid
                 if (!string.IsNullOrEmpty(lastTrackedApp))
                 {
-                    TimeSpan duration = DateTime.Now - lastAppStartTime;
+                    TimeSpan duration = GetIstNow() - lastAppStartTime;
                     if (duration.TotalSeconds >= 5)  // Only log if used for 5+ seconds
                     {
                         lock (appUsageLogs)
@@ -297,7 +313,7 @@ namespace EmployeeAttendance
                                 AppName = lastTrackedApp,
                                 WindowTitle = lastTrackedTitle,
                                 StartTime = lastAppStartTime,
-                                EndTime = DateTime.Now,
+                                EndTime = GetIstNow(),
                                 IsSynced = false
                             });
                         }
@@ -307,11 +323,11 @@ namespace EmployeeAttendance
                 // Start tracking new app
                 lastTrackedApp = appName;
                 lastTrackedTitle = windowTitle;
-                lastAppStartTime = DateTime.Now;
+                lastAppStartTime = GetIstNow();
             }
             
             // Update activity time (user is active if using apps)
-            lastActivityTime = DateTime.Now;
+            lastActivityTime = GetIstNow();
         }
         
         #endregion
@@ -320,7 +336,7 @@ namespace EmployeeAttendance
         
         private void ScanBrowserHistory()
         {
-            DateTime since = DateTime.Now.AddHours(-24);  // Last 24 hours
+            DateTime since = GetIstNow().AddHours(-24);  // Last 24 hours
             
             try { ScanChromeHistory(since); } catch { }
             try { ScanEdgeHistory(since); } catch { }
@@ -442,6 +458,8 @@ namespace EmployeeAttendance
                                         Url = url.Length > 2000 ? url.Substring(0, 2000) : url,
                                         Title = title.Length > 500 ? title.Substring(0, 500) : title,
                                         Category = CategorizeUrl(url),
+                                        SearchQuery = ExtractSearchQuery(url),
+                                        Domain = ExtractDomain(url),
                                         VisitTime = visitDateTime,
                                         IsSynced = false
                                     });
@@ -503,6 +521,8 @@ namespace EmployeeAttendance
                                         Url = url.Length > 2000 ? url.Substring(0, 2000) : url,
                                         Title = title.Length > 500 ? title.Substring(0, 500) : title,
                                         Category = CategorizeUrl(url),
+                                        SearchQuery = ExtractSearchQuery(url),
+                                        Domain = ExtractDomain(url),
                                         VisitTime = visitDateTime,
                                         IsSynced = false
                                     });
@@ -525,16 +545,132 @@ namespace EmployeeAttendance
                 return "Social Media";
             if (url.Contains("gmail") || url.Contains("outlook") || url.Contains("mail"))
                 return "Email";
-            if (url.Contains("google") || url.Contains("bing") || url.Contains("duckduckgo"))
+            if (url.Contains("google") || url.Contains("bing") || url.Contains("duckduckgo") || url.Contains("search"))
                 return "Search";
             if (url.Contains("github") || url.Contains("stackoverflow") || url.Contains("docs."))
                 return "Development";
-            if (url.Contains("amazon") || url.Contains("ebay") || url.Contains("shop") || url.Contains("store"))
+            if (url.Contains("amazon") || url.Contains("ebay") || url.Contains("shop") || url.Contains("store") || url.Contains("flipkart"))
                 return "Shopping";
             if (url.Contains("news") || url.Contains("bbc") || url.Contains("cnn"))
                 return "News";
             
             return "General";
+        }
+        
+        /// <summary>
+        /// Extract search query from URL
+        /// </summary>
+        private string ExtractSearchQuery(string url)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(url)) return "";
+                
+                var uri = new Uri(url);
+                var queryParams = ParseQueryString(uri.Query);
+                
+                // Google search
+                if (url.Contains("google.com") || url.Contains("google.co."))
+                {
+                    return GetQueryParam(queryParams, "q") ?? GetQueryParam(queryParams, "query") ?? "";
+                }
+                
+                // Bing search
+                if (url.Contains("bing.com"))
+                {
+                    return GetQueryParam(queryParams, "q") ?? "";
+                }
+                
+                // YouTube search
+                if (url.Contains("youtube.com"))
+                {
+                    return GetQueryParam(queryParams, "search_query") ?? "";
+                }
+                
+                // DuckDuckGo
+                if (url.Contains("duckduckgo.com"))
+                {
+                    return GetQueryParam(queryParams, "q") ?? "";
+                }
+                
+                // Yahoo search
+                if (url.Contains("search.yahoo.com"))
+                {
+                    return GetQueryParam(queryParams, "p") ?? "";
+                }
+                
+                // Amazon search
+                if (url.Contains("amazon"))
+                {
+                    return GetQueryParam(queryParams, "k") ?? GetQueryParam(queryParams, "keywords") ?? "";
+                }
+                
+                // Flipkart search
+                if (url.Contains("flipkart.com"))
+                {
+                    return GetQueryParam(queryParams, "q") ?? "";
+                }
+                
+                // Generic search parameter
+                return GetQueryParam(queryParams, "q") ?? GetQueryParam(queryParams, "query") ?? 
+                       GetQueryParam(queryParams, "search") ?? GetQueryParam(queryParams, "keyword") ?? "";
+            }
+            catch
+            {
+                return "";
+            }
+        }
+        
+        /// <summary>
+        /// Parse query string into dictionary
+        /// </summary>
+        private Dictionary<string, string> ParseQueryString(string query)
+        {
+            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            if (string.IsNullOrEmpty(query)) return result;
+            
+            if (query.StartsWith("?")) query = query.Substring(1);
+            
+            var pairs = query.Split('&');
+            foreach (var pair in pairs)
+            {
+                var parts = pair.Split(new[] { '=' }, 2);
+                if (parts.Length == 2)
+                {
+                    string key = Uri.UnescapeDataString(parts[0]);
+                    string value = Uri.UnescapeDataString(parts[1]);
+                    if (!result.ContainsKey(key))
+                    {
+                        result[key] = value;
+                    }
+                }
+            }
+            return result;
+        }
+        
+        /// <summary>
+        /// Get query parameter value
+        /// </summary>
+        private string? GetQueryParam(Dictionary<string, string> queryParams, string key)
+        {
+            return queryParams.TryGetValue(key, out var value) ? value : null;
+        }
+        
+        /// <summary>
+        /// Extract domain from URL
+        /// </summary>
+        private string ExtractDomain(string url)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(url)) return "";
+                var uri = new Uri(url);
+                return uri.Host;
+            }
+            catch
+            {
+                return "";
+            }
         }
         
         #endregion
@@ -551,7 +687,7 @@ namespace EmployeeAttendance
                 if (!isCurrentlyInactive)
                 {
                     isCurrentlyInactive = true;
-                    inactivityStartTime = DateTime.Now.AddMilliseconds(-idleTime);
+                    inactivityStartTime = GetIstNow().AddMilliseconds(-idleTime);
                     LogToFile($"User became inactive. Idle time: {idleTime / 1000}s");
                 }
             }
@@ -561,16 +697,16 @@ namespace EmployeeAttendance
                 if (isCurrentlyInactive && inactivityStartTime.HasValue)
                 {
                     // Log the inactivity period
-                    TimeSpan duration = DateTime.Now - inactivityStartTime.Value;
+                    TimeSpan duration = GetIstNow() - inactivityStartTime.Value;
                     if (duration.TotalSeconds >= inactivityThresholdSeconds)
                     {
-                        LogToFile($"Logging inactivity period: {duration.TotalSeconds:F0}s ({inactivityStartTime.Value:HH:mm:ss} to {DateTime.Now:HH:mm:ss})");
+                        LogToFile($"Logging inactivity period: {duration.TotalSeconds:F0}s ({inactivityStartTime.Value:HH:mm:ss} to {GetIstNow():HH:mm:ss})");
                         lock (inactivityLogs)
                         {
                             inactivityLogs.Add(new InactivityLog
                             {
                                 StartTime = inactivityStartTime.Value,
-                                EndTime = DateTime.Now,
+                                EndTime = GetIstNow(),
                                 DurationSeconds = (int)duration.TotalSeconds,
                                 IsSynced = false
                             });
@@ -580,7 +716,7 @@ namespace EmployeeAttendance
                 
                 isCurrentlyInactive = false;
                 inactivityStartTime = null;
-                lastActivityTime = DateTime.Now;
+                lastActivityTime = GetIstNow();
             }
         }
         
@@ -725,7 +861,7 @@ namespace EmployeeAttendance
                 }
                 
                 // Remove old synced logs
-                appUsageLogs.RemoveAll(l => l.IsSynced && l.EndTime < DateTime.Now.AddHours(-1));
+                appUsageLogs.RemoveAll(l => l.IsSynced && l.EndTime < GetIstNow().AddHours(-1));
             }
             
             // Sync web logs
@@ -745,7 +881,7 @@ namespace EmployeeAttendance
                 }
                 
                 // Remove old synced logs
-                webLogs.RemoveAll(l => l.IsSynced && l.VisitTime < DateTime.Now.AddHours(-1));
+                webLogs.RemoveAll(l => l.IsSynced && l.VisitTime < GetIstNow().AddHours(-1));
             }
             
             // Sync inactivity logs
@@ -778,7 +914,7 @@ namespace EmployeeAttendance
                 }
                 
                 // Remove old synced logs
-                inactivityLogs.RemoveAll(l => l.IsSynced && l.EndTime < DateTime.Now.AddHours(-1));
+                inactivityLogs.RemoveAll(l => l.IsSynced && l.EndTime < GetIstNow().AddHours(-1));
             }
         }
         
@@ -795,7 +931,7 @@ namespace EmployeeAttendance
                     "EmployeeAttendance");
                 Directory.CreateDirectory(logDir);
                 string logPath = Path.Combine(logDir, "audit.log");
-                File.AppendAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {message}\n");
+                File.AppendAllText(logPath, $"{GetIstNow():yyyy-MM-dd HH:mm:ss} - {message}\n");
             }
             catch { }
         }

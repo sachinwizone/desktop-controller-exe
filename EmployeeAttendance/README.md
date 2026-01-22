@@ -77,7 +77,7 @@ Connects to the same PostgreSQL database as the Admin Desktop Controller:
 4. **Resume Work** - Click purple "BREAK STOP" button
 5. **Punch Out** - Click red "PUNCH OUT" button when done
 6. **Minimize** - Close window to minimize to tray
-7. **Exit** - Right-click tray icon → Exit (requires admin password: `admin123`)
+7. **Exit** - Right-click tray icon → Exit (requires admin password: `Admin@tracker$%000`)
 
 ## File Locations
 

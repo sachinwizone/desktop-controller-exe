@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 8px 12px; cursor: pointer; }
+        pre { background: #f0f0f0; padding: 10px; overflow-x: auto; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>API Endpoint Tests</h1>
+    
+    <div class="test-section">
+        <h2>1. Test get_daily_working_hours</h2>
+        <button onclick="testDailyHours()">Test</button>
+        <pre id="result1"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test get_employees</h2>
+        <button onclick="testEmployees()">Test</button>
+        <pre id="result2"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test get_web_logs</h2>
+        <button onclick="testWebLogs()">Test</button>
+        <pre id="result3"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test get_application_logs</h2>
+        <button onclick="testAppLogs()">Test</button>
+        <pre id="result4"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>5. Test get_inactivity_logs</h2>
+        <button onclick="testInactivityLogs()">Test</button>
+        <pre id="result5"></pre>
+    </div>
+
+    <div class="test-section">
+        <h2>6. Test get_screenshots</h2>
+        <button onclick="testScreenshots()">Test</button>
+        <pre id="result6"></pre>
+    </div>
+
+    <script>
+        async function apiCall(action, data) {
+            try {
+                const response = await fetch(`/api.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                return await response.json();
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testDailyHours() {
+            const result = await apiCall('get_daily_working_hours', {
+                employee: 'ashutosh',
+                date: '2026-01-19',
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD'
+            });
+            document.getElementById('result1').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function testEmployees() {
+            const result = await apiCall('get_employees', {
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD'
+            });
+            document.getElementById('result2').textContent = JSON.stringify(result, null, 2);
+        }
+
+        async function testWebLogs() {
+            const result = await apiCall('get_web_logs', {
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD',
+                page: 1,
+                limit: 3
+            });
+            const summary = {
+                success: result.success,
+                total_records: result.data?.pagination?.total_records,
+                records_returned: result.data?.records?.length,
+                sample_record: result.data?.records?.[0],
+                error: result.error
+            };
+            document.getElementById('result3').textContent = JSON.stringify(summary, null, 2);
+        }
+
+        async function testAppLogs() {
+            const result = await apiCall('get_application_logs', {
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD',
+                page: 1,
+                limit: 3
+            });
+            const summary = {
+                success: result.success,
+                total_records: result.data?.pagination?.total_records,
+                records_returned: result.data?.records?.length,
+                sample_record: result.data?.records?.[0],
+                error: result.error
+            };
+            document.getElementById('result4').textContent = JSON.stringify(summary, null, 2);
+        }
+
+        async function testInactivityLogs() {
+            const result = await apiCall('get_inactivity_logs', {
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD',
+                page: 1,
+                limit: 3
+            });
+            const summary = {
+                success: result.success,
+                total_records: result.data?.pagination?.total_records,
+                records_returned: result.data?.records?.length,
+                sample_record: result.data?.records?.[0],
+                error: result.error
+            };
+            document.getElementById('result5').textContent = JSON.stringify(summary, null, 2);
+        }
+
+        async function testScreenshots() {
+            const result = await apiCall('get_screenshots', {
+                company_name: 'WIZONE IT NETWORK INDIA PVT LTD',
+                page: 1,
+                limit: 3
+            });
+            const summary = {
+                success: result.success,
+                total_records: result.data?.pagination?.total_records,
+                records_returned: result.data?.records?.length,
+                sample_record: result.data?.records?.[0],
+                error: result.error
+            };
+            document.getElementById('result6').textContent = JSON.stringify(summary, null, 2);
+        }
+    </script>
+</body>
+</html>

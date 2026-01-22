@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WIZONE Desktop Controller - Admin Login</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loadingScreen" class="loading-screen">
+        <div class="loader"></div>
+        <p>Loading Desktop Controller...</p>
+    </div>
+
+    <!-- Role Selection (Hidden) -->
+    <div id="roleSelection" class="role-selection hidden"></div>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="login-section">
+        <div id="loginContainer"></div>
+    </div>
+
+    <!-- App Container (Hidden initially) -->
+    <div id="appContainer" class="app-container"></div>
+
+    <!-- Image Viewer Modal -->
+    <div id="imageModal" class="image-modal">
+        <div class="image-modal-content" id="imageModalContent">
+            <div class="image-modal-header">
+                <h2 id="imageModalTitle">📸 Screenshot Viewer</h2>
+                <button class="image-modal-close" onclick="document.getElementById('imageModal').classList.remove('active')">✕</button>
+            </div>
+            <img id="imageModalImage" src="" alt="Screenshot" class="image-modal-image" />
+            <div class="image-modal-info" id="imageModalInfo"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

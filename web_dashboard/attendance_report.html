@@ -3,20 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Reports - Desktop Controller</title>
+    <title>Attendance Reports - WIZONE AI LAB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
-        .sidebar { position: fixed; left: 0; top: 0; width: 260px; height: 100vh; background: #1e1e1e; padding: 20px; overflow-y: auto; }
-        .logo-section { text-align: center; padding: 20px 0; border-bottom: 1px solid #333; margin-bottom: 30px; }
-        .admin-badge { background: #f59e0b; color: white; padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: 600; margin-bottom: 10px; display: inline-block; }
-        .app-title { color: #fff; font-size: 18px; font-weight: 600; }
-        .company-name { color: #888; font-size: 11px; margin-top: 5px; }
-        .menu-section { margin-bottom: 20px; }
-        .menu-header { color: #666; font-size: 11px; text-transform: uppercase; padding: 10px 15px; letter-spacing: 1px; }
-        .menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; color: #a0a0a0; text-decoration: none; border-radius: 8px; margin-bottom: 5px; cursor: pointer; transition: all 0.3s ease; }
-        .menu-item:hover, .menu-item.active { background: #2a2a2a; color: #f59e0b; }
-        .main-content { margin-left: 260px; padding: 20px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            padding: 24px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+            border-right: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .logo-section {
+            text-align: center;
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #f59e0b 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 
+                0 12px 24px rgba(59, 130, 246, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: logoShine 3s infinite;
+        }
+
+        @keyframes logoShine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .app-title {
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            color: #94a3b8;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .menu-item:hover,
+        .menu-item.active {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            transform: translateX(4px);
+        }
+
+        .menu-item:hover::before,
+        .menu-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .menu-section {
+            margin-top: 24px;
+        }
+
+        .menu-section-title {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 12px 16px 8px;
+            margin-top: 16px;
+            letter-spacing: 0.8px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            padding: 24px;
+            min-height: 100vh;
+        }
         .header { background: white; padding: 20px 30px; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
         .page-title { font-size: 24px; font-weight: 700; color: #1e1e1e; }
         .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
@@ -64,24 +214,83 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-section">
-            <div class="admin-badge">ADMIN PANEL</div>
-            <div class="app-title">Desktop Controller</div>
-            <div class="company-name" id="companyDisplay">WIZONE IT NETWORK</div>
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" style="width: 50px; height: 32px;">
+                    <defs>
+                        <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                            <stop offset="30%" style="stop-color:#f8fafc;stop-opacity:0.8" />
+                            <stop offset="70%" style="stop-color:#e2e8f0;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:0.6" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M10 55 L30 15 L50 55 M20 42 L40 42" fill="none" stroke="url(#aiGradient)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="75" cy="20" r="3" fill="url(#aiGradient)"/>
+                    <rect x="72" y="30" width="6" height="20" rx="3" fill="url(#aiGradient)"/>
+                </svg>
+            </div>
+            <div class="admin-badge">🤖 AI ADMIN</div>
+            <div class="app-title">WIZONE AI LAB</div>
+            <div class="app-subtitle">Advanced Intelligence Platform</div>
         </div>
+
         <nav>
-            <a class="menu-item" href="admin_dashboard.html">📊 Dashboard</a>
-            <a class="menu-item" href="live_systems.html">🖥️ Live Systems</a>
-            <a class="menu-item" href="employee_management.html">👥 Employees</a>
-            <a class="menu-item active">📋 Attendance Reports</a>
-            <a class="menu-item" href="leave_management.html">🗓️ Leave Management</a>
-            <div class="menu-header">CORE MONITORING</div>
-            <a class="menu-item" href="web_logs.html">🌐 Web Browsing Logs</a>
-            <a class="menu-item" href="application_logs.html">💻 Application Usage</a>
-            <a class="menu-item" href="inactivity_logs.html">⏸️ Inactivity Logs</a>
-            <a class="menu-item" href="screenshots.html">📸 Screenshots</a>
-            <div class="menu-header">SYSTEM</div>
-            <a class="menu-item" href="settings.html">⚙️ Settings</a>
-            <a class="menu-item" href="admin_login.html">🚪 Logout</a>
+            <a class="menu-item" onclick="window.location.href='index.html'">
+                <span>🏠</span>
+                <span>Dashboard</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='live_systems.html'">
+                <span>🔗</span>
+                <span>Live Systems</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='employee_management.html'">
+                <span>👥</span>
+                <span>Employees</span>
+            </a>
+            <a class="menu-item active">
+                <span>📊</span>
+                <span>Attendance Reports</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='leave_management.html'">
+                <span>🗓️</span>
+                <span>Leave Management</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='departments.html'">
+                <span>🏢</span>
+                <span>Departments</span>
+            </a>
+        </nav>
+        
+        <div class="menu-section-title">AI Monitoring</div>
+        <nav>
+            <a class="menu-item" onclick="window.location.href='web_logs.html'">
+                <span>🌐</span>
+                <span>Web Activity</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='application_logs.html'">
+                <span>💻</span>
+                <span>Application Usage</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='inactivity_logs.html'">
+                <span>⏱️</span>
+                <span>Activity Logs</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='screenshots.html'">
+                <span>📷</span>
+                <span>Screenshots</span>
+            </a>
+        </nav>
+        
+        <div class="menu-section-title">System Control</div>
+        <nav>
+            <a class="menu-item" onclick="window.location.href='settings.html'">
+                <span>⚙️</span>
+                <span>AI Settings</span>
+            </a>
+            <a class="menu-item" onclick="window.location.href='admin_login.html'">
+                <span>🔓</span>
+                <span>Logout</span>
+            </a>
         </nav>
     </div>
 
@@ -197,7 +406,9 @@
         }
 
         async function apiCall(action, params = {}) {
-            const timestamp = Date.now(); // Cache buster
+            const timestamp = Date.now();
+            // Use company_name for the API instead of activation_key
+            const companyName = 'WIZONE IT NETWORK INDIA PVT LTD'; // Default company name
             const query = new URLSearchParams({ action, company_name: companyName, ...params, _t: timestamp }).toString();
             const url = `/api.php?${query}`;
             console.log('API Call URL:', url);
@@ -250,15 +461,18 @@
         }
 
         async function loadFilters() {
-            // Load employees who have punch records
-            const empResult = await apiCall('get_punch_employees');
-            if (empResult.success && empResult.data) {
+            // Load employees who have punch records by getting attendance data first
+            const empResult = await apiCall('get_attendance');
+            if (empResult.success && empResult.data) {  // Changed from records to data
                 const select = document.getElementById('employeeFilter');
                 select.innerHTML = '<option value="">All Employees</option>';
-                empResult.data.forEach(e => {
+                
+                // Get unique usernames from attendance records
+                const uniqueUsers = [...new Set(empResult.data.map(r => r.display_name || r.username))];  // Use display_name if available
+                uniqueUsers.forEach(username => {
                     const opt = document.createElement('option');
-                    opt.value = e.employee_id;
-                    opt.textContent = `${e.display_name || e.employee_id}${e.department ? ' (' + e.department + ')' : ''}`;
+                    opt.value = username;
+                    opt.textContent = username;
                     select.appendChild(opt);
                 });
             }
@@ -275,14 +489,14 @@
 
             console.log('Loading attendance with dates:', startDate, 'to', endDate);
 
-            if (startDate) params.start_date = startDate;
-            if (endDate) params.end_date = endDate;
-            if (employee) params.employee_id = employee;
+            if (startDate) params.start_date = startDate;  // Changed from date_from to start_date
+            if (endDate) params.end_date = endDate;        // Changed from date_to to end_date
+            if (employee) params.employee_id = employee;    // Changed from username to employee_id
 
             const result = await apiCall('get_attendance', params);
             console.log('Attendance result:', result);
 
-            if (!result.success || !result.data || result.data.length === 0) {
+            if (!result.success || !result.data || result.data.length === 0) {  // Changed from records to data
                 console.log('No data found or error:', result);
                 container.innerHTML = `
                     <div class="no-data">
@@ -296,7 +510,7 @@
                 return;
             }
 
-            const data = result.data;
+            const data = result.data;  // Changed from result.records to result.data
             updateStats(data);
 
             let html = `
@@ -308,7 +522,7 @@
                             <th>Punch In</th>
                             <th>Punch Out</th>
                             <th>Working Time</th>
-                            <th>Break Time</th>
+                            <th>System/Location</th>
                             <th>Status</th>
                         </tr>
                     </thead>
@@ -316,16 +530,16 @@
             `;
 
             data.forEach(record => {
-                const punchIn = formatTime(record.punch_in_time);
+                const punchIn = formatTime(record.punch_in_time);  // Changed from punch_in to punch_in_time
                 const punchOut = record.punch_out_time ? formatTime(record.punch_out_time) : '<span style="color: #3b82f6; font-weight: 600;">Working...</span>';
-                const workHours = record.punch_out_time ? formatDuration(record.total_work_duration_seconds) : '--';
-                const breakTime = formatBreakTime(record.break_duration_seconds);
-                const date = formatDate(record.punch_in_time);
+                const workHours = record.total_work_duration_seconds ? formatDuration(record.total_work_duration_seconds) : '--';
+                const date = formatDate(record.punch_in_time || record.created_at);  // Use actual field names
                 const displayName = record.display_name || record.username;
-                const employeeId = record.username;
+                const system = record.system_name || '--';
+                const location = record.department || '--';
                 
                 let status, statusClass;
-                if (!record.punch_out_time) {
+                if (!record.punch_out_time) {  // Changed from punch_out to punch_out_time
                     status = '🟢 Active';
                     statusClass = 'status-working';
                 } else {
@@ -338,14 +552,14 @@
                         <td>
                             <div class="employee-info">
                                 <span class="employee-name">${displayName}</span>
-                                <span class="employee-id">${employeeId}</span>
+                                <span class="employee-id">${location}</span>
                             </div>
                         </td>
                         <td>${date}</td>
                         <td class="time-cell">${punchIn}</td>
                         <td class="time-cell">${punchOut}</td>
                         <td class="duration-cell">${workHours}</td>
-                        <td class="break-cell">${breakTime}</td>
+                        <td class="break-cell">${system}</td>
                         <td><span class="status-badge ${statusClass}">${status}</span></td>
                     </tr>
                 `;
@@ -358,23 +572,25 @@
 
         function updateStats(data) {
             const totalRecords = data.length;
-            const activeNow = data.filter(r => !r.punch_out_time).length;
+            const activeNow = data.filter(r => !r.punch_out_time).length;  // Changed from punch_out to punch_out_time
             
             let totalSeconds = 0;
             let totalBreakSeconds = 0;
             
             data.forEach(r => {
-                if (r.total_work_duration_seconds) totalSeconds += r.total_work_duration_seconds;
-                if (r.break_duration_seconds) totalBreakSeconds += r.break_duration_seconds;
+                if (r.total_work_duration_seconds) totalSeconds += r.total_work_duration_seconds;  // Use correct field name
+                if (r.break_duration_seconds) totalBreakSeconds += r.break_duration_seconds;     // Use correct field name
             });
             
             const totalHours = Math.floor(totalSeconds / 3600);
-            const totalMins = Math.floor((totalSeconds % 3600) / 60);
-            const breakMins = Math.floor(totalBreakSeconds / 60);
+            const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
+            
+            const breakHours = Math.floor(totalBreakSeconds / 3600);
+            const breakMinutes = Math.floor((totalBreakSeconds % 3600) / 60);
             
             document.getElementById('totalRecords').textContent = totalRecords;
-            document.getElementById('totalHours').textContent = totalHours > 0 ? `${totalHours}h` : `${totalMins}m`;
-            document.getElementById('totalBreak').textContent = `${breakMins}m`;
+            document.getElementById('totalHours').textContent = totalHours > 0 ? `${totalHours}h ${totalMinutes}m` : `${totalMinutes}m`;
+            document.getElementById('totalBreak').textContent = breakHours > 0 ? `${breakHours}h ${breakMinutes}m` : `${breakMinutes}m`;
             document.getElementById('activeNow').textContent = activeNow;
         }
 

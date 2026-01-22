@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Systems - Desktop Controller</title>
+    <title>Live Systems - WIZONE AI LAB</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,8 +15,8 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #f5f7fa;
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
         }
 
         /* Sidebar */
@@ -21,60 +24,147 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 260px;
+            width: 280px;
             height: 100vh;
-            background: #1e1e1e;
-            padding: 20px;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            padding: 24px;
             overflow-y: auto;
             z-index: 100;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.12);
+            border-right: 1px solid rgba(59, 130, 246, 0.1);
         }
 
         .logo-section {
             text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #333;
-            margin-bottom: 30px;
+            padding: 24px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            margin-bottom: 32px;
+        }
+
+        .logo-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #f59e0b 100%);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+            box-shadow: 
+                0 12px 24px rgba(59, 130, 246, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logo-icon::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: logoShine 3s infinite;
+        }
+
+        @keyframes logoShine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+            100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
         }
 
         .admin-badge {
-            background: #f59e0b;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
             color: white;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 10px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
             font-weight: 600;
-            margin-bottom: 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .app-title {
-            color: #fff;
-            font-size: 18px;
-            font-weight: 600;
+            color: #f8fafc;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .app-subtitle {
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
         }
 
         .menu-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 12px 15px;
-            color: #a0a0a0;
+            gap: 14px;
+            padding: 14px 16px;
+            color: #94a3b8;
             text-decoration: none;
-            border-radius: 8px;
-            margin-bottom: 5px;
-            transition: all 0.3s ease;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
+            font-weight: 500;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: linear-gradient(180deg, #3b82f6 0%, #8b5cf6 100%);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
         }
 
         .menu-item:hover,
         .menu-item.active {
-            background: #2a2a2a;
-            color: #f59e0b;
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            transform: translateX(4px);
+        }
+
+        .menu-item:hover::before,
+        .menu-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .menu-section {
+            margin-top: 24px;
+        }
+
+        .menu-section-title {
+            color: #64748b;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 12px 16px 8px;
+            margin-top: 16px;
+            letter-spacing: 0.8px;
         }
 
         /* Main Content */
         .main-content {
-            margin-left: 260px;
-            padding: 20px;
+            margin-left: 280px;
+            padding: 24px;
             min-height: 100vh;
         }
 
@@ -411,17 +501,33 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="logo-section">
-            <div class="admin-badge">ADMIN</div>
-            <div class="app-title">Desktop Controller</div>
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" style="width: 50px; height: 32px;">
+                    <defs>
+                        <linearGradient id="aiGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+                            <stop offset="30%" style="stop-color:#f8fafc;stop-opacity:0.8" />
+                            <stop offset="70%" style="stop-color:#e2e8f0;stop-opacity:0.7" />
+                            <stop offset="100%" style="stop-color:#cbd5e1;stop-opacity:0.6" />
+                        </linearGradient>
+                    </defs>
+                    <path d="M10 55 L30 15 L50 55 M20 42 L40 42" fill="none" stroke="url(#aiGradient)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="75" cy="20" r="3" fill="url(#aiGradient)"/>
+                    <rect x="72" y="30" width="6" height="20" rx="3" fill="url(#aiGradient)"/>
+                </svg>
+            </div>
+            <div class="admin-badge">🤖 AI ADMIN</div>
+            <div class="app-title">WIZONE AI LAB</div>
+            <div class="app-subtitle">Advanced Intelligence Platform</div>
         </div>
 
         <nav>
-            <a class="menu-item" onclick="window.location.href='admin_dashboard.html'">
-                <span>📊</span>
+            <a class="menu-item" onclick="window.location.href='index.html'">
+                <span>🏠</span>
                 <span>Dashboard</span>
             </a>
             <a class="menu-item active">
-                <span>🖥️</span>
+                <span>🔗</span>
                 <span>Live Systems</span>
             </a>
             <a class="menu-item" onclick="window.location.href='employee_management.html'">
@@ -429,7 +535,7 @@
                 <span>Employees</span>
             </a>
             <a class="menu-item" onclick="window.location.href='attendance_report.html'">
-                <span>📋</span>
+                <span>📊</span>
                 <span>Attendance Reports</span>
             </a>
             <a class="menu-item" onclick="window.location.href='leave_management.html'">
@@ -442,34 +548,34 @@
             </a>
         </nav>
         
-        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">Core Monitoring</div>
+        <div class="menu-section-title">AI Monitoring</div>
         <nav>
             <a class="menu-item" onclick="window.location.href='web_logs.html'">
                 <span>🌐</span>
-                <span>Web Browsing Logs</span>
+                <span>Web Activity</span>
             </a>
             <a class="menu-item" onclick="window.location.href='application_logs.html'">
                 <span>💻</span>
                 <span>Application Usage</span>
             </a>
             <a class="menu-item" onclick="window.location.href='inactivity_logs.html'">
-                <span>⏰</span>
-                <span>Inactivity Logs</span>
+                <span>⏱️</span>
+                <span>Activity Logs</span>
             </a>
             <a class="menu-item" onclick="window.location.href='screenshots.html'">
-                <span>📸</span>
+                <span>📷</span>
                 <span>Screenshots</span>
             </a>
         </nav>
         
-        <div style="color: #666; font-size: 11px; text-transform: uppercase; padding: 15px 15px 10px; margin-top: 10px;">System</div>
+        <div class="menu-section-title">System Control</div>
         <nav>
             <a class="menu-item" onclick="window.location.href='settings.html'">
                 <span>⚙️</span>
-                <span>System Settings</span>
+                <span>AI Settings</span>
             </a>
             <a class="menu-item" onclick="window.location.href='admin_login.html'">
-                <span>🚪</span>
+                <span>🔓</span>
                 <span>Logout</span>
             </a>
         </nav>

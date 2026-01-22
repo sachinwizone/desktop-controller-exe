@@ -2,11 +2,21 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.Runtime.InteropServices;
+using System.Diagnostics;
+using System.Linq;
 
 namespace EmployeeAttendance
 {
     public class MainDashboard : Form
     {
+        // P/Invoke for window management
+        [DllImport("user32.dll")]
+        private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+        
+        [DllImport("user32.dll")]
+        private static extern bool SetForegroundWindow(IntPtr hWnd);
+        
         // UI Components
         private Label statusLabel = null!;
         private Label workHoursLabel = null!;
@@ -42,16 +52,24 @@ namespace EmployeeAttendance
         // Heartbeat timer for live system tracking (direct database)
         private System.Windows.Forms.Timer heartbeatTimer = null!;
         
-        // Colors matching the design
-        private readonly Color bgColor = Color.FromArgb(17, 17, 17);
-        private readonly Color cardColor = Color.FromArgb(30, 30, 30);
-        private readonly Color textColor = Color.FromArgb(255, 255, 255);
-        private readonly Color mutedColor = Color.FromArgb(156, 163, 175);
-        private readonly Color greenColor = Color.FromArgb(16, 185, 129);
-        private readonly Color redColor = Color.FromArgb(239, 68, 68);
-        private readonly Color yellowColor = Color.FromArgb(251, 191, 36);
-        private readonly Color purpleColor = Color.FromArgb(139, 92, 246);
-        private readonly Color cyanColor = Color.FromArgb(6, 182, 212);
+        // Colors matching the design - Updated color scheme
+        // Main colors
+        private readonly Color bgColor = Color.FromArgb(26, 26, 26);           // #1a1a1a - App background
+        private readonly Color cardColor = Color.FromArgb(37, 37, 37);        // #252525 - Stats cards background
+        private readonly Color textColor = Color.FromArgb(224, 224, 224);     // #e0e0e0 - Primary text
+        private readonly Color mutedColor = Color.FromArgb(138, 138, 138);    // #8a8a8a - Muted text
+        
+        // Status & Action colors
+        private readonly Color greenColor = Color.FromArgb(16, 185, 129);     // #10b981 - Punch In
+        private readonly Color redColor = Color.FromArgb(239, 68, 68);        // #ef4444 - Punch Out
+        private readonly Color yellowColor = Color.FromArgb(245, 158, 11);    // #f59e0b - Break Start
+        private readonly Color blueColor = Color.FromArgb(37, 99, 235);       // #2563eb - Break Stop / Web Dashboard
+        private readonly Color cyanColor = Color.FromArgb(6, 182, 212);       // #06b4d4 - Secondary highlight
+        
+        // Additional colors for UI elements
+        private readonly Color titleBarBg = Color.FromArgb(45, 45, 45);       // #2d2d2d - Title bar
+        private readonly Color borderColor = Color.FromArgb(58, 58, 58);      // #3a3a3a - Borders
+        private readonly Color scrollbarThumb = Color.FromArgb(58, 58, 58);   // #3a3a3a - Scrollbar
         
         public MainDashboard()
         {
@@ -87,38 +105,84 @@ namespace EmployeeAttendance
             {
                 systemIdLabel.Text = $"🔢 ID: {auditTracker.SystemId}";
             }
+            
+            // Start tracking automatically - regardless of punch status
+            auditTracker?.StartTracking();
         }
         
         private void InitializeComponent()
         {
             this.SuspendLayout();
             
-            // Form settings
+            // Form settings with DPI scaling support
             this.Text = $"{companyName} - Attendance";
-            this.Size = new Size(500, 750);
+            this.Size = ScaleDpi(new Size(500, 780));
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.BackColor = bgColor;
             this.Font = new Font("Segoe UI", 10F);
+            this.AutoScaleMode = AutoScaleMode.Dpi;
             
-            // Main panel
+            // Main panel - reduced left padding for left-aligned content
             var mainPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                Padding = new Padding(30),
-                BackColor = bgColor
+                Padding = ScaleDpi(new Padding(15, 30, 15, 15)),
+                BackColor = bgColor,
+                AutoScroll = true
             };
             
-            int y = 20;
+            int y = 5;
+            int leftMargin = 5;
+            
+            // Support Contact Bar at top
+            var supportPanel = new Panel
+            {
+                Location = new Point(0, 0),
+                Size = new Size(500, 28),
+                BackColor = titleBarBg  // #2d2d2d
+            };
+            
+            // Add logo to support bar
+            var logoPicture = new PictureBox
+            {
+                Size = new Size(24, 24),
+                Location = new Point(5, 2),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.Transparent
+            };
+            try
+            {
+                string exeDir = Path.GetDirectoryName(Application.ExecutablePath) ?? "";
+                string logoPath = Path.Combine(exeDir, "logo.png");
+                if (!File.Exists(logoPath))
+                    logoPath = Path.Combine(exeDir, "logo ai.png");
+                if (File.Exists(logoPath))
+                    logoPicture.Image = Image.FromFile(logoPath);
+            }
+            catch { }
+            supportPanel.Controls.Add(logoPicture);
+            
+            var supportLabel = new Label
+            {
+                Text = "WIZONE AI LAB  |  📧 HELPDESK@WIZONEIT.COM  |  📱 9258299518",
+                Font = new Font("Segoe UI", 9, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(32, 5),
+                AutoSize = true
+            };
+            supportPanel.Controls.Add(supportLabel);
+            mainPanel.Controls.Add(supportPanel);
+            y += 35;
             
             // Company Header
             var companyHeader = new Label
             {
                 Text = companyName.ToUpper(),
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                ForeColor = textColor,
-                Location = new Point(0, y),
+                ForeColor = Color.FromArgb(255, 255, 255),  // #ffffff
+                Location = new Point(leftMargin, y),
                 AutoSize = true
             };
             mainPanel.Controls.Add(companyHeader);
@@ -128,26 +192,27 @@ namespace EmployeeAttendance
             {
                 Text = "Attendance System",
                 Font = new Font("Segoe UI", 10),
-                ForeColor = mutedColor,
-                Location = new Point(0, y),
+                ForeColor = Color.FromArgb(138, 138, 138),  // #8a8a8a
+                Location = new Point(leftMargin, y),
                 AutoSize = true
             };
             mainPanel.Controls.Add(subtitleLabel);
             
-            // System ID (like AnyDesk) - right aligned
+            // System ID (like AnyDesk) - HIDDEN from frontend
             systemIdLabel = new Label
             {
                 Text = "🔢 ID: ---",
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
                 ForeColor = cyanColor,
-                Location = new Point(300, y),
-                AutoSize = true
+                Location = new Point(320, y),
+                AutoSize = true,
+                Visible = false  // Hidden from frontend only
             };
             mainPanel.Controls.Add(systemIdLabel);
             y += 40;
             
             // Status Card
-            var statusCard = CreateCard(0, y, 440, 80);
+            var statusCard = CreateCard(leftMargin, y, 450, 80);
             mainPanel.Controls.Add(statusCard);
             
             // Status indicator
@@ -200,7 +265,7 @@ namespace EmployeeAttendance
             {
                 Text = "0:00",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                ForeColor = cyanColor,
+                ForeColor = blueColor,  // #2563eb
                 Location = new Point(155, 28),
                 AutoSize = true
             };
@@ -221,7 +286,7 @@ namespace EmployeeAttendance
             {
                 Text = "0:00",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                ForeColor = redColor,
+                ForeColor = yellowColor,  // #f59e0b
                 Location = new Point(320, 28),
                 AutoSize = true
             };
@@ -230,21 +295,21 @@ namespace EmployeeAttendance
             y += 100;
             
             // Punch Buttons Row
-            punchInButton = CreateActionButton("▶ PUNCH IN", greenColor, 0, y, 210, 50);
+            punchInButton = CreateActionButton("▶ PUNCH IN", greenColor, leftMargin, y, 220, 50);
             punchInButton.Click += PunchInButton_Click;
             mainPanel.Controls.Add(punchInButton);
             
-            punchOutButton = CreateActionButton("⏹ PUNCH OUT", redColor, 230, y, 210, 50);
+            punchOutButton = CreateActionButton("⏹ PUNCH OUT", redColor, leftMargin + 230, y, 220, 50);
             punchOutButton.Click += PunchOutButton_Click;
             mainPanel.Controls.Add(punchOutButton);
             y += 65;
             
             // Break Buttons Row
-            breakStartButton = CreateActionButton("☕ BREAK START", yellowColor, 0, y, 210, 50, true);
+            breakStartButton = CreateActionButton("☕ BREAK START", yellowColor, leftMargin, y, 220, 50, true);
             breakStartButton.Click += BreakStartButton_Click;
             mainPanel.Controls.Add(breakStartButton);
             
-            breakStopButton = CreateActionButton("⏸ BREAK STOP", purpleColor, 230, y, 210, 50);
+            breakStopButton = CreateActionButton("⏸ BREAK STOP", blueColor, leftMargin + 230, y, 220, 50);
             breakStopButton.Click += BreakStopButton_Click;
             mainPanel.Controls.Add(breakStopButton);
             y += 75;
@@ -254,8 +319,8 @@ namespace EmployeeAttendance
             {
                 Text = "📋 TODAY'S ACTIVITY",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                ForeColor = mutedColor,
-                Location = new Point(0, y),
+                ForeColor = Color.FromArgb(138, 138, 138),  // #8a8a8a
+                Location = new Point(leftMargin, y),
                 AutoSize = true
             };
             mainPanel.Controls.Add(activityHeader);
@@ -264,22 +329,45 @@ namespace EmployeeAttendance
             // Activity Panel (scrollable)
             activityPanel = new Panel
             {
-                Location = new Point(0, y),
-                Size = new Size(440, 280),
+                Location = new Point(leftMargin, y),
+                Size = new Size(450, 280),
                 AutoScroll = true,
-                BackColor = bgColor
+                BackColor = Color.FromArgb(37, 37, 37)  // #252525
             };
             mainPanel.Controls.Add(activityPanel);
             y += 295;
+            
+            // Activity History Button
+            var activityHistoryButton = new Button
+            {
+                Text = "📅 ACTIVITY HISTORY",
+                Size = new Size(455, 50),
+                Location = new Point(leftMargin, y),
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                BackColor = Color.FromArgb(100, 116, 139),  // Slate color
+                ForeColor = textColor,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            activityHistoryButton.FlatAppearance.BorderSize = 0;
+            activityHistoryButton.Click += (s, e) =>
+            {
+                using (var historyForm = new ActivityHistoryForm(username, displayName))
+                {
+                    historyForm.ShowDialog(this);
+                }
+            };
+            mainPanel.Controls.Add(activityHistoryButton);
+            y += 65;
             
             // Web Dashboard Button
             webDashboardButton = new Button
             {
                 Text = "🌐 OPEN WEB DASHBOARD",
-                Size = new Size(440, 55),
-                Location = new Point(0, y),
+                Size = new Size(455, 55),
+                Location = new Point(leftMargin, y),
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
-                BackColor = purpleColor,
+                BackColor = blueColor,  // #2563eb
                 ForeColor = textColor,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand
@@ -305,7 +393,7 @@ namespace EmployeeAttendance
             };
             panel.Paint += (s, e) =>
             {
-                using (var pen = new Pen(Color.FromArgb(55, 65, 81), 1))
+                using (var pen = new Pen(borderColor, 1))  // #3a3a3a
                 {
                     e.Graphics.DrawRectangle(pen, 0, 0, width - 1, height - 1);
                 }
@@ -327,6 +415,7 @@ namespace EmployeeAttendance
             
             if (outline)
             {
+                // Outline style for break start button
                 button.BackColor = Color.Transparent;
                 button.ForeColor = color;
                 button.FlatAppearance.BorderColor = color;
@@ -334,8 +423,13 @@ namespace EmployeeAttendance
             }
             else
             {
+                // Filled style
                 button.BackColor = color;
-                button.ForeColor = textColor;
+                // Black text for green (punch in), white for red and blue buttons
+                if (color == greenColor)
+                    button.ForeColor = Color.FromArgb(0, 0, 0);  // Black text
+                else
+                    button.ForeColor = textColor;
                 button.FlatAppearance.BorderSize = 0;
             }
             
@@ -373,6 +467,86 @@ namespace EmployeeAttendance
                 ForeColor = cyanColor
             };
             trayMenu.Items.Add(userItem);
+            
+            trayMenu.Items.Add(new ToolStripSeparator());
+            
+            // Running Applications Section
+            var runningAppsItem = new ToolStripMenuItem("🚀 Running Applications");
+            runningAppsItem.Font = new Font("Segoe UI", 10, FontStyle.Bold);
+            
+            // Add running processes
+            try
+            {
+                var processes = System.Diagnostics.Process.GetProcesses()
+                    .Where(p => !string.IsNullOrEmpty(p.ProcessName) && 
+                                p.ProcessName != "explorer" && 
+                                p.ProcessName != "svchost" &&
+                                p.ProcessName != "lsass" &&
+                                p.ProcessName != "services" &&
+                                p.ProcessName != "wininit" &&
+                                p.MainWindowTitle.Length > 0)
+                    .OrderBy(p => p.ProcessName)
+                    .Take(25)
+                    .ToList();
+                
+                if (processes.Count > 0)
+                {
+                    foreach (var proc in processes)
+                    {
+                        try
+                        {
+                            var title = proc.MainWindowTitle.Length > 30 
+                                ? proc.MainWindowTitle.Substring(0, 27) + "..." 
+                                : proc.MainWindowTitle;
+                            
+                            var appItem = new ToolStripMenuItem($"  ➤ {title}")
+                            {
+                                Enabled = true,
+                                ForeColor = greenColor
+                            };
+                            appItem.Click += (s, e) =>
+                            {
+                                try
+                                {
+                                    if (!proc.HasExited)
+                                    {
+                                        proc.Refresh();
+                                        if (proc.MainWindowHandle != IntPtr.Zero)
+                                        {
+                                            // Bring window to front
+                                            var handle = proc.MainWindowHandle;
+                                            ShowWindow(handle, 9); // SW_RESTORE
+                                            SetForegroundWindow(handle);
+                                        }
+                                    }
+                                }
+                                catch { }
+                            };
+                            runningAppsItem.DropDownItems.Add(appItem);
+                        }
+                        catch { continue; }
+                    }
+                }
+                else
+                {
+                    var noAppsItem = new ToolStripMenuItem("  (No applications running)")
+                    {
+                        Enabled = false,
+                        ForeColor = mutedColor
+                    };
+                    runningAppsItem.DropDownItems.Add(noAppsItem);
+                }
+            }
+            catch (Exception ex)
+            {
+                var errorItem = new ToolStripMenuItem($"  Error: {ex.Message}")
+                {
+                    Enabled = false
+                };
+                runningAppsItem.DropDownItems.Add(errorItem);
+            }
+            
+            trayMenu.Items.Add(runningAppsItem);
             
             trayMenu.Items.Add(new ToolStripSeparator());
             
@@ -440,22 +614,13 @@ namespace EmployeeAttendance
             };
             trayMenu.Items.Add(logoutItem);
             
-            // Exit
-            var exitItem = new ToolStripMenuItem("🚪 Exit (Admin Only)");
+            // Exit to Tray
+            var exitItem = new ToolStripMenuItem("🚪 Minimize to Tray");
             exitItem.ForeColor = mutedColor;
             exitItem.Click += (s, e) =>
             {
-                string password = ShowPasswordDialog("Enter admin password to exit:", "Admin Exit");
-                if (password == "admin123")
-                {
-                    trayIcon.Visible = false;
-                    Application.Exit();
-                }
-                else if (!string.IsNullOrEmpty(password))
-                {
-                    MessageBox.Show("Invalid admin password", "Access Denied", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+                this.Hide();
+                this.WindowState = FormWindowState.Minimized;
             };
             trayMenu.Items.Add(exitItem);
             
@@ -473,18 +638,199 @@ namespace EmployeeAttendance
         
         private void MainDashboard_FormClosing(object? sender, FormClosingEventArgs e)
         {
+            // X Button Click - Simply minimize to tray (no password required)
             if (e.CloseReason == CloseReason.UserClosing)
             {
                 e.Cancel = true;
                 this.Hide();
-                trayIcon.ShowBalloonTip(2000, "Employee Attendance", 
-                    "Application minimized to tray. Double-click to open.", ToolTipIcon.Info);
+                this.WindowState = FormWindowState.Minimized;
+                return;
             }
-            else
+            
+            // Task Manager Kill Attempt - Require password to prevent exit
+            if (e.CloseReason == CloseReason.TaskManagerClosing)
             {
-                // App is truly closing - mark system as offline
-                DatabaseHelper.SetSystemOffline(companyName, username);
+                e.Cancel = true; // BLOCK the kill
+                
+                // Show password dialog to authorize exit
+                string? password = null;
+                int attempts = 0;
+                
+                while (attempts < 3)
+                {
+                    password = ShowPasswordDialog(
+                        "⚠️ TASK MANAGER TERMINATION BLOCKED\n\n" +
+                        "Enter admin password to force close application:", 
+                        "🔒 Master Password Required");
+                    
+                    if (string.IsNullOrEmpty(password))
+                    {
+                        // User cancelled - keep app open and prevent kill
+                        MessageBox.Show(
+                            "❌ Application close blocked.\n\n" +
+                            "Password is required to close this application.", 
+                            "Close Blocked", 
+                            MessageBoxButtons.OK, 
+                            MessageBoxIcon.Warning);
+                        e.Cancel = true; // PREVENT KILL
+                        return;
+                    }
+                    
+                    if (password == "Admin@tracker$%000")
+                    {
+                        // Correct password - allow close
+                        e.Cancel = false;
+                        try
+                        {
+                            DatabaseHelper.SetSystemOffline(companyName, username);
+                        }
+                        catch { }
+                        return;
+                    }
+                    
+                    // Wrong password
+                    attempts++;
+                    if (attempts < 3)
+                    {
+                        MessageBox.Show(
+                            "❌ Wrong password! Attempts: " + attempts + "/3\n\n" +
+                            "Application is protected.", 
+                            "Wrong Password", 
+                            MessageBoxButtons.OK, 
+                            MessageBoxIcon.Error);
+                    }
+                }
+                
+                // Too many failed attempts
+                MessageBox.Show(
+                    "❌ LOCKED: Too many failed attempts.\n\n" +
+                    "Application cannot be closed from Task Manager.", 
+                    "Access Denied", 
+                    MessageBoxButtons.OK, 
+                    MessageBoxIcon.Stop);
+                e.Cancel = true; // PREVENT KILL - APP LOCKED
+                return;
             }
+            
+            // Windows Shutdown - Allow graceful shutdown
+            if (e.CloseReason == CloseReason.WindowsShutDown)
+            {
+                e.Cancel = false;
+                try
+                {
+                    DatabaseHelper.SetSystemOffline(companyName, username);
+                }
+                catch { }
+                return;
+            }
+        }
+        
+        private void PromptPasswordBeforeClose()
+        {
+            // Hardcoded password for protection against Task Manager termination
+            const string ADMIN_PASSWORD = "Admin@tracker$%000";
+            
+            // Prompt for admin password
+            var passwordForm = new Form
+            {
+                Text = "Admin Password Required",
+                Width = 400,
+                Height = 230,
+                StartPosition = FormStartPosition.CenterScreen,
+                MaximizeBox = false,
+                MinimizeBox = false,
+                FormBorderStyle = FormBorderStyle.FixedDialog,
+                BackColor = Color.FromArgb(30, 30, 30),
+                ForeColor = Color.White,
+                Icon = this.Icon,
+                TopMost = true
+            };
+
+            var label = new Label
+            {
+                Text = "⚠️ This application is protected.\nEnter admin password to close:",
+                Location = new Point(15, 20),
+                Width = 370,
+                Height = 60,
+                ForeColor = Color.FromArgb(255, 193, 7),
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                AutoSize = false
+            };
+            passwordForm.Controls.Add(label);
+
+            var passwordBox = new TextBox
+            {
+                Location = new Point(15, 85),
+                Width = 370,
+                Height = 35,
+                UseSystemPasswordChar = true,
+                Font = new Font("Segoe UI", 11),
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            passwordForm.Controls.Add(passwordBox);
+
+            var okButton = new Button
+            {
+                Text = "Close Application",
+                Location = new Point(205, 140),
+                Width = 180,
+                Height = 40,
+                BackColor = Color.FromArgb(244, 67, 54),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                DialogResult = DialogResult.OK
+            };
+            passwordForm.Controls.Add(okButton);
+
+            var cancelButton = new Button
+            {
+                Text = "Cancel",
+                Location = new Point(15, 140),
+                Width = 180,
+                Height = 40,
+                BackColor = Color.FromArgb(76, 175, 80),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                DialogResult = DialogResult.Cancel
+            };
+            passwordForm.Controls.Add(cancelButton);
+
+            passwordForm.AcceptButton = okButton;
+            passwordForm.CancelButton = cancelButton;
+
+            if (passwordForm.ShowDialog() == DialogResult.OK)
+            {
+                if (passwordBox.Text == ADMIN_PASSWORD)
+                {
+                    // Password correct - proceed with close
+                    MessageBox.Show("Closing application...", "Confirmed", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    
+                    // Mark system as offline before closing
+                    try
+                    {
+                        DatabaseHelper.SetSystemOffline(companyName, username);
+                    }
+                    catch { }
+                    
+                    this.FormClosing -= MainDashboard_FormClosing;
+                    Application.Exit();
+                }
+                else
+                {
+                    MessageBox.Show("❌ Incorrect password!\n\nApplication cannot be closed from Task Manager without the correct password.", 
+                        "Access Denied",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    passwordBox.Clear();
+                    passwordBox.Focus();
+                }
+            }
+            
+            passwordForm.Dispose();
         }
         
         private void LoadCurrentSession()
@@ -567,12 +913,27 @@ namespace EmployeeAttendance
             breakStartButton.Enabled = isPunchedIn && !isOnBreak;
             breakStopButton.Enabled = isPunchedIn && isOnBreak;
             
-            // Visual feedback
-            punchInButton.BackColor = punchInButton.Enabled ? greenColor : Color.FromArgb(60, 60, 60);
+            // Visual feedback - Punch In button
+            if (punchInButton.Enabled)
+            {
+                punchInButton.BackColor = greenColor;
+                punchInButton.ForeColor = Color.FromArgb(0, 0, 0);  // Black text
+            }
+            else
+            {
+                punchInButton.BackColor = Color.FromArgb(60, 60, 60);
+                punchInButton.ForeColor = Color.FromArgb(100, 100, 100);
+            }
+            
+            // Punch Out button
             punchOutButton.BackColor = punchOutButton.Enabled ? redColor : Color.FromArgb(60, 60, 60);
+            
+            // Break Start button (outline style)
             breakStartButton.ForeColor = breakStartButton.Enabled ? yellowColor : Color.FromArgb(80, 80, 80);
             breakStartButton.FlatAppearance.BorderColor = breakStartButton.Enabled ? yellowColor : Color.FromArgb(80, 80, 80);
-            breakStopButton.BackColor = breakStopButton.Enabled ? purpleColor : Color.FromArgb(60, 60, 60);
+            
+            // Break Stop button
+            breakStopButton.BackColor = breakStopButton.Enabled ? blueColor : Color.FromArgb(60, 60, 60);
             
             statusLabel.Text = isOnBreak ? "On Break" : (isPunchedIn ? "Active" : "Inactive");
             statusLabel.ForeColor = isOnBreak ? yellowColor : (isPunchedIn ? greenColor : mutedColor);
@@ -598,7 +959,7 @@ namespace EmployeeAttendance
                 {
                     Text = "No activity today. Punch in to start!",
                     Font = new Font("Segoe UI", 10),
-                    ForeColor = mutedColor,
+                    ForeColor = Color.FromArgb(138, 138, 138),  // #8a8a8a
                     Location = new Point(10, 20),
                     AutoSize = true
                 };
@@ -612,14 +973,14 @@ namespace EmployeeAttendance
             {
                 Location = new Point(0, y),
                 Size = new Size(420, 50),
-                BackColor = cardColor
+                BackColor = Color.FromArgb(37, 37, 37)  // #252525
             };
             
             var timeLabel = new Label
             {
                 Text = time.ToString("hh:mm tt"),
                 Font = new Font("Segoe UI", 11),
-                ForeColor = textColor,
+                ForeColor = Color.FromArgb(138, 138, 138),  // #8a8a8a
                 Location = new Point(15, 15),
                 AutoSize = true
             };
@@ -653,11 +1014,8 @@ namespace EmployeeAttendance
                 UpdateButtonStates();
                 RefreshActivities();
                 
-                // Start audit tracking (apps, web, inactivity, screenshots, live stream)
-                auditTracker?.StartTracking();
-                
                 trayIcon.ShowBalloonTip(2000, "Punch In", 
-                    $"You have punched in at {DateTime.Now:hh:mm tt}\nMonitoring started.", ToolTipIcon.Info);
+                    $"You have punched in at {DateTime.Now:hh:mm tt}", ToolTipIcon.Info);
             }
             else
             {
@@ -677,8 +1035,7 @@ namespace EmployeeAttendance
                 UpdateButtonStates();
                 RefreshActivities();
                 
-                // Stop audit tracking
-                auditTracker?.StopTracking();
+                // Note: Audit tracking continues even after punch out
                 
                 trayIcon.ShowBalloonTip(2000, "Punch Out", 
                     $"You have punched out at {DateTime.Now:hh:mm tt}", ToolTipIcon.Info);
@@ -756,63 +1113,80 @@ namespace EmployeeAttendance
             using (var form = new Form())
             {
                 form.Text = title;
-                form.Size = new Size(350, 180);
+                form.Size = new Size(400, 220);
                 form.FormBorderStyle = FormBorderStyle.FixedDialog;
                 form.StartPosition = FormStartPosition.CenterScreen;
                 form.MaximizeBox = false;
                 form.MinimizeBox = false;
+                form.ControlBox = false; // Remove X button
                 form.BackColor = cardColor;
+                form.TopMost = true; // Always on top
+                form.ShowInTaskbar = false; // Don't show in taskbar
                 
                 var label = new Label
                 {
                     Text = prompt,
                     Location = new Point(20, 20),
-                    Size = new Size(300, 25),
-                    ForeColor = textColor
+                    Size = new Size(360, 60),
+                    ForeColor = Color.FromArgb(255, 193, 7), // Yellow warning color
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    AutoSize = false
                 };
                 form.Controls.Add(label);
                 
                 var textBox = new TextBox
                 {
-                    Location = new Point(20, 50),
-                    Size = new Size(290, 30),
+                    Location = new Point(20, 85),
+                    Size = new Size(360, 35),
                     PasswordChar = '*',
                     BackColor = Color.FromArgb(45, 45, 45),
                     ForeColor = textColor,
-                    BorderStyle = BorderStyle.FixedSingle
+                    BorderStyle = BorderStyle.FixedSingle,
+                    Font = new Font("Segoe UI", 12)
                 };
                 form.Controls.Add(textBox);
+                textBox.Focus();
                 
                 var okButton = new Button
                 {
-                    Text = "OK",
-                    Location = new Point(130, 95),
-                    Size = new Size(80, 30),
+                    Text = "✓ Confirm",
+                    Location = new Point(100, 140),
+                    Size = new Size(100, 40),
                     BackColor = greenColor,
-                    ForeColor = textColor,
+                    ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat,
-                    DialogResult = DialogResult.OK
+                    DialogResult = DialogResult.OK,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold)
                 };
                 okButton.FlatAppearance.BorderSize = 0;
                 form.Controls.Add(okButton);
                 
                 var cancelButton = new Button
                 {
-                    Text = "Cancel",
-                    Location = new Point(220, 95),
-                    Size = new Size(80, 30),
-                    BackColor = Color.FromArgb(60, 60, 60),
-                    ForeColor = textColor,
+                    Text = "✗ Cancel",
+                    Location = new Point(220, 140),
+                    Size = new Size(100, 40),
+                    BackColor = redColor,
+                    ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat,
-                    DialogResult = DialogResult.Cancel
+                    DialogResult = DialogResult.Cancel,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold)
                 };
                 cancelButton.FlatAppearance.BorderSize = 0;
                 form.Controls.Add(cancelButton);
                 
                 form.AcceptButton = okButton;
                 form.CancelButton = cancelButton;
+                form.KeyDown += (s, e) =>
+                {
+                    if (e.KeyCode == Keys.Escape)
+                    {
+                        e.Handled = true; // Prevent escape from closing
+                    }
+                };
                 
-                return form.ShowDialog() == DialogResult.OK ? textBox.Text : "";
+                var result = form.ShowDialog(this);
+                return result == DialogResult.OK ? textBox.Text : null;
             }
         }
         
@@ -837,6 +1211,36 @@ namespace EmployeeAttendance
                 trayIcon?.Dispose();
             }
             base.Dispose(disposing);
+        }
+        
+        /// <summary>
+        /// Helper method to scale sizes based on DPI (handles different screen resolutions)
+        /// </summary>
+        private Size ScaleDpi(Size size)
+        {
+            using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                float dpiX = g.DpiX / 96.0f;
+                float dpiY = g.DpiY / 96.0f;
+                return new Size((int)(size.Width * dpiX), (int)(size.Height * dpiY));
+            }
+        }
+        
+        /// <summary>
+        /// Helper method to scale padding based on DPI
+        /// </summary>
+        private Padding ScaleDpi(Padding padding)
+        {
+            using (Graphics g = Graphics.FromHwnd(IntPtr.Zero))
+            {
+                float dpiX = g.DpiX / 96.0f;
+                return new Padding(
+                    (int)(padding.Left * dpiX),
+                    (int)(padding.Top * dpiX),
+                    (int)(padding.Right * dpiX),
+                    (int)(padding.Bottom * dpiX)
+                );
+            }
         }
     }
 }

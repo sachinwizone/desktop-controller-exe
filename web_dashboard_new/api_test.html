@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Test</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+        .error { color: red; }
+        .success { color: green; }
+        .loading { color: blue; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Testing</h1>
+        
+        <div class="section">
+            <h2>Web Logs</h2>
+            <button onclick="testWebLogs()">Test Web Logs API</button>
+            <div id="web-logs-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Application Logs</h2>
+            <button onclick="testAppLogs()">Test App Logs API</button>
+            <div id="app-logs-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Inactivity Logs</h2>
+            <button onclick="testInactivityLogs()">Test Inactivity Logs API</button>
+            <div id="inactivity-logs-result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Screenshots</h2>
+            <button onclick="testScreenshots()">Test Screenshots API</button>
+            <div id="screenshots-result"></div>
+        </div>
+    </div>
+
+    <script>
+        const companyName = 'WIZONE IT NETWORK INDIA PVT LTD';
+
+        async function testAPI(action, resultElementId) {
+            const resultEl = document.getElementById(resultElementId);
+            resultEl.innerHTML = '<p class="loading">Loading...</p>';
+            
+            try {
+                const url = `/api.php?action=${action}&company_name=${encodeURIComponent(companyName)}`;
+                console.log('Fetching:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    const count = Array.isArray(data.data) ? data.data.length : 'N/A';
+                    resultEl.innerHTML = `
+                        <p class="success">✓ Success! Records: ${count}</p>
+                        <pre>${JSON.stringify(data.data[0] || data.data, null, 2).substring(0, 500)}</pre>
+                    `;
+                } else {
+                    resultEl.innerHTML = `<p class="error">✗ Error: ${data.error}</p>`;
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                resultEl.innerHTML = `<p class="error">✗ Exception: ${err.message}</p>`;
+            }
+        }
+
+        function testWebLogs() {
+            testAPI('get_web_logs', 'web-logs-result');
+        }
+
+        function testAppLogs() {
+            testAPI('get_application_logs', 'app-logs-result');
+        }
+
+        function testInactivityLogs() {
+            testAPI('get_inactivity_logs', 'inactivity-logs-result');
+        }
+
+        function testScreenshots() {
+            testAPI('get_screenshots', 'screenshots-result');
+        }
+    </script>
+</body>
+</html>

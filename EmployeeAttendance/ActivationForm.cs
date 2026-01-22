@@ -2,20 +2,84 @@ using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
+using System.IO;
 
 namespace EmployeeAttendance
 {
+    // Custom rounded panel to wrap TextBox for rounded appearance
+    public class RoundedTextBoxContainer : Panel
+    {
+        private TextBox innerTextBox;
+        private int cornerRadius = 15;
+        private Color borderColor = Color.FromArgb(55, 65, 81);
+        
+        public RoundedTextBoxContainer()
+        {
+            this.SetStyle(ControlStyles.UserPaint | ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer, true);
+            this.BorderStyle = BorderStyle.None;
+            this.Padding = new Padding(10, 5, 10, 5);
+            
+            innerTextBox = new TextBox();
+            innerTextBox.BorderStyle = BorderStyle.None;
+            innerTextBox.Dock = DockStyle.Fill;
+            this.Controls.Add(innerTextBox);
+        }
+        
+        public TextBox TextBox => innerTextBox;
+        
+        public int CornerRadius
+        {
+            get => cornerRadius;
+            set { cornerRadius = value; Invalidate(); }
+        }
+        
+        public Color BorderColorCustom
+        {
+            get => borderColor;
+            set { borderColor = value; Invalidate(); }
+        }
+        
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            
+            var rect = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+            using (var path = GetRoundedRect(rect, cornerRadius))
+            {
+                using (var brush = new SolidBrush(this.BackColor))
+                    e.Graphics.FillPath(brush, path);
+                using (var pen = new Pen(borderColor, 1))
+                    e.Graphics.DrawPath(pen, path);
+            }
+        }
+        
+        private GraphicsPath GetRoundedRect(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius * 2, radius * 2, 180, 90);
+            path.AddArc(rect.Right - radius * 2, rect.Y, radius * 2, radius * 2, 270, 90);
+            path.AddArc(rect.Right - radius * 2, rect.Bottom - radius * 2, radius * 2, radius * 2, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius * 2, radius * 2, radius * 2, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+    }
+
     public class ActivationForm : Form
     {
+        private RoundedTextBoxContainer activationKeyContainer = null!;
+        private RoundedTextBoxContainer displayNameContainer = null!;
         private TextBox activationKeyTextBox = null!;
-        private TextBox displayNameTextBox = null!;  // User's proper display name
+        private TextBox displayNameTextBox = null!;
         private TextBox usernameTextBox = null!;
         private ComboBox departmentComboBox = null!;
         private Button activateButton = null!;
-        private Button validateButton = null!;  // Validate employee button
+        private Button validateButton = null!;
         private Label statusLabel = null!;
         private Label companyLabel = null!;
-        private Label validationStatusLabel = null!;  // Shows validation result
+        private Label validationStatusLabel = null!;
+        private PictureBox logoPictureBox = null!;
         
         // Colors matching the design
         private readonly Color bgColor = Color.FromArgb(17, 17, 17);
@@ -29,6 +93,7 @@ namespace EmployeeAttendance
         
         private string verifiedCompanyName = "";
         private bool isEmployeeValidated = false;
+        
         
         public ActivationForm()
         {
@@ -53,36 +118,65 @@ namespace EmployeeAttendance
             int contentWidth = formWidth - (padding * 2);
             int y = 25;
             
-            // Logo placeholder (circle with icon)
-            var logoPanel = new Panel
+            // Logo from file
+            logoPictureBox = new PictureBox
             {
-                Size = new Size(100, 100),
-                Location = new Point((formWidth - 100) / 2, y),
+                Size = new Size(120, 120),
+                Location = new Point((formWidth - 120) / 2, y),
+                SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
-            logoPanel.Paint += (s, e) =>
+            
+            // Load logo from file next to EXE
+            try
             {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using (var brush = new LinearGradientBrush(
-                    new Rectangle(0, 0, 100, 100),
-                    Color.FromArgb(6, 182, 212),
-                    Color.FromArgb(59, 130, 246),
-                    45F))
+                string exeDir = Path.GetDirectoryName(Application.ExecutablePath) ?? "";
+                string logoPath = Path.Combine(exeDir, "logo.png");
+                if (File.Exists(logoPath))
                 {
-                    e.Graphics.FillEllipse(brush, 10, 10, 80, 80);
+                    logoPictureBox.Image = Image.FromFile(logoPath);
                 }
-                
-                // Draw "AI" text
-                using (var font = new Font("Segoe UI", 24, FontStyle.Bold))
-                using (var brush = new SolidBrush(Color.White))
+                else
                 {
-                    var size = e.Graphics.MeasureString("AI", font);
-                    e.Graphics.DrawString("AI", font, brush, 
-                        (100 - size.Width) / 2, (100 - size.Height) / 2);
+                    // Try alternate name
+                    logoPath = Path.Combine(exeDir, "logo ai.png");
+                    if (File.Exists(logoPath))
+                    {
+                        logoPictureBox.Image = Image.FromFile(logoPath);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException("Logo not found");
+                    }
                 }
-            };
-            this.Controls.Add(logoPanel);
-            y += 110;
+            }
+            catch
+            {
+                // Fallback: draw a simple logo if file not found
+                var bmp = new Bitmap(120, 120);
+                using (var g = Graphics.FromImage(bmp))
+                {
+                    g.SmoothingMode = SmoothingMode.AntiAlias;
+                    using (var brush = new LinearGradientBrush(
+                        new Rectangle(0, 0, 120, 120),
+                        Color.FromArgb(6, 182, 212),
+                        Color.FromArgb(59, 130, 246),
+                        45F))
+                    {
+                        g.FillEllipse(brush, 10, 10, 100, 100);
+                    }
+                    using (var font = new Font("Segoe UI", 28, FontStyle.Bold))
+                    using (var textBrush = new SolidBrush(Color.White))
+                    {
+                        var size = g.MeasureString("AI", font);
+                        g.DrawString("AI", font, textBrush, 
+                            (120 - size.Width) / 2, (120 - size.Height) / 2);
+                    }
+                }
+                logoPictureBox.Image = bmp;
+            }
+            this.Controls.Add(logoPictureBox);
+            y += 130;
             
             // Company name title
             companyLabel = new Label
@@ -136,20 +230,23 @@ namespace EmployeeAttendance
             this.Controls.Add(keyLabel);
             y += 22;
             
-            // Activation Key Input
-            activationKeyTextBox = new TextBox
+            // Activation Key Input - Rounded
+            activationKeyContainer = new RoundedTextBoxContainer
             {
-                Size = new Size(contentWidth, 32),
+                Size = new Size(contentWidth, 40),
                 Location = new Point(padding, y),
-                Font = new Font("Segoe UI", 11),
                 BackColor = inputBgColor,
-                ForeColor = textColor,
-                BorderStyle = BorderStyle.FixedSingle
+                BorderColorCustom = borderColor,
+                CornerRadius = 20
             };
+            activationKeyTextBox = activationKeyContainer.TextBox;
+            activationKeyTextBox.Font = new Font("Segoe UI", 11);
+            activationKeyTextBox.BackColor = inputBgColor;
+            activationKeyTextBox.ForeColor = textColor;
             activationKeyTextBox.CharacterCasing = CharacterCasing.Upper;
             activationKeyTextBox.TextChanged += ActivationKeyTextBox_TextChanged;
-            this.Controls.Add(activationKeyTextBox);
-            y += 45;
+            this.Controls.Add(activationKeyContainer);
+            y += 50;
             
             // Display Name Label (proper name)
             var nameLabel = new Label
@@ -163,17 +260,20 @@ namespace EmployeeAttendance
             this.Controls.Add(nameLabel);
             y += 22;
             
-            // Display Name Input with Validate Button
-            displayNameTextBox = new TextBox
+            // Display Name Input - Rounded
+            displayNameContainer = new RoundedTextBoxContainer
             {
-                Size = new Size(contentWidth - 100, 32),  // Leave space for button
+                Size = new Size(contentWidth - 100, 40),
                 Location = new Point(padding, y),
-                Font = new Font("Segoe UI", 11),
                 BackColor = inputBgColor,
-                ForeColor = mutedColor,
-                BorderStyle = BorderStyle.FixedSingle,
-                Text = "Enter your full name"
+                BorderColorCustom = borderColor,
+                CornerRadius = 20
             };
+            displayNameTextBox = displayNameContainer.TextBox;
+            displayNameTextBox.Font = new Font("Segoe UI", 11);
+            displayNameTextBox.BackColor = inputBgColor;
+            displayNameTextBox.ForeColor = mutedColor;
+            displayNameTextBox.Text = "Enter your full name";
             displayNameTextBox.GotFocus += (s, e) =>
             {
                 if (displayNameTextBox.Text == "Enter your full name")
@@ -199,13 +299,13 @@ namespace EmployeeAttendance
                 usernameTextBox.BackColor = inputBgColor;
                 departmentComboBox.SelectedIndex = 0;
             };
-            this.Controls.Add(displayNameTextBox);
+            this.Controls.Add(displayNameContainer);
             
-            // Validate Button
+            // Validate Button - Rounded
             validateButton = new Button
             {
-                Text = "VALIDATE",
-                Size = new Size(90, 32),
+                Text = "✓ VALID",
+                Size = new Size(90, 40),
                 Location = new Point(padding + contentWidth - 90, y),
                 Font = new Font("Segoe UI", 9, FontStyle.Bold),
                 BackColor = Color.FromArgb(59, 130, 246),  // Blue
@@ -231,19 +331,19 @@ namespace EmployeeAttendance
             this.Controls.Add(validationStatusLabel);
             y += 25;
             
-            // Username Label
+            // Username Label (Hidden)
             var userLabel = new Label
             {
                 Text = "Employee ID (Auto-filled)",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = mutedColor,
                 Location = new Point(padding, y),
-                AutoSize = true
+                AutoSize = true,
+                Visible = false
             };
             this.Controls.Add(userLabel);
-            y += 22;
             
-            // Username Input (Read-only, auto-filled)
+            // Username Input (Hidden - auto-filled in background)
             usernameTextBox = new TextBox
             {
                 Size = new Size(contentWidth, 32),
@@ -253,24 +353,24 @@ namespace EmployeeAttendance
                 ForeColor = mutedColor,
                 BorderStyle = BorderStyle.FixedSingle,
                 ReadOnly = true,
-                Text = ""
+                Text = "",
+                Visible = false
             };
             this.Controls.Add(usernameTextBox);
-            y += 45;
             
-            // Department Label
+            // Department Label (Hidden)
             var deptLabel = new Label
             {
                 Text = "Department (Auto-filled)",
                 Font = new Font("Segoe UI", 10),
                 ForeColor = mutedColor,
                 Location = new Point(padding, y),
-                AutoSize = true
+                AutoSize = true,
+                Visible = false
             };
             this.Controls.Add(deptLabel);
-            y += 22;
             
-            // Department ComboBox
+            // Department ComboBox (Hidden - auto-filled in background)
             departmentComboBox = new ComboBox
             {
                 Size = new Size(contentWidth, 32),
@@ -280,12 +380,12 @@ namespace EmployeeAttendance
                 ForeColor = textColor,
                 FlatStyle = FlatStyle.Flat,
                 DropDownStyle = ComboBoxStyle.DropDownList,
-                Enabled = false  // Disabled, auto-filled
+                Enabled = false,
+                Visible = false
             };
             departmentComboBox.Items.Add("Select Department");
             departmentComboBox.SelectedIndex = 0;
             this.Controls.Add(departmentComboBox);
-            y += 50;
             
             // Status Label
             statusLabel = new Label

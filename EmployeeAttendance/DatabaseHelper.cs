@@ -14,6 +14,19 @@ using Npgsql;
 namespace EmployeeAttendance
 {
     /// <summary>
+    /// IST Timezone Helper
+    /// </summary>
+    public static class IstHelper
+    {
+        private static readonly TimeZoneInfo IstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+        
+        /// <summary>
+        /// Get current time in IST (India Standard Time)
+        /// </summary>
+        public static DateTime Now => TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, IstTimeZone);
+    }
+
+    /// <summary>
     /// Web log entry for batch insert
     /// </summary>
     public class WebLogEntry
@@ -22,6 +35,8 @@ namespace EmployeeAttendance
         public string Url { get; set; } = "";
         public string Title { get; set; } = "";
         public string Category { get; set; } = "";
+        public string SearchQuery { get; set; } = "";  // Search query if applicable
+        public string Domain { get; set; } = "";       // Domain extracted from URL
         public DateTime VisitTime { get; set; }
         public bool IsSynced { get; set; } = false;
     }
@@ -307,6 +322,38 @@ namespace EmployeeAttendance
             catch
             {
                 return false;
+            }
+        }
+        
+        /// <summary>
+        /// Get the company password from database (for verification)
+        /// </summary>
+        public static string GetCompanyPassword(string companyName)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    
+                    string sql = @"SELECT password FROM company_passwords WHERE LOWER(company_name) = LOWER(@company) LIMIT 1";
+                    
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName);
+                        
+                        object? result = cmd.ExecuteScalar();
+                        if (result != null)
+                        {
+                            return result.ToString() ?? "";
+                        }
+                    }
+                }
+                return "";
+            }
+            catch
+            {
+                return "";
             }
         }
         
@@ -670,7 +717,7 @@ namespace EmployeeAttendance
                         cmd.Parameters.AddWithValue("@system_name", Environment.MachineName);
                         cmd.Parameters.AddWithValue("@ip_address", GetLocalIPAddress());
                         cmd.Parameters.AddWithValue("@machine_id", GetMachineId());
-                        cmd.Parameters.AddWithValue("@punch_in_time", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@punch_in_time", IstHelper.Now);
                         
                         return cmd.ExecuteNonQuery() > 0;
                     }
@@ -703,8 +750,8 @@ namespace EmployeeAttendance
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@id", sessionId.Value);
-                        cmd.Parameters.AddWithValue("@punch_out_time", DateTime.Now);
-                        cmd.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@punch_out_time", IstHelper.Now);
+                        cmd.Parameters.AddWithValue("@updated_at", IstHelper.Now);
                         
                         return cmd.ExecuteNonQuery() > 0;
                     }
@@ -736,8 +783,8 @@ namespace EmployeeAttendance
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@id", sessionId.Value);
-                        cmd.Parameters.AddWithValue("@break_start_time", DateTime.Now);
-                        cmd.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@break_start_time", IstHelper.Now);
+                        cmd.Parameters.AddWithValue("@updated_at", IstHelper.Now);
                         
                         return cmd.ExecuteNonQuery() > 0;
                     }
@@ -771,8 +818,8 @@ namespace EmployeeAttendance
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@id", sessionId.Value);
-                        cmd.Parameters.AddWithValue("@break_end_time", DateTime.Now);
-                        cmd.Parameters.AddWithValue("@updated_at", DateTime.Now);
+                        cmd.Parameters.AddWithValue("@break_end_time", IstHelper.Now);
+                        cmd.Parameters.AddWithValue("@updated_at", IstHelper.Now);
                         
                         return cmd.ExecuteNonQuery() > 0;
                     }
@@ -823,6 +870,171 @@ namespace EmployeeAttendance
             return (null, null, 0, 0);
         }
         
+        /// <summary>
+        /// Get activity details for a specific date
+        /// </summary>
+        public class ActivityDetail
+        {
+            public DateTime? PunchInTime { get; set; }
+            public DateTime? PunchOutTime { get; set; }
+            public DateTime? BreakStartTime { get; set; }
+            public DateTime? BreakEndTime { get; set; }
+            public int BreakDurationSeconds { get; set; }
+            public int TotalWorkDurationSeconds { get; set; }
+            
+            public string FormattedPunchIn => PunchInTime?.ToString("hh:mm tt") ?? "N/A";
+            public string FormattedPunchOut => PunchOutTime?.ToString("hh:mm tt") ?? "N/A";
+            public string FormattedBreakStart => BreakStartTime?.ToString("hh:mm tt") ?? "N/A";
+            public string FormattedBreakEnd => BreakEndTime?.ToString("hh:mm tt") ?? "N/A";
+            
+            public string FormattedBreakDuration
+            {
+                get
+                {
+                    if (BreakDurationSeconds <= 0) return "0h 0m";
+                    int hours = BreakDurationSeconds / 3600;
+                    int minutes = (BreakDurationSeconds % 3600) / 60;
+                    return $"{hours}h {minutes}m";
+                }
+            }
+            
+            public string FormattedWorkDuration
+            {
+                get
+                {
+                    if (TotalWorkDurationSeconds <= 0) return "0h 0m";
+                    int hours = TotalWorkDurationSeconds / 3600;
+                    int minutes = (TotalWorkDurationSeconds % 3600) / 60;
+                    return $"{hours}h {minutes}m";
+                }
+            }
+            
+            /// <summary>
+            /// Calculate actual duration from punch in to punch out
+            /// </summary>
+            public int GetTotalDurationSeconds()
+            {
+                if (!PunchInTime.HasValue || !PunchOutTime.HasValue)
+                    return 0;
+                
+                var duration = PunchOutTime.Value - PunchInTime.Value;
+                return (int)duration.TotalSeconds;
+            }
+            
+            /// <summary>
+            /// Calculate net work hours (total duration - break)
+            /// </summary>
+            public int GetNetWorkSeconds()
+            {
+                int totalDuration = GetTotalDurationSeconds();
+                int netWork = totalDuration - BreakDurationSeconds;
+                return netWork > 0 ? netWork : 0;
+            }
+            
+            /// <summary>
+            /// Calculate inactivity based on standard 8-hour workday
+            /// </summary>
+            public int GetInactivitySeconds()
+            {
+                const int standardWorkSeconds = 28800; // 8 hours
+                int netWork = GetNetWorkSeconds();
+                int inactivity = standardWorkSeconds - netWork;
+                return inactivity > 0 ? inactivity : 0;
+            }
+            
+            public string FormattedTotalDuration
+            {
+                get
+                {
+                    int seconds = GetTotalDurationSeconds();
+                    if (seconds <= 0) return "0h 0m";
+                    int hours = seconds / 3600;
+                    int minutes = (seconds % 3600) / 60;
+                    return $"{hours}h {minutes}m";
+                }
+            }
+            
+            public string FormattedNetWork
+            {
+                get
+                {
+                    int seconds = GetNetWorkSeconds();
+                    if (seconds <= 0) return "0h 0m";
+                    int hours = seconds / 3600;
+                    int minutes = (seconds % 3600) / 60;
+                    return $"{hours}h {minutes}m";
+                }
+            }
+            
+            public string FormattedInactivity
+            {
+                get
+                {
+                    int seconds = GetInactivitySeconds();
+                    if (seconds <= 0) return "0h 0m";
+                    int hours = seconds / 3600;
+                    int minutes = (seconds % 3600) / 60;
+                    return $"{hours}h {minutes}m";
+                }
+            }
+            
+            public bool HasActivity => PunchInTime.HasValue;
+            
+            private static string FormatDuration(int seconds)
+            {
+                if (seconds <= 0) return "0h 0m";
+                int hours = seconds / 3600;
+                int minutes = (seconds % 3600) / 60;
+                return $"{hours}h {minutes}m";
+            }
+        }
+        
+        public static ActivityDetail GetActivityForDate(string username, DateTime date)
+        {
+            var detail = new ActivityDetail();
+            try
+            {
+                using (var connection = new NpgsqlConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    
+                    // Get ALL activity for the specified date (sum multiple punch sessions)
+                    string sql = @"SELECT 
+                                   MIN(punch_in_time) as first_punch_in,
+                                   MAX(punch_out_time) as last_punch_out,
+                                   MIN(break_start_time) as first_break_start,
+                                   MAX(break_end_time) as last_break_end,
+                                   COALESCE(SUM(break_duration_seconds), 0) as total_break_seconds,
+                                   COALESCE(SUM(total_work_duration_seconds), 0) as total_work_seconds
+                                   FROM punch_log_consolidated 
+                                   WHERE username = @username 
+                                   AND DATE(punch_in_time) = @date";
+                    
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@username", username);
+                        cmd.Parameters.AddWithValue("@date", date.Date);
+                        
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                detail.PunchInTime = reader.IsDBNull(0) ? null : reader.GetDateTime(0);
+                                detail.PunchOutTime = reader.IsDBNull(1) ? null : reader.GetDateTime(1);
+                                detail.BreakStartTime = reader.IsDBNull(2) ? null : reader.GetDateTime(2);
+                                detail.BreakEndTime = reader.IsDBNull(3) ? null : reader.GetDateTime(3);
+                                detail.BreakDurationSeconds = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
+                                detail.TotalWorkDurationSeconds = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                            }
+                        }
+                    }
+                }
+            }
+            catch { }
+            
+            return detail;
+        }
+        
         public static List<ActivityItem> GetTodayActivities(string username)
         {
             var activities = new List<ActivityItem>();
@@ -832,13 +1044,12 @@ namespace EmployeeAttendance
                 {
                     connection.Open();
                     
-                    // Get today's session
-                    string sql = @"SELECT punch_in_time, punch_out_time, break_start_time, break_end_time, 
-                                   break_duration_seconds, total_work_duration_seconds
+                    // Get ALL today's sessions (multiple punch in/out pairs)
+                    string sql = @"SELECT punch_in_time, punch_out_time, break_start_time, break_end_time
                                    FROM punch_log_consolidated 
                                    WHERE username = @username 
                                    AND DATE(punch_in_time) = CURRENT_DATE
-                                   ORDER BY id DESC LIMIT 1";
+                                   ORDER BY id ASC";
                     
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
@@ -846,8 +1057,9 @@ namespace EmployeeAttendance
                         
                         using (var reader = cmd.ExecuteReader())
                         {
-                            if (reader.Read())
+                            while (reader.Read())
                             {
+                                // Add punch in time
                                 if (!reader.IsDBNull(0))
                                 {
                                     activities.Add(new ActivityItem
@@ -858,26 +1070,29 @@ namespace EmployeeAttendance
                                     });
                                 }
                                 
+                                // Add break start time
                                 if (!reader.IsDBNull(2))
                                 {
                                     activities.Add(new ActivityItem
                                     {
                                         Time = reader.GetDateTime(2),
                                         Type = "Break Start",
-                                        Color = Color.FromArgb(251, 191, 36) // Yellow
+                                        Color = Color.FromArgb(245, 158, 11) // Amber
                                     });
                                 }
                                 
+                                // Add break end time
                                 if (!reader.IsDBNull(3))
                                 {
                                     activities.Add(new ActivityItem
                                     {
                                         Time = reader.GetDateTime(3),
                                         Type = "Break Stop",
-                                        Color = Color.FromArgb(139, 92, 246) // Purple
+                                        Color = Color.FromArgb(37, 99, 235) // Blue
                                     });
                                 }
                                 
+                                // Add punch out time
                                 if (!reader.IsDBNull(1))
                                 {
                                     activities.Add(new ActivityItem
@@ -903,7 +1118,7 @@ namespace EmployeeAttendance
             {
                 Directory.CreateDirectory(AppDataPath);
                 string logPath = Path.Combine(AppDataPath, "error.log");
-                File.AppendAllText(logPath, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {method}: {error}\n");
+                File.AppendAllText(logPath, $"{IstHelper.Now:yyyy-MM-dd HH:mm:ss} - {method}: {error}\n");
             }
             catch { }
         }
@@ -1016,9 +1231,9 @@ namespace EmployeeAttendance
                             {
                                 string sql = @"
                                     INSERT INTO web_logs (activation_key, company_name, system_name, ip_address, username, display_user_name,
-                                        machine_id, browser_name, website_url, page_title, category, visit_time)
+                                        machine_id, browser_name, website_url, page_title, category, search_query, domain, visit_time)
                                     VALUES (@activation_key, @company_name, @system_name, @ip_address, @username, @display_user_name,
-                                        @machine_id, @browser_name, @website_url, @page_title, @category, @visit_time)";
+                                        @machine_id, @browser_name, @website_url, @page_title, @category, @search_query, @domain, @visit_time)";
                                 
                                 using (var cmd = new NpgsqlCommand(sql, connection, transaction))
                                 {
@@ -1033,6 +1248,8 @@ namespace EmployeeAttendance
                                     cmd.Parameters.AddWithValue("@website_url", entry.Url);
                                     cmd.Parameters.AddWithValue("@page_title", entry.Title);
                                     cmd.Parameters.AddWithValue("@category", entry.Category);
+                                    cmd.Parameters.AddWithValue("@search_query", entry.SearchQuery ?? "");
+                                    cmd.Parameters.AddWithValue("@domain", entry.Domain ?? "");
                                     cmd.Parameters.AddWithValue("@visit_time", entry.VisitTime);
                                     cmd.ExecuteNonQuery();
                                     inserted++;

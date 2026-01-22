@@ -1446,7 +1446,7 @@ const app = {
                     
                     <div class="menu-label" style="margin-top: 20px;">Management</div>
                     <nav>
-                        <a class="menu-item admin" href="employee_management.html" data-view="employees">
+                        <a class="menu-item admin" onclick="app.navigate('employees')" data-view="employees">
                             <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
                                 <circle cx="9" cy="7" r="4"/>
