@@ -1,6 +1,6 @@
 ; Employee Attendance - Installer with Progress Bar Only
 #define MyAppName "Employee Attendance"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.1.7"
 #define MyAppPublisher "Wizone AI Labs"
 #define MyAppExeName "EmployeeAttendance.exe"
 
@@ -14,7 +14,7 @@ DisableDirPage=yes
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=publish_final
-OutputBaseFilename=EmployeeAttendance_Setup_v1.0.6
+OutputBaseFilename=EmployeeAttendance_Setup_v1.1.7
 Compression=lzma
 SolidCompression=yes
 PrivilegesRequired=lowest
@@ -31,10 +31,10 @@ ShowComponentSizes=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "publish\EmployeeAttendance.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "..\publish_final\EmployeeAttendance.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "logo ai.png"; DestDir: "{app}"; DestName: "logo.png"; Flags: ignoreversion
 Source: "logo_3d_animation.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "publish\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "..\publish_final\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

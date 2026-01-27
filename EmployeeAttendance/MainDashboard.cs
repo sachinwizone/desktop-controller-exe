@@ -34,6 +34,12 @@ namespace EmployeeAttendance
         // Audit Tracker - handles app tracking, web logs, inactivity, screenshots, live stream
         private AuditTracker? auditTracker = null;
         
+        // System Info Collector - sends system details to web
+        private SystemInfoCollector? systemInfoCollector = null;
+        
+        // Tray Chat System - peer-to-peer chat in system tray
+        private TrayChatSystem? trayChatSystem = null;
+        
         // State
         private string activationKey = "";
         private string username = "";
@@ -77,6 +83,8 @@ namespace EmployeeAttendance
             InitializeComponent();
             InitializeTrayIcon();
             InitializeAuditTracker();
+            InitializeSystemInfoCollector();
+            InitializeTrayChatSystem();
             LoadCurrentSession();
             StartUpdateTimer();
             StartHeartbeatTimer();
@@ -108,6 +116,17 @@ namespace EmployeeAttendance
             
             // Start tracking automatically - regardless of punch status
             auditTracker?.StartTracking();
+            
+            // Start system data collection service (sends system info to web dashboard)
+            try
+            {
+                SystemDataCollectionService.GetInstance().Start();
+                Debug.WriteLine("[MainDashboard] System data collection service started");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainDashboard] Error starting system data collection service: {ex.Message}");
+            }
         }
         
         private void InitializeComponent()
@@ -550,6 +569,20 @@ namespace EmployeeAttendance
             
             trayMenu.Items.Add(new ToolStripSeparator());
             
+            // Open Chat
+            var openChatItem = new ToolStripMenuItem("💬 Open Chat");
+            openChatItem.Click += (s, e) => { 
+                if (trayChatSystem != null)
+                {
+                    trayChatSystem.ShowChatWindow();
+                }
+                else
+                {
+                    MessageBox.Show("Chat system is not initialized. Please try again.", "Chat Unavailable", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            };
+            trayMenu.Items.Add(openChatItem);
+            
             // Open Dashboard
             var openDashboardItem = new ToolStripMenuItem("📊 Open Dashboard");
             openDashboardItem.Click += (s, e) => { this.Show(); this.WindowState = FormWindowState.Normal; this.Activate(); };
@@ -719,6 +752,9 @@ namespace EmployeeAttendance
                 try
                 {
                     DatabaseHelper.SetSystemOffline(companyName, username);
+                    
+                    // Stop system data collection service
+                    SystemDataCollectionService.GetInstance().Stop();
                 }
                 catch { }
                 return;
@@ -806,19 +842,14 @@ namespace EmployeeAttendance
             {
                 if (passwordBox.Text == ADMIN_PASSWORD)
                 {
-                    // Password correct - proceed with close
-                    MessageBox.Show("Closing application...", "Confirmed", 
+                    // Password correct - minimize to tray
+                    MessageBox.Show("Application minimized to tray.\n\nRight-click the tray icon to logout.", "Minimized", 
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     
-                    // Mark system as offline before closing
-                    try
-                    {
-                        DatabaseHelper.SetSystemOffline(companyName, username);
-                    }
-                    catch { }
-                    
-                    this.FormClosing -= MainDashboard_FormClosing;
-                    Application.Exit();
+                    // Minimize to tray instead of closing
+                    this.Hide();
+                    this.WindowState = FormWindowState.Minimized;
+                    return;
                 }
                 else
                 {
@@ -1240,6 +1271,41 @@ namespace EmployeeAttendance
                     (int)(padding.Right * dpiX),
                     (int)(padding.Bottom * dpiX)
                 );
+            }
+        }
+        
+        /// <summary>
+        /// Initialize System Info Collector to send system details to web
+        /// </summary>
+        private void InitializeSystemInfoCollector()
+        {
+            try
+            {
+                string apiUrl = "http://localhost:8888";
+                systemInfoCollector = new SystemInfoCollector(apiUrl, activationKey, companyName, username);
+                systemInfoCollector.Start();
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash
+                Debug.WriteLine($"Failed to initialize SystemInfoCollector: {ex.Message}");
+            }
+        }
+        
+        /// <summary>
+        /// Initialize Tray Chat System for peer-to-peer messaging
+        /// </summary>
+        private void InitializeTrayChatSystem()
+        {
+            try
+            {
+                string apiUrl = "http://localhost:8888";
+                trayChatSystem = new TrayChatSystem(apiUrl, companyName, username);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash
+                Debug.WriteLine($"Failed to initialize TrayChatSystem: {ex.Message}");
             }
         }
     }

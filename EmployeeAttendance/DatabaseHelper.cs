@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Management;
 using System.Net;
@@ -1736,6 +1737,139 @@ namespace EmployeeAttendance
                 AppVersion = "1.0",
                 Status = "active"
             };
+        }
+
+        /// <summary>
+        /// Save a chat message to the database for sync between users
+        /// </summary>
+        public static bool SaveChatMessage(string sender, string recipient, string message, string companyName)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    // Ensure table exists
+                    string createTableSql = @"CREATE TABLE IF NOT EXISTS chat_messages (
+                        id SERIAL PRIMARY KEY,
+                        sender VARCHAR(255) NOT NULL,
+                        recipient VARCHAR(255) NOT NULL,
+                        message TEXT NOT NULL,
+                        company_name VARCHAR(255) NOT NULL,
+                        created_at TIMESTAMP DEFAULT NOW()
+                    );";
+                    
+                    using (var cmd = new NpgsqlCommand(createTableSql, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    // Insert the message
+                    string insertSql = @"INSERT INTO chat_messages (sender, recipient, message, company_name) 
+                        VALUES (@sender, @recipient, @message, @company)";
+                    
+                    using (var cmd = new NpgsqlCommand(insertSql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@sender", sender ?? "");
+                        cmd.Parameters.AddWithValue("@recipient", recipient ?? "");
+                        cmd.Parameters.AddWithValue("@message", message ?? "");
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.ExecuteNonQuery();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Chat DB Error] SaveChatMessage: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get chat messages between two users from the database
+        /// </summary>
+        public static List<(string sender, string message, DateTime timestamp)> GetChatMessages(string user1, string user2, string companyName, int limit = 100)
+        {
+            var messages = new List<(string, string, DateTime)>();
+            try
+            {
+                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    string sql = @"SELECT sender, message, created_at 
+                        FROM chat_messages 
+                        WHERE company_name = @company
+                        AND ((sender = @user1 AND recipient = @user2) 
+                             OR (sender = @user2 AND recipient = @user1))
+                        ORDER BY created_at ASC
+                        LIMIT @limit";
+                    
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@user1", user1 ?? "");
+                        cmd.Parameters.AddWithValue("@user2", user2 ?? "");
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@limit", limit);
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                string sender = reader.IsDBNull(0) ? "" : reader.GetString(0);
+                                string message = reader.IsDBNull(1) ? "" : reader.GetString(1);
+                                DateTime timestamp = reader.IsDBNull(2) ? DateTime.Now : reader.GetDateTime(2);
+                                messages.Add((sender, message, timestamp));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Chat DB Error] GetChatMessages: {ex.Message}");
+            }
+            return messages;
+        }
+
+        /// <summary>
+        /// Check if there are new messages from a specific sender
+        /// </summary>
+        public static int GetNewMessageCount(string recipient, string sender, string companyName)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    // Count messages from this sender that might not have been seen
+                    string sql = @"SELECT COUNT(*) FROM chat_messages 
+                        WHERE recipient = @recipient 
+                        AND sender = @sender 
+                        AND company_name = @company";
+                    
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@recipient", recipient ?? "");
+                        cmd.Parameters.AddWithValue("@sender", sender ?? "");
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+
+                        var result = cmd.ExecuteScalar();
+                        return result != null ? Convert.ToInt32(result) : 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Chat DB Error] GetNewMessageCount: {ex.Message}");
+                return 0;
+            }
         }
     }
 }
