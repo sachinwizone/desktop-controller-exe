@@ -266,6 +266,235 @@ async function initializeDatabaseTables() {
             CREATE INDEX IF NOT EXISTS idx_recordings_meeting ON meeting_recordings(meeting_id);
         `);
 
+        // Create company_employees table (for managing employees)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS company_employees (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL,
+                employee_id VARCHAR(100) NOT NULL,
+                full_name VARCHAR(255),
+                email VARCHAR(255),
+                department VARCHAR(255),
+                designation VARCHAR(255),
+                phone VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE,
+                UNIQUE(company_name, employee_id)
+            );
+        `);
+
+        // Create indexes for company_employees
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_company_employees_company ON company_employees(company_name);
+            CREATE INDEX IF NOT EXISTS idx_company_employees_employee ON company_employees(employee_id);
+            CREATE INDEX IF NOT EXISTS idx_company_employees_active ON company_employees(company_name, is_active);
+        `);
+
+        // Create connected_systems table (for tracking live system connections)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS connected_systems (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL,
+                employee_id VARCHAR(100),
+                machine_id VARCHAR(255),
+                machine_name VARCHAR(255),
+                system_id VARCHAR(100),
+                ip_address VARCHAR(50),
+                os_version VARCHAR(255),
+                app_version VARCHAR(50),
+                first_connected TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_heartbeat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_online BOOLEAN DEFAULT TRUE,
+                status VARCHAR(50) DEFAULT 'online',
+                cpu_usage DECIMAL(5,2) DEFAULT 0,
+                ram_usage DECIMAL(5,2) DEFAULT 0,
+                UNIQUE(company_name, machine_id)
+            );
+        `);
+
+        // Create indexes for connected_systems
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_connected_systems_company ON connected_systems(company_name);
+            CREATE INDEX IF NOT EXISTS idx_connected_systems_employee ON connected_systems(employee_id);
+            CREATE INDEX IF NOT EXISTS idx_connected_systems_online ON connected_systems(is_online);
+            CREATE INDEX IF NOT EXISTS idx_connected_systems_heartbeat ON connected_systems(last_heartbeat);
+        `);
+
+        // Create inactivity_logs table (for tracking idle time)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS inactivity_logs (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                employee_id VARCHAR(100),
+                username VARCHAR(255),
+                machine_id VARCHAR(255),
+                start_time TIMESTAMP,
+                end_time TIMESTAMP,
+                duration_seconds INT DEFAULT 0,
+                reason VARCHAR(255),
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create indexes for inactivity_logs
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_inactivity_company ON inactivity_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_inactivity_employee ON inactivity_logs(employee_id);
+            CREATE INDEX IF NOT EXISTS idx_inactivity_timestamp ON inactivity_logs(timestamp);
+        `);
+
+        // Create company_departments table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS company_departments (
+                id SERIAL PRIMARY KEY,
+                company_id INT,
+                company_name VARCHAR(255) NOT NULL,
+                department_name VARCHAR(255) NOT NULL,
+                department_code VARCHAR(50),
+                description TEXT,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(company_name, department_name)
+            );
+        `);
+
+        // Create punch_log_consolidated table (for attendance)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS punch_log_consolidated (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                machine_id VARCHAR(255),
+                punch_date DATE,
+                first_punch TIME,
+                last_punch TIME,
+                total_work_duration VARCHAR(50),
+                total_break_duration VARCHAR(50),
+                punch_count INT DEFAULT 0,
+                status VARCHAR(50),
+                ip_address VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(company_name, username, punch_date)
+            );
+        `);
+
+        // Create web_logs table (for browser history)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS web_logs (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                browser_name VARCHAR(100),
+                website_url TEXT,
+                page_title TEXT,
+                category VARCHAR(100),
+                visit_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                duration_seconds INT DEFAULT 0,
+                ip_address VARCHAR(50),
+                log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create application_logs table (for app usage)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS application_logs (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                app_name VARCHAR(255),
+                window_title TEXT,
+                start_time TIMESTAMP,
+                end_time TIMESTAMP,
+                duration_seconds INT DEFAULT 0,
+                is_active BOOLEAN DEFAULT FALSE,
+                ip_address VARCHAR(50),
+                log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create screenshot_logs table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS screenshot_logs (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                screenshot_data TEXT,
+                screen_width INT,
+                screen_height INT,
+                ip_address VARCHAR(50),
+                log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create file_activity_logs table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS file_activity_logs (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                file_name VARCHAR(500),
+                file_path TEXT,
+                file_extension VARCHAR(50),
+                action_type VARCHAR(50),
+                source_path TEXT,
+                destination_path TEXT,
+                file_size BIGINT DEFAULT 0,
+                ip_address VARCHAR(50),
+                log_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create live_sessions table (for remote viewing)
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS live_sessions (
+                id SERIAL PRIMARY KEY,
+                system_id VARCHAR(100),
+                viewer_id VARCHAR(255),
+                is_active BOOLEAN DEFAULT TRUE,
+                started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                ended_at TIMESTAMP,
+                UNIQUE(system_id, viewer_id)
+            );
+        `);
+
+        // Create live_stream_frames table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS live_stream_frames (
+                id SERIAL PRIMARY KEY,
+                system_id VARCHAR(100),
+                frame_data TEXT,
+                frame_number INT,
+                captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create additional indexes for performance
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_punch_log_company ON punch_log_consolidated(company_name);
+            CREATE INDEX IF NOT EXISTS idx_punch_log_date ON punch_log_consolidated(punch_date);
+            CREATE INDEX IF NOT EXISTS idx_web_logs_company ON web_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_web_logs_time ON web_logs(visit_time);
+            CREATE INDEX IF NOT EXISTS idx_app_logs_company ON application_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_app_logs_time ON application_logs(start_time);
+            CREATE INDEX IF NOT EXISTS idx_screenshot_company ON screenshot_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_screenshot_time ON screenshot_logs(log_timestamp);
+            CREATE INDEX IF NOT EXISTS idx_file_activity_company ON file_activity_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_live_sessions_system ON live_sessions(system_id);
+            CREATE INDEX IF NOT EXISTS idx_live_frames_system ON live_stream_frames(system_id);
+        `);
+
         console.log('✓ Database tables initialized successfully');
     } catch (err) {
         console.error('Database initialization error:', err.message);
