@@ -1,9 +1,11 @@
 const http = require('http');
+const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Client } = require('pg');
 
 const PORT = 8888;
+const HTTPS_PORT = 8443;
 
 // PostgreSQL connection config (same as Desktop Controller)
 const dbConfig = {
@@ -3900,8 +3902,8 @@ function serveStatic(res, filePath) {
     });
 }
 
-// Main server
-const server = http.createServer(async (req, res) => {
+// Main server request handler
+const requestHandler = async (req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -3952,15 +3954,43 @@ const server = http.createServer(async (req, res) => {
     // Static files
     let filePath = path.join(__dirname, url === '/' ? 'index.html' : url);
     serveStatic(res, filePath);
-});
+};
+
+// HTTP Server
+const server = http.createServer(requestHandler);
+
+// Try to start HTTPS server with self-signed certificate
+let httpsServer = null;
+const certPath = path.join(__dirname, 'ssl');
+const keyFile = path.join(certPath, 'server.key');
+const certFile = path.join(certPath, 'server.crt');
+
+// Check if SSL certificates exist
+if (fs.existsSync(keyFile) && fs.existsSync(certFile)) {
+    try {
+        const httpsOptions = {
+            key: fs.readFileSync(keyFile),
+            cert: fs.readFileSync(certFile)
+        };
+        httpsServer = https.createServer(httpsOptions, requestHandler);
+        
+        httpsServer.listen(HTTPS_PORT, '0.0.0.0', () => {
+            console.log(`  HTTPS: https://0.0.0.0:${HTTPS_PORT} (for video/audio calls)`);
+        });
+    } catch (err) {
+        console.log('  HTTPS: Not available (certificate error)');
+    }
+} else {
+    console.log(`  HTTPS: Not available (no SSL certificates)`);
+    console.log(`  To enable HTTPS, create ssl/server.key and ssl/server.crt`);
+}
 
 // Listen on all network interfaces (0.0.0.0) so other machines can connect
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`\n========================================`);
     console.log(`  DTA Web Dashboard Server`);
-    console.log(`  Running on: http://0.0.0.0:${PORT}`);
+    console.log(`  HTTP: http://0.0.0.0:${PORT}`);
     console.log(`  Local: http://localhost:${PORT}`);
-    console.log(`  Network: http://192.168.1.5:${PORT}`);
     console.log(`  Database: ${dbConfig.host}:${dbConfig.port}/${dbConfig.database}`);
     console.log(`========================================\n`);
     console.log('Authentication Flow:');
