@@ -7,11 +7,11 @@ const PORT = 8888;
 
 // PostgreSQL connection config (same as Desktop Controller)
 const dbConfig = {
-    host: '72.61.170.243',
+    host: '72.61.235.203',
     port: 9095,
-    database: 'controller_application',
-    user: 'appuser',
-    password: 'jksdj$&^&*YUG*^%&THJHIO4546GHG&j'
+    database: 'controller',
+    user: 'controller_dbuser',
+    password: 'hwrw*&^hdg2gsGDGJHAU&838373h'
 };
 
 // MIME types for static files
@@ -36,6 +36,239 @@ async function queryDB(sql, params = []) {
     } catch (err) {
         console.error('Database error:', err.message);
         throw err;
+    } finally {
+        await client.end();
+    }
+}
+
+// Initialize database tables
+async function initializeDatabaseTables() {
+    const client = new Client(dbConfig);
+    try {
+        await client.connect();
+        
+        // Create system_info table if it doesn't exist
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS system_info (
+                id SERIAL PRIMARY KEY,
+                activation_key VARCHAR(100),
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                user_name VARCHAR(255),
+                tracking_id VARCHAR(50),
+                os_version VARCHAR(255),
+                processor_info VARCHAR(255),
+                total_memory VARCHAR(100),
+                installed_apps TEXT,
+                system_serial_number VARCHAR(255),
+                captured_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(company_name, system_name, user_name, captured_at)
+            );
+        `);
+        
+        // Add tracking_id column if it doesn't exist
+        try {
+            await client.query(`
+                ALTER TABLE system_info ADD COLUMN tracking_id VARCHAR(50)
+            `);
+        } catch (err) {
+            // Column might already exist, ignore error
+        }
+        
+        // Create indexes
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_system_info_company ON system_info(company_name);
+            CREATE INDEX IF NOT EXISTS idx_system_info_user ON system_info(user_name);
+            CREATE INDEX IF NOT EXISTS idx_system_info_tracking ON system_info(tracking_id);
+        `);
+        
+        // Create system_tracking table for generating and storing tracking IDs
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS system_tracking (
+                id SERIAL PRIMARY KEY,
+                activation_key VARCHAR(100) NOT NULL,
+                user_name VARCHAR(255) NOT NULL,
+                system_name VARCHAR(255),
+                tracking_id VARCHAR(50) UNIQUE NOT NULL,
+                company_name VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE,
+                UNIQUE(activation_key, user_name, system_name)
+            );
+        `);
+        
+        // Create system_tracking indexes
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_system_tracking_key ON system_tracking(activation_key);
+            CREATE INDEX IF NOT EXISTS idx_system_tracking_user ON system_tracking(user_name);
+            CREATE INDEX IF NOT EXISTS idx_system_tracking_id ON system_tracking(tracking_id);
+        `);
+
+        // Create USB file transfer logs table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS usb_file_transfer_logs (
+                id SERIAL PRIMARY KEY,
+                activation_key VARCHAR(100),
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                ip_address VARCHAR(50),
+                username VARCHAR(255),
+                display_user_name VARCHAR(255),
+                machine_id VARCHAR(255),
+                file_name VARCHAR(500),
+                file_path TEXT,
+                file_size BIGINT DEFAULT 0,
+                file_extension VARCHAR(50),
+                transfer_type VARCHAR(20) DEFAULT 'COPY',
+                source_path TEXT,
+                destination_path TEXT,
+                drive_letter VARCHAR(10),
+                drive_label VARCHAR(255),
+                transfer_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create USB file transfer indexes
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_usb_transfer_company ON usb_file_transfer_logs(company_name);
+            CREATE INDEX IF NOT EXISTS idx_usb_transfer_user ON usb_file_transfer_logs(username);
+            CREATE INDEX IF NOT EXISTS idx_usb_transfer_time ON usb_file_transfer_logs(transfer_time);
+            CREATE INDEX IF NOT EXISTS idx_usb_transfer_type ON usb_file_transfer_logs(transfer_type);
+        `);
+
+        // Create blocked_applications table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS blocked_applications (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                app_name VARCHAR(255),
+                app_path TEXT,
+                exe_name VARCHAR(255),
+                blocked_by VARCHAR(255) DEFAULT 'admin',
+                blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_blocked BOOLEAN DEFAULT TRUE,
+                UNIQUE(company_name, system_name, app_name)
+            );
+        `);
+
+        // Create system_restrictions table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS system_restrictions (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255),
+                system_name VARCHAR(255),
+                restriction_type VARCHAR(100),
+                is_active BOOLEAN DEFAULT FALSE,
+                changed_by VARCHAR(255) DEFAULT 'admin',
+                changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(company_name, system_name, restriction_type)
+            );
+        `);
+
+        // Create indexes for new tables
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_blocked_apps_company ON blocked_applications(company_name);
+            CREATE INDEX IF NOT EXISTS idx_blocked_apps_system ON blocked_applications(company_name, system_name);
+            CREATE INDEX IF NOT EXISTS idx_restrictions_company ON system_restrictions(company_name);
+            CREATE INDEX IF NOT EXISTS idx_restrictions_system ON system_restrictions(company_name, system_name);
+        `);
+
+        // Create company_admin_users table for separate admin login
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS company_admin_users (
+                id SERIAL PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL,
+                username VARCHAR(100) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                full_name VARCHAR(255),
+                email VARCHAR(255),
+                phone VARCHAR(50),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                last_login TIMESTAMP,
+                is_active BOOLEAN DEFAULT TRUE,
+                created_by VARCHAR(100),
+                UNIQUE(company_name, username)
+            );
+        `);
+
+        // Create indexes for admin users
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_admin_users_company ON company_admin_users(company_name);
+            CREATE INDEX IF NOT EXISTS idx_admin_users_username ON company_admin_users(username);
+        `);
+
+        // Create wizone_meetings table for AI meeting system
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS wizone_meetings (
+                id SERIAL PRIMARY KEY,
+                meeting_id VARCHAR(100) UNIQUE NOT NULL,
+                company_name VARCHAR(255) NOT NULL,
+                meeting_name VARCHAR(255),
+                meeting_description TEXT,
+                created_by VARCHAR(255) NOT NULL,
+                created_by_name VARCHAR(255),
+                start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                end_time TIMESTAMP,
+                status VARCHAR(50) DEFAULT 'active',
+                meeting_link TEXT,
+                max_participants INT DEFAULT 100,
+                is_recording_enabled BOOLEAN DEFAULT TRUE,
+                recording_status VARCHAR(50) DEFAULT 'not_started',
+                recording_file_path TEXT,
+                recording_size_mb DECIMAL(10,2),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // Create meeting_participants table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS meeting_participants (
+                id SERIAL PRIMARY KEY,
+                meeting_id VARCHAR(100) NOT NULL,
+                company_name VARCHAR(255) NOT NULL,
+                participant_username VARCHAR(255) NOT NULL,
+                participant_name VARCHAR(255),
+                joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                left_at TIMESTAMP,
+                is_online BOOLEAN DEFAULT TRUE,
+                connection_quality VARCHAR(50),
+                UNIQUE(meeting_id, participant_username)
+            );
+        `);
+
+        // Create meeting_recordings table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS meeting_recordings (
+                id SERIAL PRIMARY KEY,
+                meeting_id VARCHAR(100) NOT NULL,
+                company_name VARCHAR(255) NOT NULL,
+                recording_name VARCHAR(255),
+                recording_file_path TEXT,
+                recording_size_mb DECIMAL(10,2),
+                recording_duration_minutes INT,
+                started_at TIMESTAMP,
+                ended_at TIMESTAMP,
+                uploaded_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                is_available BOOLEAN DEFAULT TRUE
+            );
+        `);
+
+        // Create indexes for meetings
+        await client.query(`
+            CREATE INDEX IF NOT EXISTS idx_meetings_company ON wizone_meetings(company_name);
+            CREATE INDEX IF NOT EXISTS idx_meetings_id ON wizone_meetings(meeting_id);
+            CREATE INDEX IF NOT EXISTS idx_meetings_created_by ON wizone_meetings(created_by);
+            CREATE INDEX IF NOT EXISTS idx_participants_meeting ON meeting_participants(meeting_id);
+            CREATE INDEX IF NOT EXISTS idx_recordings_meeting ON meeting_recordings(meeting_id);
+        `);
+
+        console.log('✓ Database tables initialized successfully');
+    } catch (err) {
+        console.error('Database initialization error:', err.message);
     } finally {
         await client.end();
     }
@@ -80,25 +313,28 @@ const apiHandlers = {
     // Login - directly with username/password from company_users table
     async login(body) {
         const { username, password, role } = body;
-        
+
         if (!username || !password) {
             return { success: false, error: 'Username and password are required' };
         }
-        
+
         try {
-            // Get user from company_users table along with activation key info
+            // First, try to get user from company_users table
             const userRows = await queryDB(
-                `SELECT cu.id, cu.username, cu.full_name, cu.email, cu.role_id, cu.company_name, 
-                        cu.is_active, cu.activation_key_id, ak.activation_key
+                `SELECT cu.id, cu.username, cu.full_name, cu.email, cu.role_id, cu.company_name,
+                        cu.is_active, cu.activation_key_id, ak.activation_key,
+                        COALESCE(cr.role_name, 'Administrator') as role_name
                  FROM company_users cu
                  LEFT JOIN activation_keys ak ON cu.activation_key_id = ak.id
-                 WHERE cu.username = $1 AND cu.password = $2 AND cu.is_active = TRUE 
+                 LEFT JOIN company_roles cr ON cu.role_id = cr.id
+                 WHERE cu.username = $1 AND cu.password = $2 AND cu.is_active = TRUE
                  LIMIT 1`,
                 [username, password]
             );
-            
+
             if (userRows.length > 0) {
                 const user = userRows[0];
+                const roleName = (user.role_name || '').toLowerCase();
                 return {
                     success: true,
                     user: {
@@ -106,13 +342,45 @@ const apiHandlers = {
                         username: user.username,
                         full_name: user.full_name || user.username,
                         email: user.email,
-                        role: user.role_id === 1 ? 'admin' : 'user',
+                        role: roleName === 'administrator' ? 'admin' : 'user',
                         company_name: user.company_name,
                         activation_key: user.activation_key
                     }
                 };
             }
-            
+
+            // If not found in company_users, try company_admin_users table
+            const adminRows = await queryDB(
+                `SELECT id, company_name, username, full_name, email, phone
+                 FROM company_admin_users
+                 WHERE username = $1 AND password = $2 AND is_active = TRUE
+                 LIMIT 1`,
+                [username, password]
+            );
+
+            if (adminRows.length > 0) {
+                const user = adminRows[0];
+
+                // Update last login time
+                await queryDB(
+                    'UPDATE company_admin_users SET last_login = NOW() WHERE id = $1',
+                    [user.id]
+                );
+
+                return {
+                    success: true,
+                    user: {
+                        id: user.id,
+                        username: user.username,
+                        full_name: user.full_name || user.username,
+                        email: user.email || '',
+                        phone: user.phone || '',
+                        role: 'admin',
+                        company_name: user.company_name
+                    }
+                };
+            }
+
             return { success: false, error: 'Invalid username or password' };
         } catch (err) {
             console.error('Login error:', err.message);
@@ -123,22 +391,25 @@ const apiHandlers = {
     // Admin login - alias for login with admin-only check
     async admin_login(body) {
         const { username, password } = body;
-        
+
         if (!username || !password) {
             return { success: false, error: 'Username and password are required' };
         }
-        
+
         try {
             const userRows = await queryDB(
-                `SELECT cu.id, cu.username, cu.full_name, cu.email, cu.role_id, cu.company_name, 
-                        cu.is_active, cu.activation_key_id, ak.activation_key
+                `SELECT cu.id, cu.username, cu.full_name, cu.email, cu.role_id, cu.company_name,
+                        cu.is_active, cu.activation_key_id, ak.activation_key,
+                        COALESCE(cr.role_name, 'Administrator') as role_name
                  FROM company_users cu
                  LEFT JOIN activation_keys ak ON cu.activation_key_id = ak.id
-                 WHERE cu.username = $1 AND cu.password = $2 AND cu.is_active = TRUE AND cu.role_id = 1
+                 LEFT JOIN company_roles cr ON cu.role_id = cr.id
+                 WHERE cu.username = $1 AND cu.password = $2 AND cu.is_active = TRUE
+                   AND (cr.role_name = 'Administrator' OR cu.role_id IS NULL)
                  LIMIT 1`,
                 [username, password]
             );
-            
+
             if (userRows.length > 0) {
                 const user = userRows[0];
                 return {
@@ -153,7 +424,7 @@ const apiHandlers = {
                     }
                 };
             }
-            
+
             return { success: false, error: 'Invalid username or password, or insufficient permissions' };
         } catch (err) {
             console.error('Admin login error:', err.message);
@@ -813,19 +1084,34 @@ const apiHandlers = {
     async add_employee(body) {
         try {
             const { company_name, employee_id, full_name, email, phone, department, designation, lunch_duration, significant_idle_threshold_minutes } = body;
-            
+
             if (!company_name || !full_name) {
                 return { success: false, error: 'Company name and full name are required' };
             }
-            
+
+            // Auto-generate employee_id if not provided (format: WIZxxxx-001)
+            let empId = employee_id || '';
+            if (!empId) {
+                const randomNum = Math.floor(1000 + Math.random() * 9000);
+                empId = 'WIZ' + randomNum + '-001';
+                // Check for duplicates and regenerate if needed
+                const existing = await queryDB(
+                    'SELECT employee_id FROM company_employees WHERE company_name = $1 AND employee_id = $2',
+                    [company_name, empId]
+                );
+                if (existing.length > 0) {
+                    empId = 'WIZ' + Math.floor(1000 + Math.random() * 9000) + '-001';
+                }
+            }
+
             const result = await queryDB(
                 `INSERT INTO company_employees (company_name, employee_id, full_name, email, phone, department, designation, lunch_duration, significant_idle_threshold_minutes, is_active, created_at, updated_at)
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true, NOW(), NOW())
-                 RETURNING id`,
-                [company_name, employee_id || '', full_name, email || '', phone || '', department || '', designation || '', lunch_duration || 60, significant_idle_threshold_minutes || 10]
+                 RETURNING id, employee_id`,
+                [company_name, empId, full_name, email || '', phone || '', department || '', designation || '', lunch_duration || 60, significant_idle_threshold_minutes || 10]
             );
-            
-            return { success: true, message: 'Employee added successfully', id: result[0]?.id };
+
+            return { success: true, message: 'Employee added successfully', data: { id: result[0]?.id, employee_id: result[0]?.employee_id } };
         } catch (err) {
             console.error('Add employee error:', err.message);
             return { success: false, error: err.message };
@@ -1053,10 +1339,12 @@ const apiHandlers = {
                         cs.first_connected,
                         COALESCE(cs.is_online, false) as is_online,
                         COALESCE(cs.status, 'not-connected') as status,
-                        COALESCE(cs.system_id, '') as system_id
+                        COALESCE(cs.system_id, '') as system_id,
+                        COALESCE(cs.cpu_usage, 0) as cpu_usage,
+                        COALESCE(cs.ram_usage, 0) as ram_usage
                      FROM company_employees ce
-                     LEFT JOIN connected_systems cs 
-                        ON ce.employee_id = cs.employee_id 
+                     LEFT JOIN connected_systems cs
+                        ON ce.employee_id = cs.employee_id
                         AND ce.company_name = cs.company_name
                      WHERE ce.company_name = $1 AND ce.is_active = true
                      ORDER BY cs.is_online DESC NULLS LAST, ce.full_name ASC`,
@@ -1080,10 +1368,12 @@ const apiHandlers = {
                         cs.first_connected,
                         COALESCE(cs.is_online, false) as is_online,
                         COALESCE(cs.status, 'not-connected') as status,
-                        COALESCE(cs.system_id, '') as system_id
+                        COALESCE(cs.system_id, '') as system_id,
+                        COALESCE(cs.cpu_usage, 0) as cpu_usage,
+                        COALESCE(cs.ram_usage, 0) as ram_usage
                      FROM company_employees ce
-                     LEFT JOIN connected_systems cs 
-                        ON ce.employee_id = cs.employee_id 
+                     LEFT JOIN connected_systems cs
+                        ON ce.employee_id = cs.employee_id
                         AND ce.company_name = cs.company_name
                      WHERE ce.is_active = true
                      ORDER BY cs.is_online DESC NULLS LAST, ce.company_name, ce.full_name ASC`
@@ -1868,6 +2158,1462 @@ const apiHandlers = {
             console.error('Update site status error:', err.message);
             return { success: false, error: err.message };
         }
+    },
+
+    // ==================== SYSTEM DATA / INSTALLED SOFTWARE ====================
+
+    // Generate or retrieve tracking ID for a system
+    async get_or_create_tracking_id(body) {
+        try {
+            const { activation_key, user_name, system_name, company_name } = body;
+            
+            if (!activation_key || !user_name || !system_name) {
+                return { success: false, error: 'activation_key, user_name, and system_name are required' };
+            }
+            
+            // Check if tracking ID already exists for this system
+            const existingRows = await queryDB(
+                `SELECT tracking_id FROM system_tracking 
+                 WHERE activation_key = $1 AND user_name = $2 AND system_name = $3`,
+                [activation_key, user_name, system_name]
+            );
+            
+            if (existingRows.length > 0) {
+                // Update last_seen and return existing tracking ID
+                await queryDB(
+                    `UPDATE system_tracking SET last_seen = NOW() 
+                     WHERE activation_key = $1 AND user_name = $2 AND system_name = $3`,
+                    [activation_key, user_name, system_name]
+                );
+                return { success: true, tracking_id: existingRows[0].tracking_id };
+            }
+            
+            // Generate new tracking ID: SYSTM-XXXXXXX-XXXXXXX
+            const uniqueId = Math.random().toString(36).substring(2, 8).toUpperCase() + 
+                            Math.random().toString(36).substring(2, 8).toUpperCase();
+            const trackingId = `SYSTM-${uniqueId}`;
+            
+            // Insert new tracking record
+            await queryDB(
+                `INSERT INTO system_tracking (activation_key, user_name, system_name, tracking_id, company_name)
+                 VALUES ($1, $2, $3, $4, $5)`,
+                [activation_key, user_name, system_name, trackingId, company_name || '']
+            );
+            
+            return { success: true, tracking_id: trackingId };
+        } catch (err) {
+            console.error('Get or create tracking ID error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get system data by tracking ID
+    async get_system_by_tracking_id(query) {
+        try {
+            const trackingId = query.tracking_id;
+            
+            if (!trackingId) {
+                return { success: false, error: 'Tracking ID is required' };
+            }
+            
+            // Get tracking info
+            const trackingRows = await queryDB(
+                `SELECT * FROM system_tracking WHERE tracking_id = $1`,
+                [trackingId]
+            );
+            
+            if (trackingRows.length === 0) {
+                return { success: false, error: 'Tracking ID not found' };
+            }
+            
+            const tracking = trackingRows[0];
+            
+            // Get latest system info for this tracking ID
+            const systemRows = await queryDB(
+                `SELECT * FROM system_info 
+                 WHERE activation_key = $1 AND user_name = $2 AND system_name = $3
+                 ORDER BY captured_at DESC LIMIT 1`,
+                [tracking.activation_key, tracking.user_name, tracking.system_name]
+            );
+            
+            if (systemRows.length > 0) {
+                const sysInfo = systemRows[0];
+                // Parse installed_apps if needed
+                if (typeof sysInfo.installed_apps === 'string') {
+                    try {
+                        sysInfo.installed_apps = JSON.parse(sysInfo.installed_apps);
+                    } catch (e) {
+                        sysInfo.installed_apps = [];
+                    }
+                }
+                
+                return { 
+                    success: true, 
+                    data: {
+                        ...sysInfo,
+                        tracking_id: trackingId,
+                        last_seen: tracking.last_seen
+                    }
+                };
+            }
+            
+            return { success: false, error: 'No system info found for this tracking ID' };
+        } catch (err) {
+            console.error('Get system by tracking ID error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get system data for all systems or specific user
+    async get_system_data(query) {
+
+        try {
+            const companyName = query.company_name;
+            const userName = query.user_name;
+
+            if (!companyName) {
+                return { success: false, error: 'Company name is required' };
+            }
+
+            let sql = `
+                SELECT
+                    si.id, si.activation_key, si.company_name, si.system_name, si.user_name,
+                    si.os_version, si.processor_info, si.total_memory, si.installed_apps,
+                    si.system_serial_number, si.tracking_id, si.captured_at,
+                    COALESCE(ce.full_name, si.user_name) as display_name,
+                    COALESCE(cs.ip_address, '-') as ip_address
+                FROM system_info si
+                LEFT JOIN company_employees ce ON ce.employee_id = si.user_name AND ce.company_name = si.company_name
+                LEFT JOIN connected_systems cs ON cs.employee_id = si.user_name AND cs.company_name = si.company_name
+                WHERE si.company_name = $1
+            `;
+            let params = [companyName];
+
+            // Filter by specific user if provided
+            if (userName) {
+                sql += ` AND si.user_name = $2`;
+                params.push(userName);
+            }
+
+            sql += ` ORDER BY si.captured_at DESC LIMIT 100`;
+
+            const rows = await queryDB(sql, params);
+
+            return { success: true, data: rows };
+        } catch (err) {
+            console.error('Get system data error:', err.message);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // Get detailed system info (HDD/SSD, BIOS, Motherboard, GPU, CPU, RAM, OS, etc.)
+    async get_system_data_detailed(query) {
+        try {
+            const companyName = query.company_name;
+            if (!companyName) return { success: false, error: 'Company name required' };
+
+            let sql = `SELECT * FROM system_info_detailed WHERE company_name = $1`;
+            let params = [companyName];
+            let idx = 2;
+
+            if (query.user_name) {
+                sql += ` AND user_name = $${idx}`;
+                params.push(query.user_name);
+                idx++;
+            }
+
+            sql += ` ORDER BY last_updated DESC LIMIT 100`;
+            const rows = await queryDB(sql, params);
+
+            // Parse JSON fields
+            rows.forEach(row => {
+                try { row.storage_info = JSON.parse(row.storage_info || '[]'); } catch(e) { row.storage_info = []; }
+                try { row.network_info = JSON.parse(row.network_info || '[]'); } catch(e) { row.network_info = []; }
+                try { row.memory_details = JSON.parse(row.memory_details || '[]'); } catch(e) { row.memory_details = []; }
+                try { row.gpu_info = JSON.parse(row.gpu_info || '[]'); } catch(e) { row.gpu_info = []; }
+                try { row.raw_data = JSON.parse(row.raw_data || '{}'); } catch(e) { row.raw_data = {}; }
+            });
+
+            return { success: true, data: rows };
+        } catch (err) {
+            console.error('Get system data detailed error:', err.message);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // Get system details for a specific system
+    async get_system_details(query) {
+        try {
+            const systemName = query.system_name;
+            const companyName = query.company_name;
+            
+            if (!systemName || !companyName) {
+                return { success: false, error: 'System name and company name are required' };
+            }
+            
+            const rows = await queryDB(
+                `SELECT * FROM system_info 
+                 WHERE system_name = $1 AND company_name = $2 
+                 ORDER BY captured_at DESC 
+                 LIMIT 1`,
+                [systemName, companyName]
+            );
+            
+            if (rows.length > 0) {
+                const record = rows[0];
+                // Parse installed_apps JSON if it's a string
+                if (typeof record.installed_apps === 'string') {
+                    try {
+                        record.installed_apps = JSON.parse(record.installed_apps);
+                    } catch (e) {
+                        record.installed_apps = [];
+                    }
+                }
+                return { success: true, data: record };
+            }
+            
+            return { success: false, error: 'System not found' };
+        } catch (err) {
+            console.error('Get system details error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get installed applications for a system
+    async get_installed_applications(query) {
+        try {
+            const systemName = query.system_name;
+            const companyName = query.company_name;
+            
+            if (!systemName || !companyName) {
+                return { success: false, error: 'System name and company name are required' };
+            }
+            
+            const rows = await queryDB(
+                `SELECT installed_apps FROM system_info 
+                 WHERE system_name = $1 AND company_name = $2 
+                 ORDER BY captured_at DESC 
+                 LIMIT 1`,
+                [systemName, companyName]
+            );
+            
+            if (rows.length > 0) {
+                let apps = rows[0].installed_apps;
+                
+                // Parse JSON if it's a string
+                if (typeof apps === 'string') {
+                    try {
+                        apps = JSON.parse(apps);
+                    } catch (e) {
+                        apps = [];
+                    }
+                }
+                
+                // Ensure it's an array
+                if (!Array.isArray(apps)) {
+                    apps = [];
+                }
+                
+                return { success: true, data: apps, count: apps.length };
+            }
+            
+            return { success: false, error: 'System not found', data: [] };
+        } catch (err) {
+            console.error('Get installed applications error:', err.message);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // ===== SYSTEM CONTROL COMMANDS =====
+
+    async send_system_command(body) {
+        try {
+            const { company_name, system_name, command_type, parameters, created_by } = body;
+            if (!company_name || !system_name || !command_type) {
+                return { success: false, error: 'Company name, system name and command type are required' };
+            }
+            await queryDB(`CREATE TABLE IF NOT EXISTS system_control_commands (
+                id SERIAL PRIMARY KEY, company_name VARCHAR(255), system_name VARCHAR(255),
+                user_name VARCHAR(255), command_type VARCHAR(100), parameters JSONB DEFAULT '{}',
+                status VARCHAR(50) DEFAULT 'pending', result TEXT, created_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW(), executed_at TIMESTAMP
+            )`);
+            const rows = await queryDB(
+                `INSERT INTO system_control_commands (company_name, system_name, command_type, parameters, status, created_by)
+                 VALUES ($1, $2, $3, $4, 'pending', $5) RETURNING id, command_type, status, created_at`,
+                [company_name, system_name, command_type, JSON.stringify(parameters || {}), created_by || 'admin']
+            );
+            return { success: true, data: rows[0], message: `Command '${command_type}' queued for ${system_name}` };
+        } catch (err) {
+            console.error('Send command error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_command_history(query) {
+        try {
+            const companyName = query.company_name;
+            if (!companyName) return { success: false, error: 'Company name is required' };
+            const rows = await queryDB(
+                `SELECT * FROM system_control_commands WHERE company_name = $1 ORDER BY created_at DESC LIMIT 50`,
+                [companyName]
+            );
+            return { success: true, data: rows, count: rows.length };
+        } catch (err) {
+            return { success: true, data: [], count: 0 };
+        }
+    },
+
+    async get_pending_commands(query) {
+        try {
+            const { system_name, company_name } = query;
+            if (!system_name) return { success: false, error: 'System name is required' };
+            const rows = await queryDB(
+                `SELECT * FROM system_control_commands WHERE system_name = $1 AND status = 'pending' ORDER BY created_at ASC`,
+                [system_name]
+            );
+            return { success: true, data: rows, count: rows.length };
+        } catch (err) {
+            return { success: true, data: [], count: 0 };
+        }
+    },
+
+    async update_command_status(body) {
+        try {
+            const { command_id, status, result } = body;
+            if (!command_id || !status) return { success: false, error: 'Command ID and status required' };
+            await queryDB(
+                `UPDATE system_control_commands SET status = $1, result = $2, executed_at = NOW() WHERE id = $3`,
+                [status, result || '', command_id]
+            );
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ===== INSTALLED APPS DETAILED =====
+
+    async get_installed_apps_detailed(query) {
+        try {
+            const companyName = query.company_name;
+            const systemName = query.system_name;
+            if (!companyName) return { success: false, error: 'Company name required' };
+
+            // Try installed_apps_detailed table first
+            try {
+                let sql = 'SELECT * FROM installed_apps_detailed WHERE company_name = $1';
+                let params = [companyName];
+                if (systemName) { sql += ' AND system_name = $2'; params.push(systemName); }
+                sql += ' ORDER BY app_name ASC';
+                const rows = await queryDB(sql, params);
+                if (rows.length > 0) return { success: true, data: rows, count: rows.length };
+            } catch(e) { console.log('installed_apps_detailed query error:', e.message); }
+
+            // Fallback 1: Check system_info_detailed raw_data for installed apps
+            try {
+                let sql = `SELECT raw_data, computer_name, user_name FROM system_info_detailed WHERE company_name = $1`;
+                let params = [companyName];
+                if (systemName) { sql += ' AND computer_name = $2'; params.push(systemName); }
+                sql += ' ORDER BY updated_at DESC LIMIT 1';
+                const rows = await queryDB(sql, params);
+                if (rows.length > 0 && rows[0].raw_data && rows[0].raw_data.installed_apps) {
+                    const appsData = rows[0].raw_data.installed_apps;
+                    if (typeof appsData === 'string') {
+                        const apps = appsData.split('|').filter(a => a.trim()).map(a => {
+                            const parts = a.trim().split(' - ');
+                            return { app_name: parts[0] || a.trim(), app_version: parts[1] || '', system_name: rows[0].computer_name, user_name: rows[0].user_name };
+                        });
+                        if (apps.length > 0) return { success: true, data: apps, count: apps.length, source: 'system_info_detailed' };
+                    } else if (Array.isArray(appsData)) {
+                        return { success: true, data: appsData, count: appsData.length, source: 'system_info_detailed' };
+                    }
+                }
+            } catch(e) { console.log('system_info_detailed fallback error:', e.message); }
+
+            // Fallback 2: parse pipe-separated text from system_info
+            try {
+                let sql = `SELECT installed_apps, system_name, user_name FROM system_info WHERE company_name = $1`;
+                let params = [companyName];
+                if (systemName) { sql += ' AND system_name = $2'; params.push(systemName); }
+                sql += ' ORDER BY captured_at DESC LIMIT 1';
+                const rows = await queryDB(sql, params);
+                if (rows.length > 0 && rows[0].installed_apps) {
+                    const appsText = rows[0].installed_apps;
+                    const apps = appsText.split('|').filter(a => a.trim()).map(a => {
+                        const parts = a.trim().split(' - ');
+                        return { app_name: parts[0] || a.trim(), app_version: parts[1] || '', system_name: rows[0].system_name, user_name: rows[0].user_name };
+                    });
+                    return { success: true, data: apps, count: apps.length, source: 'system_info' };
+                }
+            } catch(e) { console.log('system_info fallback error:', e.message); }
+
+            return { success: true, data: [], count: 0, message: 'No installed apps data found. EXE needs to sync installed apps first.' };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // ===== FILE & EMAIL ACTIVITY =====
+
+    async get_file_activity_logs(query) {
+        try {
+            const companyName = query.company_name;
+            if (!companyName) return { success: false, error: 'Company name required' };
+
+            await queryDB(`CREATE TABLE IF NOT EXISTS file_activity_logs (
+                id SERIAL PRIMARY KEY, user_name VARCHAR(255), system_name VARCHAR(255),
+                company_name VARCHAR(255), activity_type VARCHAR(100),
+                file_name VARCHAR(1000), old_file_name VARCHAR(1000), file_path TEXT,
+                file_size BIGINT, created_at TIMESTAMP DEFAULT NOW()
+            )`);
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT NOW()`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS old_file_name VARCHAR(1000)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS new_file_name VARCHAR(1000)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS file_size BIGINT`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_sender VARCHAR(500)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_recipient VARCHAR(500)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_subject VARCHAR(1000)`); } catch(e) {}
+
+            let sql = `SELECT f.*,
+                       COALESCE(ce.full_name, f.user_name) as display_user_name,
+                       COALESCE(cs.ip_address, '-') as ip_address
+                       FROM file_activity_logs f
+                       LEFT JOIN company_employees ce ON ce.employee_id = f.user_name AND ce.company_name = f.company_name
+                       LEFT JOIN connected_systems cs ON cs.employee_id = f.user_name AND cs.company_name = f.company_name
+                       WHERE f.company_name = $1`;
+            let params = [companyName];
+            let idx = 2;
+
+            if (query.employee_id) { sql += ` AND f.user_name = $${idx}`; params.push(query.employee_id); idx++; }
+            if (query.start_date) { sql += ` AND f.created_at >= $${idx}::date`; params.push(query.start_date); idx++; }
+            if (query.end_date) { sql += ` AND f.created_at <= ($${idx}::date + interval '1 day')`; params.push(query.end_date); idx++; }
+
+            sql += ' ORDER BY f.created_at DESC LIMIT 500';
+            const rows = await queryDB(sql, params);
+            return { success: true, data: rows, count: rows.length };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async save_file_activity(body) {
+        try {
+            const { user_name, system_name, company_name, activity_type, file_name, old_file_name, new_file_name, file_path, file_size, email_sender, email_recipient, email_subject } = body;
+            await queryDB(`CREATE TABLE IF NOT EXISTS file_activity_logs (
+                id SERIAL PRIMARY KEY, user_name VARCHAR(255), system_name VARCHAR(255),
+                company_name VARCHAR(255), activity_type VARCHAR(100),
+                file_name VARCHAR(1000), old_file_name VARCHAR(1000), new_file_name VARCHAR(1000), file_path TEXT,
+                file_size BIGINT, email_sender VARCHAR(500), email_recipient VARCHAR(500), email_subject VARCHAR(1000),
+                created_at TIMESTAMP DEFAULT NOW()
+            )`);
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS new_file_name VARCHAR(1000)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_sender VARCHAR(500)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_recipient VARCHAR(500)`); } catch(e) {}
+            try { await queryDB(`ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_subject VARCHAR(1000)`); } catch(e) {}
+            await queryDB(
+                `INSERT INTO file_activity_logs (user_name, system_name, company_name, activity_type, file_name, old_file_name, new_file_name, file_path, file_size, email_sender, email_recipient, email_subject)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)`,
+                [user_name, system_name, company_name, activity_type, file_name, old_file_name || '', new_file_name || '', file_path || '', file_size || 0, email_sender || '', email_recipient || '', email_subject || '']
+            );
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ===== USB FILE TRANSFER LOGS =====
+
+    async get_usb_file_logs(query) {
+        try {
+            const companyName = query.company_name;
+            if (!companyName) return { success: false, error: 'Company name required' };
+
+            let sql = `SELECT u.*,
+                       COALESCE(ce.full_name, u.username) as display_user_name,
+                       COALESCE(cs.ip_address, u.ip_address) as display_ip_address
+                       FROM usb_file_transfer_logs u
+                       LEFT JOIN company_employees ce ON ce.employee_id = u.username AND ce.company_name = u.company_name
+                       LEFT JOIN connected_systems cs ON cs.employee_id = u.username AND cs.company_name = u.company_name
+                       WHERE u.company_name = $1`;
+            let params = [companyName];
+            let idx = 2;
+
+            if (query.employee_id || query.employee) {
+                const empId = query.employee_id || query.employee;
+                sql += ` AND u.username = $${idx}`;
+                params.push(empId);
+                idx++;
+            }
+
+            if (query.start_date) {
+                sql += ` AND u.transfer_time >= $${idx}::date`;
+                params.push(query.start_date);
+                idx++;
+            }
+
+            if (query.end_date) {
+                sql += ` AND u.transfer_time <= ($${idx}::date + interval '1 day')`;
+                params.push(query.end_date);
+                idx++;
+            }
+
+            if (query.transfer_type) {
+                sql += ` AND u.transfer_type = $${idx}`;
+                params.push(query.transfer_type);
+                idx++;
+            }
+
+            if (query.search) {
+                sql += ` AND (u.file_name ILIKE $${idx} OR u.file_path ILIKE $${idx} OR u.drive_label ILIKE $${idx})`;
+                params.push(`%${query.search}%`);
+                idx++;
+            }
+
+            sql += ' ORDER BY u.transfer_time DESC LIMIT 500';
+            const rows = await queryDB(sql, params);
+
+            // Calculate summary stats
+            let totalSize = 0;
+            let copyCount = 0, moveCount = 0, deleteCount = 0;
+            rows.forEach(r => {
+                totalSize += parseInt(r.file_size) || 0;
+                if (r.transfer_type === 'TO_USB') copyCount++;
+                else if (r.transfer_type === 'FROM_USB') moveCount++;
+                else if (r.transfer_type === 'DELETE_USB') deleteCount++;
+            });
+
+            return {
+                success: true,
+                data: rows,
+                count: rows.length,
+                summary: {
+                    total_transfers: rows.length,
+                    total_size: totalSize,
+                    to_usb: copyCount,
+                    from_usb: moveCount,
+                    deleted: deleteCount
+                }
+            };
+        } catch (err) {
+            console.error('USB file logs error:', err.message);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async save_usb_file_log(body) {
+        try {
+            const { activation_key, company_name, system_name, ip_address, username, display_user_name,
+                    machine_id, file_name, file_path, file_size, file_extension, transfer_type,
+                    source_path, destination_path, drive_letter, drive_label } = body;
+
+            if (!company_name || !username) return { success: false, error: 'Company name and username required' };
+
+            await queryDB(
+                `INSERT INTO usb_file_transfer_logs (activation_key, company_name, system_name, ip_address, username, display_user_name,
+                    machine_id, file_name, file_path, file_size, file_extension, transfer_type,
+                    source_path, destination_path, drive_letter, drive_label, transfer_time)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, NOW())`,
+                [activation_key || '', company_name, system_name || '', ip_address || '', username, display_user_name || '',
+                 machine_id || '', file_name || '', file_path || '', file_size || 0, file_extension || '', transfer_type || 'COPY',
+                 source_path || '', destination_path || '', drive_letter || '', drive_label || '']
+            );
+            return { success: true, message: 'USB file transfer logged' };
+        } catch (err) {
+            console.error('Save USB file log error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_usb_transfer_stats(query) {
+        try {
+            const companyName = query.company_name;
+            if (!companyName) return { success: false, error: 'Company name required' };
+
+            const stats = await queryDB(`
+                SELECT
+                    COUNT(*) as total_transfers,
+                    COUNT(DISTINCT username) as unique_users,
+                    COUNT(DISTINCT drive_label) as unique_devices,
+                    COALESCE(SUM(file_size), 0) as total_size,
+                    COUNT(CASE WHEN transfer_type = 'TO_USB' THEN 1 END) as to_usb_count,
+                    COUNT(CASE WHEN transfer_type = 'FROM_USB' THEN 1 END) as from_usb_count,
+                    COUNT(CASE WHEN transfer_type = 'DELETE_USB' THEN 1 END) as delete_count,
+                    COUNT(CASE WHEN transfer_time >= NOW() - interval '24 hours' THEN 1 END) as last_24h
+                FROM usb_file_transfer_logs
+                WHERE company_name = $1
+            `, [companyName]);
+
+            return { success: true, data: stats[0] || {} };
+        } catch (err) {
+            return { success: false, error: err.message, data: {} };
+        }
+    },
+
+    // ===== CHAT MESSAGES =====
+
+    async send_chat_message(body) {
+        try {
+            const { sender, recipient, message, company_name, message_type, file_name, file_data, file_size } = body;
+            if (!sender || !recipient) return { success: false, error: 'Sender and recipient required' };
+
+            await queryDB(`CREATE TABLE IF NOT EXISTS chat_messages (
+                id SERIAL PRIMARY KEY, sender VARCHAR(255) NOT NULL, recipient VARCHAR(255) NOT NULL,
+                message TEXT, company_name VARCHAR(255), is_read BOOLEAN DEFAULT FALSE,
+                message_type VARCHAR(50) DEFAULT 'text', file_name VARCHAR(500),
+                file_data BYTEA, file_size BIGINT, created_at TIMESTAMP DEFAULT NOW()
+            )`);
+
+            let fileBuffer = null;
+            if (file_data) { fileBuffer = Buffer.from(file_data, 'base64'); }
+
+            const rows = await queryDB(
+                `INSERT INTO chat_messages (sender, recipient, message, company_name, is_read, message_type, file_name, file_data, file_size)
+                 VALUES ($1, $2, $3, $4, FALSE, $5, $6, $7, $8) RETURNING id, created_at`,
+                [sender, recipient, message || '', company_name || '', message_type || 'text', file_name || null, fileBuffer, file_size || null]
+            );
+            return { success: true, data: rows[0] };
+        } catch (err) {
+            console.error('Send chat error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_chat_messages(query) {
+        try {
+            const { sender, recipient, company_name, limit, after_id } = query;
+            if (!sender || !recipient) return { success: false, error: 'Sender and recipient required' };
+
+            let sql = `SELECT id, sender, recipient, message, company_name, is_read, message_type, file_name, file_size, created_at
+                       FROM chat_messages WHERE company_name = $1
+                       AND ((sender = $2 AND recipient = $3) OR (sender = $3 AND recipient = $2))`;
+            let params = [company_name || '', sender, recipient];
+            let idx = 4;
+
+            if (after_id) { sql += ` AND id > $${idx}`; params.push(after_id); idx++; }
+            sql += ` ORDER BY created_at ASC`;
+            if (limit && !after_id) { sql += ` LIMIT $${idx}`; params.push(parseInt(limit)); }
+
+            const rows = await queryDB(sql, params);
+            return { success: true, data: rows, count: rows.length };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async get_chat_contacts(query) {
+        try {
+            const { company_name, current_user } = query;
+            if (!company_name) return { success: false, error: 'Company name required' };
+
+            const rows = await queryDB(
+                `SELECT DISTINCT ON (cs.employee_id)
+                        cs.employee_id, cs.display_name, cs.machine_name,
+                        cs.is_online, cs.last_heartbeat, cs.ip_address,
+                        COALESCE(unread.cnt, 0) as unread_count,
+                        last_msg.message as last_message,
+                        last_msg.created_at as last_message_time
+                 FROM connected_systems cs
+                 LEFT JOIN LATERAL (
+                    SELECT COUNT(*) as cnt FROM chat_messages
+                    WHERE sender = cs.employee_id AND recipient = $2 AND is_read = FALSE AND company_name = $1
+                 ) unread ON TRUE
+                 LEFT JOIN LATERAL (
+                    SELECT message, created_at FROM chat_messages
+                    WHERE company_name = $1 AND ((sender = cs.employee_id AND recipient = $2) OR (sender = $2 AND recipient = cs.employee_id))
+                    ORDER BY created_at DESC LIMIT 1
+                 ) last_msg ON TRUE
+                 WHERE cs.company_name = $1
+                 ORDER BY cs.employee_id, cs.last_heartbeat DESC NULLS LAST`,
+                [company_name, current_user || 'admin']
+            );
+            // Sort by last_message_time after dedup
+            rows.sort((a, b) => {
+                if (a.last_message_time && b.last_message_time) return new Date(b.last_message_time) - new Date(a.last_message_time);
+                if (a.last_message_time) return -1;
+                if (b.last_message_time) return 1;
+                return (a.display_name || '').localeCompare(b.display_name || '');
+            });
+            return { success: true, data: rows, count: rows.length };
+        } catch (err) {
+            console.error('Get chat contacts error:', err.message);
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async mark_chat_read(body) {
+        try {
+            const { sender, recipient, company_name } = body;
+            if (!sender || !recipient) return { success: false, error: 'Sender and recipient required' };
+            await queryDB(
+                `UPDATE chat_messages SET is_read = TRUE WHERE sender = $1 AND recipient = $2 AND company_name = $3 AND is_read = FALSE`,
+                [sender, recipient, company_name || '']
+            );
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async download_chat_file(query) {
+        try {
+            const messageId = query.message_id;
+            if (!messageId) return { success: false, error: 'Message ID required' };
+            const rows = await queryDB(
+                `SELECT file_data, file_name, file_size FROM chat_messages WHERE id = $1`, [messageId]
+            );
+            if (rows.length > 0 && rows[0].file_data) {
+                return { success: true, data: { file_data: rows[0].file_data.toString('base64'), file_name: rows[0].file_name, file_size: rows[0].file_size } };
+            }
+            return { success: false, error: 'File not found' };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ===== VOICE MESSAGE =====
+
+    async send_voice_message(body) {
+        try {
+            const { sender, recipient, company_name, voice_data, duration } = body;
+            if (!sender || !recipient || !voice_data) return { success: false, error: 'Sender, recipient and voice data required' };
+
+            const voiceBuffer = Buffer.from(voice_data, 'base64');
+            await queryDB(
+                `INSERT INTO chat_messages (sender, recipient, message, company_name, message_type, file_name, file_data, file_size, created_at)
+                 VALUES ($1, $2, $3, $4, 'voice', $5, $6, $7, NOW())`,
+                [sender, recipient, `Voice message (${duration || '0'}s)`, company_name || '', `voice_${Date.now()}.webm`, voiceBuffer, voiceBuffer.length]
+            );
+            return { success: true, message: 'Voice message sent' };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ===== WEBRTC CALL SIGNALING =====
+
+    async initiate_call(body) {
+        try {
+            const { caller, callee, company_name, call_type } = body;
+            if (!caller || !callee) return { success: false, error: 'Caller and callee required' };
+
+            // Create call_signaling table if not exists
+            await queryDB(`CREATE TABLE IF NOT EXISTS call_signaling (
+                id SERIAL PRIMARY KEY,
+                caller VARCHAR(255) NOT NULL,
+                callee VARCHAR(255) NOT NULL,
+                company_name VARCHAR(255),
+                call_type VARCHAR(20) DEFAULT 'audio',
+                status VARCHAR(20) DEFAULT 'ringing',
+                signal_data TEXT,
+                ice_candidates TEXT DEFAULT '[]',
+                started_at TIMESTAMP DEFAULT NOW(),
+                answered_at TIMESTAMP,
+                ended_at TIMESTAMP
+            )`);
+
+            const rows = await queryDB(
+                `INSERT INTO call_signaling (caller, callee, company_name, call_type, status, started_at)
+                 VALUES ($1, $2, $3, $4, 'ringing', NOW()) RETURNING id`,
+                [caller, callee, company_name || '', call_type || 'audio']
+            );
+            return { success: true, call_id: rows[0]?.id };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async update_call_signal(body) {
+        try {
+            const { call_id, signal_data, ice_candidate, status } = body;
+            if (!call_id) return { success: false, error: 'Call ID required' };
+
+            if (signal_data) {
+                await queryDB(`UPDATE call_signaling SET signal_data = $1 WHERE id = $2`, [JSON.stringify(signal_data), call_id]);
+            }
+            if (ice_candidate) {
+                await queryDB(`UPDATE call_signaling SET ice_candidates = ice_candidates::text::jsonb || $1::jsonb WHERE id = $2`,
+                    [JSON.stringify([ice_candidate]), call_id]);
+            }
+            if (status) {
+                if (status === 'answered') {
+                    await queryDB(`UPDATE call_signaling SET status = $1, answered_at = NOW() WHERE id = $2`, [status, call_id]);
+                } else if (status === 'ended' || status === 'rejected' || status === 'missed') {
+                    await queryDB(`UPDATE call_signaling SET status = $1, ended_at = NOW() WHERE id = $2`, [status, call_id]);
+                } else {
+                    await queryDB(`UPDATE call_signaling SET status = $1 WHERE id = $2`, [status, call_id]);
+                }
+            }
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async check_incoming_call(query) {
+        try {
+            const { callee, company_name } = query;
+            if (!callee) return { success: false, error: 'Callee required' };
+
+            const rows = await queryDB(
+                `SELECT * FROM call_signaling WHERE callee = $1 AND company_name = $2 AND status = 'ringing' AND started_at > NOW() - interval '30 seconds' ORDER BY started_at DESC LIMIT 1`,
+                [callee, company_name || '']
+            );
+            if (rows.length > 0) {
+                return { success: true, has_call: true, call: rows[0] };
+            }
+            return { success: true, has_call: false };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_call_signal(query) {
+        try {
+            const { call_id } = query;
+            if (!call_id) return { success: false, error: 'Call ID required' };
+            const rows = await queryDB(`SELECT * FROM call_signaling WHERE id = $1`, [call_id]);
+            if (rows.length > 0) {
+                try { rows[0].signal_data = JSON.parse(rows[0].signal_data || 'null'); } catch(e) {}
+                try { rows[0].ice_candidates = JSON.parse(rows[0].ice_candidates || '[]'); } catch(e) {}
+                return { success: true, data: rows[0] };
+            }
+            return { success: false, error: 'Call not found' };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_call_history(query) {
+        try {
+            const { company_name, user } = query;
+            if (!company_name) return { success: false, error: 'Company name required' };
+
+            let sql = `SELECT * FROM call_signaling WHERE company_name = $1`;
+            let params = [company_name];
+            if (user) { sql += ` AND (caller = $2 OR callee = $2)`; params.push(user); }
+            sql += ` ORDER BY started_at DESC LIMIT 50`;
+
+            const rows = await queryDB(sql, params);
+            return { success: true, data: rows };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // ==================== DANGER ZONE / SYSTEM RESTRICTIONS ====================
+
+    async toggle_system_restriction(query) {
+        try {
+            const { company_name, system_name, restriction_type, is_active, changed_by } = query;
+            if (!company_name || !system_name || !restriction_type) {
+                return { success: false, error: 'company_name, system_name, and restriction_type required' };
+            }
+
+            const active = is_active === 'true' || is_active === '1';
+            const commandType = active ? `block_${restriction_type}` : `unblock_${restriction_type}`;
+
+            // Map restriction types to command types
+            const commandMap = {
+                'cmd': active ? 'block_cmd' : 'unblock_cmd',
+                'powershell': active ? 'block_powershell' : 'unblock_powershell',
+                'regedit': active ? 'block_regedit' : 'unblock_regedit',
+                'copy_paste': active ? 'block_copy_paste' : 'unblock_copy_paste',
+                'software_install': active ? 'block_software_install' : 'unblock_software_install',
+                'delete': active ? 'block_delete' : 'unblock_delete',
+                'ip_change': active ? 'lock_ip' : 'unlock_ip',
+                'task_manager': active ? 'block_task_manager' : 'unblock_task_manager',
+                'control_panel': active ? 'block_control_panel' : 'unblock_control_panel'
+            };
+
+            const cmdType = commandMap[restriction_type] || commandType;
+
+            // Upsert restriction state
+            await queryDB(`
+                INSERT INTO system_restrictions (company_name, system_name, restriction_type, is_active, changed_by, changed_at)
+                VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+                ON CONFLICT (company_name, system_name, restriction_type)
+                DO UPDATE SET is_active = $4, changed_by = $5, changed_at = CURRENT_TIMESTAMP
+            `, [company_name, system_name, restriction_type, active, changed_by || 'admin']);
+
+            // Insert command into system_control_commands for the EXE to pick up
+            await queryDB(`
+                INSERT INTO system_control_commands (system_name, company_name, command_type, parameters, status, created_at)
+                VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP)
+            `, [system_name, company_name, cmdType, JSON.stringify({})]);
+
+            return { success: true, message: `Restriction '${restriction_type}' ${active ? 'enabled' : 'disabled'} for ${system_name}` };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_system_restrictions(query) {
+        try {
+            const { company_name, system_name } = query;
+            if (!company_name) return { success: false, error: 'company_name required' };
+
+            let sql = `SELECT * FROM system_restrictions WHERE company_name = $1`;
+            let params = [company_name];
+
+            if (system_name) {
+                sql += ` AND system_name = $2`;
+                params.push(system_name);
+            }
+
+            sql += ` ORDER BY restriction_type`;
+
+            const rows = await queryDB(sql, params);
+            return { success: true, data: rows };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async toggle_full_restriction(query) {
+        try {
+            const { company_name, system_name, is_active, changed_by } = query;
+            if (!company_name || !system_name) {
+                return { success: false, error: 'company_name and system_name required' };
+            }
+
+            const active = is_active === 'true' || is_active === '1';
+            const restrictions = ['cmd', 'powershell', 'regedit', 'copy_paste', 'software_install', 'delete', 'ip_change', 'task_manager', 'control_panel'];
+
+            // Update all restrictions
+            for (const r of restrictions) {
+                await queryDB(`
+                    INSERT INTO system_restrictions (company_name, system_name, restriction_type, is_active, changed_by, changed_at)
+                    VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP)
+                    ON CONFLICT (company_name, system_name, restriction_type)
+                    DO UPDATE SET is_active = $4, changed_by = $5, changed_at = CURRENT_TIMESTAMP
+                `, [company_name, system_name, r, active, changed_by || 'admin']);
+            }
+
+            // Send the full restriction command
+            const cmdType = active ? 'full_system_restriction' : 'remove_full_restriction';
+            await queryDB(`
+                INSERT INTO system_control_commands (system_name, company_name, command_type, parameters, status, created_at)
+                VALUES ($1, $2, $3, $4, 'pending', CURRENT_TIMESTAMP)
+            `, [system_name, company_name, cmdType, JSON.stringify({})]);
+
+            return { success: true, message: `Full system restriction ${active ? 'applied' : 'removed'} for ${system_name}` };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    },
+
+    async get_blocked_apps(query) {
+        try {
+            const { company_name, system_name } = query;
+            if (!company_name) return { success: false, error: 'company_name required' };
+
+            let sql = `SELECT * FROM blocked_applications WHERE company_name = $1`;
+            let params = [company_name];
+
+            if (system_name) {
+                sql += ` AND system_name = $2`;
+                params.push(system_name);
+            }
+
+            sql += ` ORDER BY blocked_at DESC`;
+
+            const rows = await queryDB(sql, params);
+            return { success: true, data: rows };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    async get_online_systems(query) {
+        try {
+            const { company_name } = query;
+            if (!company_name) return { success: false, error: 'company_name required' };
+
+            // Get systems that sent heartbeat in last 2 minutes (online)
+            // Use machine_name as system_name (this is what EXE uses for command polling)
+            const rows = await queryDB(`
+                SELECT cs.machine_name as system_name, cs.ip_address, cs.last_heartbeat, cs.status,
+                       cs.employee_id, cs.display_name, cs.machine_id,
+                       COALESCE(cs.cpu_usage, 0) as cpu_usage, COALESCE(cs.ram_usage, 0) as ram_usage,
+                       sid.os_name, sid.os_version, sid.os_build, sid.processor_name, sid.processor_cores,
+                       sid.processor_logical, sid.processor_speed, sid.total_ram, sid.available_ram,
+                       sid.storage_info, sid.gpu_info, sid.network_info,
+                       sid.motherboard_manufacturer, sid.motherboard_product, sid.motherboard_serial,
+                       sid.bios_version, sid.memory_details,
+                       sid.os_install_date, sid.last_boot_time, sid.os_serial
+                FROM connected_systems cs
+                LEFT JOIN system_info_detailed sid ON cs.company_name = sid.company_name AND cs.machine_name = sid.system_name
+                WHERE cs.company_name = $1
+                ORDER BY cs.last_heartbeat DESC
+            `, [company_name]);
+
+            // Mark online/offline
+            const now = new Date();
+            rows.forEach(row => {
+                const lastBeat = new Date(row.last_heartbeat);
+                const diffMs = now - lastBeat;
+                row.is_online = diffMs < 120000; // 2 minutes
+                // Parse JSON fields
+                try { row.storage_info = JSON.parse(row.storage_info || '[]'); } catch(e) {}
+                try { row.gpu_info = JSON.parse(row.gpu_info || '[]'); } catch(e) {}
+            });
+
+            return { success: true, data: rows };
+        } catch (err) {
+            return { success: false, error: err.message, data: [] };
+        }
+    },
+
+    // ===== ADMIN USER MANAGEMENT =====
+
+    // Create new admin user for company
+    async create_admin_user(body) {
+        try {
+            const { company_name, username, password, full_name, email, phone, created_by } = body;
+
+            if (!company_name || !username || !password) {
+                return { success: false, error: 'Company name, username, and password are required' };
+            }
+
+            // Check if username already exists
+            const existing = await queryDB(
+                'SELECT id FROM company_admin_users WHERE username = $1',
+                [username]
+            );
+
+            if (existing.length > 0) {
+                return { success: false, error: 'Username already exists' };
+            }
+
+            await queryDB(
+                `INSERT INTO company_admin_users
+                (company_name, username, password, full_name, email, phone, created_by)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [company_name, username, password, full_name || '', email || '', phone || '', created_by || 'system']
+            );
+
+            return { success: true, message: 'Admin user created successfully' };
+        } catch (err) {
+            console.error('Create admin user error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Admin login
+    async admin_user_login(body) {
+        try {
+            const { username, password } = body;
+
+            if (!username || !password) {
+                return { success: false, error: 'Username and password are required' };
+            }
+
+            const rows = await queryDB(
+                `SELECT id, company_name, username, full_name, email, phone, last_login
+                FROM company_admin_users
+                WHERE username = $1 AND password = $2 AND is_active = TRUE`,
+                [username, password]
+            );
+
+            if (rows.length === 0) {
+                return { success: false, error: 'Invalid username or password' };
+            }
+
+            const user = rows[0];
+
+            // Update last login time
+            await queryDB(
+                'UPDATE company_admin_users SET last_login = NOW() WHERE id = $1',
+                [user.id]
+            );
+
+            return {
+                success: true,
+                user: {
+                    id: user.id,
+                    company_name: user.company_name,
+                    username: user.username,
+                    full_name: user.full_name || user.username,
+                    email: user.email || '',
+                    phone: user.phone || '',
+                    role: 'admin'
+                }
+            };
+        } catch (err) {
+            console.error('Admin login error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get all admin users for a company
+    async get_admin_users(query) {
+        try {
+            const { company_name } = query;
+
+            if (!company_name) {
+                return { success: false, error: 'Company name required' };
+            }
+
+            const rows = await queryDB(
+                `SELECT id, company_name, username, full_name, email, phone,
+                created_at, last_login, is_active, created_by
+                FROM company_admin_users
+                WHERE company_name = $1
+                ORDER BY created_at DESC`,
+                [company_name]
+            );
+
+            return { success: true, data: rows };
+        } catch (err) {
+            console.error('Get admin users error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Update admin user
+    async update_admin_user(body) {
+        try {
+            const { id, full_name, email, phone, password, is_active } = body;
+
+            if (!id) {
+                return { success: false, error: 'User ID required' };
+            }
+
+            let sql = 'UPDATE company_admin_users SET ';
+            let params = [];
+            let idx = 1;
+            let updates = [];
+
+            if (full_name !== undefined) { updates.push(`full_name = $${idx}`); params.push(full_name); idx++; }
+            if (email !== undefined) { updates.push(`email = $${idx}`); params.push(email); idx++; }
+            if (phone !== undefined) { updates.push(`phone = $${idx}`); params.push(phone); idx++; }
+            if (password !== undefined) { updates.push(`password = $${idx}`); params.push(password); idx++; }
+            if (is_active !== undefined) { updates.push(`is_active = $${idx}`); params.push(is_active); idx++; }
+
+            if (updates.length === 0) {
+                return { success: false, error: 'No fields to update' };
+            }
+
+            sql += updates.join(', ') + ` WHERE id = $${idx}`;
+            params.push(id);
+
+            await queryDB(sql, params);
+
+            return { success: true, message: 'Admin user updated successfully' };
+        } catch (err) {
+            console.error('Update admin user error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Delete admin user
+    async delete_admin_user(body) {
+        try {
+            const { id } = body;
+
+            if (!id) {
+                return { success: false, error: 'User ID required' };
+            }
+
+            await queryDB('DELETE FROM company_admin_users WHERE id = $1', [id]);
+
+            return { success: true, message: 'Admin user deleted successfully' };
+        } catch (err) {
+            console.error('Delete admin user error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // ===== WIZONE AI MEETING SYSTEM =====
+
+    // Create new meeting
+    async create_meeting(body) {
+        try {
+            const { company_name, meeting_name, meeting_description, created_by, created_by_name, max_participants, is_recording_enabled, _req } = body;
+
+            if (!company_name || !meeting_name || !created_by) {
+                return { success: false, error: 'Company name, meeting name, and creator required' };
+            }
+
+            // Generate unique meeting ID
+            const meeting_id = 'WIZ-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
+            // Get host from request or use default
+            const host = _req ? (_req.headers.host || 'localhost:8888') : 'localhost:8888';
+            const protocol = host.includes('localhost') ? 'http' : 'https';
+            const meeting_link = `${protocol}://${host}/meeting.html?id=${meeting_id}`;
+
+            await queryDB(
+                `INSERT INTO wizone_meetings
+                (meeting_id, company_name, meeting_name, meeting_description, created_by, created_by_name,
+                meeting_link, max_participants, is_recording_enabled)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+                [meeting_id, company_name, meeting_name, meeting_description || '', created_by,
+                created_by_name || created_by, meeting_link, max_participants || 100, is_recording_enabled !== false]
+            );
+
+            return {
+                success: true,
+                meeting_id: meeting_id,
+                meeting_link: meeting_link,
+                message: 'Meeting created successfully'
+            };
+        } catch (err) {
+            console.error('Create meeting error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get meeting details
+    async get_meeting(query) {
+        try {
+            const { meeting_id } = query;
+
+            if (!meeting_id) {
+                return { success: false, error: 'Meeting ID required' };
+            }
+
+            const rows = await queryDB(
+                `SELECT * FROM wizone_meetings WHERE meeting_id = $1`,
+                [meeting_id]
+            );
+
+            if (rows.length === 0) {
+                return { success: false, error: 'Meeting not found' };
+            }
+
+            // Get participants
+            const participants = await queryDB(
+                `SELECT * FROM meeting_participants
+                WHERE meeting_id = $1
+                ORDER BY joined_at DESC`,
+                [meeting_id]
+            );
+
+            return {
+                success: true,
+                meeting: rows[0],
+                participants: participants
+            };
+        } catch (err) {
+            console.error('Get meeting error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get all meetings for company
+    async get_company_meetings(query) {
+        try {
+            const { company_name, status } = query;
+
+            if (!company_name) {
+                return { success: false, error: 'Company name required' };
+            }
+
+            let sql = `SELECT m.*,
+                      (SELECT COUNT(*) FROM meeting_participants WHERE meeting_id = m.meeting_id AND is_online = TRUE) as active_participants
+                      FROM wizone_meetings m
+                      WHERE m.company_name = $1`;
+            let params = [company_name];
+
+            if (status) {
+                sql += ` AND m.status = $2`;
+                params.push(status);
+            }
+
+            sql += ` ORDER BY m.created_at DESC LIMIT 100`;
+
+            const rows = await queryDB(sql, params);
+
+            return { success: true, data: rows };
+        } catch (err) {
+            console.error('Get company meetings error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Join meeting
+    async join_meeting(body) {
+        try {
+            const { meeting_id, company_name, participant_username, participant_name } = body;
+
+            if (!meeting_id || !participant_username) {
+                return { success: false, error: 'Meeting ID and participant username required' };
+            }
+
+            // Check if meeting exists and is active
+            const meeting = await queryDB(
+                `SELECT * FROM wizone_meetings WHERE meeting_id = $1 AND status = 'active'`,
+                [meeting_id]
+            );
+
+            if (meeting.length === 0) {
+                return { success: false, error: 'Meeting not found or not active' };
+            }
+
+            // Check if already joined
+            const existing = await queryDB(
+                `SELECT id FROM meeting_participants WHERE meeting_id = $1 AND participant_username = $2`,
+                [meeting_id, participant_username]
+            );
+
+            if (existing.length > 0) {
+                // Update to online
+                await queryDB(
+                    `UPDATE meeting_participants SET is_online = TRUE, joined_at = NOW() WHERE id = $1`,
+                    [existing[0].id]
+                );
+            } else {
+                // Insert new participant
+                await queryDB(
+                    `INSERT INTO meeting_participants (meeting_id, company_name, participant_username, participant_name)
+                    VALUES ($1, $2, $3, $4)`,
+                    [meeting_id, company_name || meeting[0].company_name, participant_username, participant_name || participant_username]
+                );
+            }
+
+            return { success: true, message: 'Joined meeting successfully', meeting: meeting[0] };
+        } catch (err) {
+            console.error('Join meeting error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Leave meeting
+    async leave_meeting(body) {
+        try {
+            const { meeting_id, participant_username } = body;
+
+            if (!meeting_id || !participant_username) {
+                return { success: false, error: 'Meeting ID and participant username required' };
+            }
+
+            await queryDB(
+                `UPDATE meeting_participants
+                SET is_online = FALSE, left_at = NOW()
+                WHERE meeting_id = $1 AND participant_username = $2`,
+                [meeting_id, participant_username]
+            );
+
+            return { success: true, message: 'Left meeting successfully' };
+        } catch (err) {
+            console.error('Leave meeting error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // End meeting
+    async end_meeting(body) {
+        try {
+            const { meeting_id } = body;
+
+            if (!meeting_id) {
+                return { success: false, error: 'Meeting ID required' };
+            }
+
+            await queryDB(
+                `UPDATE wizone_meetings SET status = 'ended', end_time = NOW() WHERE meeting_id = $1`,
+                [meeting_id]
+            );
+
+            // Mark all participants as offline
+            await queryDB(
+                `UPDATE meeting_participants SET is_online = FALSE, left_at = NOW() WHERE meeting_id = $1`,
+                [meeting_id]
+            );
+
+            return { success: true, message: 'Meeting ended successfully' };
+        } catch (err) {
+            console.error('End meeting error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Start recording
+    async start_recording(body) {
+        try {
+            const { meeting_id } = body;
+
+            if (!meeting_id) {
+                return { success: false, error: 'Meeting ID required' };
+            }
+
+            await queryDB(
+                `UPDATE wizone_meetings SET recording_status = 'recording' WHERE meeting_id = $1`,
+                [meeting_id]
+            );
+
+            return { success: true, message: 'Recording started' };
+        } catch (err) {
+            console.error('Start recording error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Stop recording
+    async stop_recording(body) {
+        try {
+            const { meeting_id, recording_file_path, recording_size_mb, recording_duration_minutes } = body;
+
+            if (!meeting_id) {
+                return { success: false, error: 'Meeting ID required' };
+            }
+
+            await queryDB(
+                `UPDATE wizone_meetings
+                SET recording_status = 'completed', recording_file_path = $2, recording_size_mb = $3
+                WHERE meeting_id = $1`,
+                [meeting_id, recording_file_path || '', recording_size_mb || 0]
+            );
+
+            // Save to recordings table
+            const meeting = await queryDB('SELECT * FROM wizone_meetings WHERE meeting_id = $1', [meeting_id]);
+            if (meeting.length > 0) {
+                await queryDB(
+                    `INSERT INTO meeting_recordings
+                    (meeting_id, company_name, recording_name, recording_file_path, recording_size_mb,
+                    recording_duration_minutes, started_at, ended_at)
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+                    [meeting_id, meeting[0].company_name, meeting[0].meeting_name,
+                    recording_file_path || '', recording_size_mb || 0, recording_duration_minutes || 0,
+                    meeting[0].start_time]
+                );
+            }
+
+            return { success: true, message: 'Recording stopped and saved' };
+        } catch (err) {
+            console.error('Stop recording error:', err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    // Get meeting recordings
+    async get_meeting_recordings(query) {
+        try {
+            const { company_name, meeting_id } = query;
+
+            if (!company_name) {
+                return { success: false, error: 'Company name required' };
+            }
+
+            let sql = `SELECT * FROM meeting_recordings WHERE company_name = $1`;
+            let params = [company_name];
+
+            if (meeting_id) {
+                sql += ` AND meeting_id = $2`;
+                params.push(meeting_id);
+            }
+
+            sql += ` ORDER BY created_at DESC LIMIT 100`;
+
+            const rows = await queryDB(sql, params);
+
+            return { success: true, data: rows };
+        } catch (err) {
+            console.error('Get recordings error:', err.message);
+            return { success: false, error: err.message };
+        }
     }
 };
 
@@ -1957,6 +3703,8 @@ const server = http.createServer(async (req, res) => {
         try {
             if (apiHandlers[action]) {
                 const mergedParams = { ...query, ...body };
+                // Add request object for handlers that need host info
+                mergedParams._req = req;
                 const result = await apiHandlers[action](mergedParams);
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify(result));
@@ -1993,4 +3741,10 @@ server.listen(PORT, '0.0.0.0', () => {
     console.log('Data Tables:');
     console.log('  - punch_logs (attendance records)');
     console.log('');
+    
+    // Initialize database tables
+    initializeDatabaseTables().catch(err => {
+        console.error('Failed to initialize database:', err);
+    });
 });
+

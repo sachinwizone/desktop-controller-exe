@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 500px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success {
+            background: #d1fae5;
+            color: #059669;
+        }
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Admin Login</h1>
+
+    <div>
+        <label>Username:</label>
+        <input type="text" id="username" value="admin" placeholder="Enter username">
+    </div>
+
+    <div>
+        <label>Password:</label>
+        <input type="password" id="password" value="admin123" placeholder="Enter password">
+    </div>
+
+    <button onclick="testLogin()">Test Login</button>
+
+    <div id="result"></div>
+
+    <script>
+        async function testLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+
+            try {
+                resultDiv.innerHTML = 'Testing login...';
+                resultDiv.className = 'result';
+
+                const response = await fetch('/api.php?action=login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = 'SUCCESS!\n\n' + JSON.stringify(data, null, 2);
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = 'FAILED!\n\n' + JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'ERROR: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

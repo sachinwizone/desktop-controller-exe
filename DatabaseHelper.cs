@@ -30,11 +30,11 @@ namespace DesktopController
     
     public class DatabaseHelper
     {
-        private const string Host = "72.61.170.243";
+        private const string Host = "72.61.235.203";
         private const int Port = 9095;
-        private const string Database = "controller_application";
-        private const string Username = "appuser";
-        private const string Password = "jksdj$&^&*YUG*^%&THJHIO4546GHG&j";
+        private const string Database = "controller";
+        private const string Username = "controller_dbuser";
+        private const string Password = "hwrw*&^hdg2gsGDGJHAU&838373h";
         
         // Registry key for storing activation
         private const string RegistryPath = @"SOFTWARE\DesktopController";

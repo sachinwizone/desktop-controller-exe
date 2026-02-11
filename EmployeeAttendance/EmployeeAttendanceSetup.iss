@@ -31,10 +31,11 @@ ShowComponentSizes=no
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Files]
-Source: "..\publish_final\EmployeeAttendance.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "publish_final\EmployeeAttendance.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "publish_final\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "publish_final\*.config"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "logo ai.png"; DestDir: "{app}"; DestName: "logo.png"; Flags: ignoreversion
 Source: "logo_3d_animation.png"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\publish_final\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 
 [Icons]
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -62,15 +63,36 @@ ButtonFinish=Launch
 function InitializeUninstall: Boolean;
 var
   ResultCode: Integer;
+  TempFile: String;
+  Lines: TArrayOfString;
+  ProcessFound: Boolean;
 begin
   Result := True;
-  if Exec('tasklist', '/FI "IMAGENAME eq EmployeeAttendance.exe" /FO CSV /NH', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
+  ProcessFound := False;
+
+  // Kill the process forcefully before uninstall
+  Exec('taskkill', '/F /IM EmployeeAttendance.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  // Wait a moment for process to terminate
+  Sleep(1000);
+
+  // Double check if still running
+  TempFile := ExpandConstant('{tmp}\tasklist.txt');
+  if Exec('cmd.exe', '/c tasklist /FI "IMAGENAME eq EmployeeAttendance.exe" > "' + TempFile + '"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode) then
   begin
-    if ResultCode = 0 then
+    if LoadStringsFromFile(TempFile, Lines) then
     begin
-      MsgBox('Employee Attendance is currently running. Please close it first.', mbError, MB_OK);
-      Result := False;
+      if GetArrayLength(Lines) > 3 then
+        ProcessFound := True;
     end;
+    DeleteFile(TempFile);
+  end;
+
+  // If still running after force kill, show error
+  if ProcessFound then
+  begin
+    MsgBox('Unable to stop Employee Attendance. Please restart your computer and try again.', mbError, MB_OK);
+    Result := False;
   end;
 end;
 
@@ -161,7 +183,12 @@ var
   ResultCode: Integer;
 begin
   Result := True;
-  Exec('taskkill', '/f /im EmployeeAttendance.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  // Force kill any running instance before installation
+  Exec('taskkill', '/F /IM EmployeeAttendance.exe', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  // Wait for process to fully terminate
+  Sleep(1000);
 end;
 
 procedure CurPageChanged(CurPageID: Integer);

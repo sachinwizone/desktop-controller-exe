@@ -68,11 +68,11 @@ namespace EmployeeAttendance
     public static class DatabaseHelper
     {
         // Database connection settings
-        private const string Host = "72.61.170.243";
+        private const string Host = "72.61.235.203";
         private const int Port = 9095;
-        private const string Database = "controller_application";
-        private const string Username = "appuser";
-        private const string Password = "jksdj$&^&*YUG*^%&THJHIO4546GHG&j";
+        private const string Database = "controller";
+        private const string Username = "controller_dbuser";
+        private const string Password = "hwrw*&^hdg2gsGDGJHAU&838373h";
         
         // Local storage for activation
         private static readonly string AppDataPath = Path.Combine(
@@ -227,21 +227,48 @@ namespace EmployeeAttendance
             {
                 string machineId = GetMachineId();
                 string ipAddress = GetLocalIPAddress();
-                
+
+                // Get live CPU and RAM usage
+                float cpuUsage = 0;
+                float ramUsage = 0;
+                try
+                {
+                    var cpuInfo = new System.Diagnostics.PerformanceCounter("Processor", "% Processor Time", "_Total");
+                    cpuInfo.NextValue(); // First call always returns 0
+                    System.Threading.Thread.Sleep(200);
+                    cpuUsage = cpuInfo.NextValue();
+                    cpuInfo.Dispose();
+                }
+                catch { }
+                try
+                {
+                    var memInfo = new Microsoft.VisualBasic.Devices.ComputerInfo();
+                    ulong totalMem = memInfo.TotalPhysicalMemory;
+                    ulong availMem = memInfo.AvailablePhysicalMemory;
+                    if (totalMem > 0) ramUsage = ((float)(totalMem - availMem) / totalMem) * 100f;
+                }
+                catch { }
+
                 using (var connection = new NpgsqlConnection(GetConnectionString()))
                 {
                     connection.Open();
-                    
+
+                    // Ensure columns exist
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE connected_systems ADD COLUMN IF NOT EXISTS cpu_usage REAL DEFAULT 0", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE connected_systems ADD COLUMN IF NOT EXISTS ram_usage REAL DEFAULT 0", connection)) c.ExecuteNonQuery(); } catch {}
+
                     string sql = @"
-                        UPDATE connected_systems 
-                        SET last_heartbeat = NOW(), 
-                            is_online = true, 
+                        UPDATE connected_systems
+                        SET last_heartbeat = NOW(),
+                            is_online = true,
                             status = @status,
-                            ip_address = @ip
-                        WHERE company_name = @company 
-                          AND employee_id = @empId 
+                            ip_address = @ip,
+                            cpu_usage = @cpu,
+                            ram_usage = @ram
+                        WHERE company_name = @company
+                          AND employee_id = @empId
                           AND machine_id = @machineId";
-                    
+
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@company", companyName);
@@ -249,7 +276,9 @@ namespace EmployeeAttendance
                         cmd.Parameters.AddWithValue("@machineId", machineId);
                         cmd.Parameters.AddWithValue("@status", status);
                         cmd.Parameters.AddWithValue("@ip", ipAddress);
-                        
+                        cmd.Parameters.AddWithValue("@cpu", cpuUsage);
+                        cmd.Parameters.AddWithValue("@ram", ramUsage);
+
                         cmd.ExecuteNonQuery();
                     }
                 }
@@ -1313,6 +1342,59 @@ namespace EmployeeAttendance
         }
         
         /// <summary>
+        /// Insert USB file transfer log
+        /// </summary>
+        public static bool InsertUSBFileLog(string activationKey, string companyName, string username, string displayName,
+            string fileName, string filePath, long fileSize, string fileExtension, string transferType,
+            string sourcePath, string destinationPath, string driveLetter, string driveLabel)
+        {
+            try
+            {
+                using (var connection = new NpgsqlConnection(GetConnectionString()))
+                {
+                    connection.Open();
+                    string sql = @"
+                        INSERT INTO usb_file_transfer_logs (activation_key, company_name, system_name, ip_address, username, display_user_name,
+                            machine_id, file_name, file_path, file_size, file_extension, transfer_type,
+                            source_path, destination_path, drive_letter, drive_label, transfer_time)
+                        VALUES (@activation_key, @company_name, @system_name, @ip_address, @username, @display_user_name,
+                            @machine_id, @file_name, @file_path, @file_size, @file_extension, @transfer_type,
+                            @source_path, @destination_path, @drive_letter, @drive_label, @transfer_time)";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@activation_key", activationKey ?? "");
+                        cmd.Parameters.AddWithValue("@company_name", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system_name", Environment.MachineName);
+                        cmd.Parameters.AddWithValue("@ip_address", GetLocalIPAddress());
+                        cmd.Parameters.AddWithValue("@username", username ?? "");
+                        cmd.Parameters.AddWithValue("@display_user_name", displayName ?? "");
+                        cmd.Parameters.AddWithValue("@machine_id", GetMachineId());
+                        cmd.Parameters.AddWithValue("@file_name", fileName ?? "");
+                        cmd.Parameters.AddWithValue("@file_path", filePath ?? "");
+                        cmd.Parameters.AddWithValue("@file_size", fileSize);
+                        cmd.Parameters.AddWithValue("@file_extension", fileExtension ?? "");
+                        cmd.Parameters.AddWithValue("@transfer_type", transferType ?? "COPY");
+                        cmd.Parameters.AddWithValue("@source_path", sourcePath ?? "");
+                        cmd.Parameters.AddWithValue("@destination_path", destinationPath ?? "");
+                        cmd.Parameters.AddWithValue("@drive_letter", driveLetter ?? "");
+                        cmd.Parameters.AddWithValue("@drive_label", driveLabel ?? "");
+                        // Use IST timezone
+                        var istOffset = TimeSpan.FromHours(5.5);
+                        var istNow = DateTimeOffset.UtcNow.ToOffset(istOffset).DateTime;
+                        cmd.Parameters.AddWithValue("@transfer_time", istNow);
+                        return cmd.ExecuteNonQuery() > 0;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogError("InsertUSBFileLog", ex.Message);
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Insert inactivity log
         /// </summary>
         public static bool InsertInactivityLog(string activationKey, string companyName, string username, string displayName,
@@ -1617,8 +1699,314 @@ namespace EmployeeAttendance
                 return false;
             }
         }
+
+        /// <summary>
+        /// Store system information for a user
+        /// </summary>
+        public static bool SaveSystemInfo(string activationKey, string companyName, string systemName, string userName, 
+            string osVersion, string processorInfo, string totalMemory, string installedApps, string systemSerialNumber, string trackingId = "")
+        {
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                
+                string sql = @"
+                    CREATE TABLE IF NOT EXISTS system_info (
+                        id SERIAL PRIMARY KEY,
+                        activation_key VARCHAR(255),
+                        company_name VARCHAR(255),
+                        system_name VARCHAR(255),
+                        user_name VARCHAR(255),
+                        tracking_id VARCHAR(50),
+                        os_version VARCHAR(255),
+                        processor_info VARCHAR(255),
+                        total_memory VARCHAR(100),
+                        installed_apps TEXT,
+                        system_serial_number VARCHAR(255),
+                        captured_at TIMESTAMP DEFAULT NOW(),
+                        UNIQUE(activation_key, system_name, user_name, DATE(captured_at))
+                    );
+                    
+                    INSERT INTO system_info (activation_key, company_name, system_name, user_name, tracking_id, os_version, 
+                        processor_info, total_memory, installed_apps, system_serial_number)
+                    VALUES (@activation_key, @company_name, @system_name, @user_name, @tracking_id, @os_version, 
+                        @processor_info, @total_memory, @installed_apps, @system_serial_number)
+                    ON CONFLICT (activation_key, system_name, user_name, DATE(captured_at))
+                    DO UPDATE SET 
+                        tracking_id = EXCLUDED.tracking_id,
+                        os_version = EXCLUDED.os_version,
+                        installed_apps = EXCLUDED.installed_apps,
+                        captured_at = NOW()";
+
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@activation_key", activationKey ?? "");
+                        cmd.Parameters.AddWithValue("@company_name", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system_name", systemName ?? "");
+                        cmd.Parameters.AddWithValue("@user_name", userName ?? "");
+                        cmd.Parameters.AddWithValue("@tracking_id", trackingId ?? "");
+                        cmd.Parameters.AddWithValue("@os_version", osVersion ?? "");
+                        cmd.Parameters.AddWithValue("@processor_info", processorInfo ?? "");
+                        cmd.Parameters.AddWithValue("@total_memory", totalMemory ?? "");
+                        cmd.Parameters.AddWithValue("@installed_apps", installedApps ?? "");
+                        cmd.Parameters.AddWithValue("@system_serial_number", systemSerialNumber ?? "");
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[System Info Error] SaveSystemInfo: {ex.Message}");
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Get system information for all users in a company
+        /// </summary>
+        public static List<(string userName, string systemName, string osVersion, string processorInfo, string totalMemory, 
+            string installedApps, DateTime capturedAt)> GetCompanySystemInfo(string companyName)
+        {
+            var results = new List<(string, string, string, string, string, string, DateTime)>();
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                
+                string sql = @"
+                    SELECT user_name, system_name, os_version, processor_info, total_memory, installed_apps, captured_at
+                    FROM system_info
+                    WHERE company_name = @company_name
+                    ORDER BY captured_at DESC
+                    LIMIT 1000";
+
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company_name", companyName ?? "");
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                results.Add((
+                                    reader[0]?.ToString() ?? "",
+                                    reader[1]?.ToString() ?? "",
+                                    reader[2]?.ToString() ?? "",
+                                    reader[3]?.ToString() ?? "",
+                                    reader[4]?.ToString() ?? "",
+                                    reader[5]?.ToString() ?? "",
+                                    (DateTime)reader[6]
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[System Info Error] GetCompanySystemInfo: {ex.Message}");
+            }
+            return results;
+        }
+
+        /// <summary>
+        /// Get system info for a specific user
+        /// </summary>
+        public static (string osVersion, string processorInfo, string totalMemory, string installedApps, DateTime capturedAt)? 
+            GetUserSystemInfo(string companyName, string userName)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                
+                string sql = @"
+                    SELECT os_version, processor_info, total_memory, installed_apps, captured_at
+                    FROM system_info
+                    WHERE company_name = @company_name AND user_name = @user_name
+                    ORDER BY captured_at DESC
+                    LIMIT 1";
+
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company_name", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@user_name", userName ?? "");
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                return (
+                                    reader[0]?.ToString() ?? "",
+                                    reader[1]?.ToString() ?? "",
+                                    reader[2]?.ToString() ?? "",
+                                    reader[3]?.ToString() ?? "",
+                                    (DateTime)reader[4]
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[System Info Error] GetUserSystemInfo: {ex.Message}");
+            }
+            return null;
+        }
+
+        // ==================== SYSTEM CONTROL COMMANDS ====================
+        public static List<(int id, string commandType, string parametersJson)> GetPendingCommands(string systemName, string companyName)
+        {
+            var commands = new List<(int id, string commandType, string parametersJson)>();
+            try
+            {
+                string connStr = "Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=10;CommandTimeout=15;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    string createSql = @"CREATE TABLE IF NOT EXISTS system_control_commands (
+                        id SERIAL PRIMARY KEY, company_name VARCHAR(255), system_name VARCHAR(255),
+                        user_name VARCHAR(255), command_type VARCHAR(100), parameters JSONB DEFAULT '{}',
+                        status VARCHAR(50) DEFAULT 'pending', result TEXT, created_by VARCHAR(255),
+                        created_at TIMESTAMP DEFAULT NOW(), executed_at TIMESTAMP)";
+                    using (var cmd = new NpgsqlCommand(createSql, connection)) cmd.ExecuteNonQuery();
+                    string sql = @"SELECT id, command_type, COALESCE(parameters::text, '{}') FROM system_control_commands
+                                   WHERE system_name = @system AND company_name = @company AND status = 'pending' ORDER BY created_at ASC";
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        using (var reader = cmd.ExecuteReader())
+                        { while (reader.Read()) { commands.Add((reader.GetInt32(0), reader.GetString(1), reader.GetString(2))); } }
+                    }
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SystemControl DB] GetPendingCommands error: {ex.Message}"); }
+            return commands;
+        }
+
+        public static void UpdateCommandStatus(int commandId, string status, string result)
+        {
+            try
+            {
+                string connStr = "Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=10;CommandTimeout=15;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand("UPDATE system_control_commands SET status = @status, result = @result, executed_at = NOW() WHERE id = @id", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@status", status ?? "completed");
+                        cmd.Parameters.AddWithValue("@result", result ?? "");
+                        cmd.Parameters.AddWithValue("@id", commandId);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SystemControl DB] UpdateCommandStatus error: {ex.Message}"); }
+        }
+
+        public static bool SaveSystemInfoDetailed(string companyName, string userName, string systemName, Dictionary<string, object> systemData)
+        {
+            try
+            {
+                string connStr = "Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=15;CommandTimeout=30;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    string createSql = @"CREATE TABLE IF NOT EXISTS system_info_detailed (id SERIAL PRIMARY KEY, company_name VARCHAR(255), user_name VARCHAR(255), system_name VARCHAR(255), machine_id VARCHAR(255),
+                        os_name TEXT, os_version TEXT, os_build TEXT, os_install_date TEXT, os_serial TEXT, last_boot_time TEXT,
+                        processor_name TEXT, processor_cores TEXT, processor_logical TEXT, processor_speed TEXT, processor_id TEXT,
+                        total_ram TEXT, available_ram TEXT, memory_details TEXT, storage_info TEXT, network_info TEXT,
+                        motherboard_manufacturer TEXT, motherboard_product TEXT, motherboard_serial TEXT,
+                        bios_manufacturer TEXT, bios_version TEXT, bios_date TEXT, gpu_info TEXT, system_architecture TEXT, timezone TEXT,
+                        raw_data JSONB, last_updated TIMESTAMP DEFAULT NOW(), UNIQUE(company_name, user_name, system_name))";
+                    using (var cmd = new NpgsqlCommand(createSql, connection)) cmd.ExecuteNonQuery();
+                    string machineId = DatabaseHelper.GetMachineId();
+                    string jsonData = System.Text.Json.JsonSerializer.Serialize(systemData);
+                    string GetVal(string key) { if (systemData.ContainsKey(key)) { var val = systemData[key]; if (val is System.Text.Json.JsonElement je) return je.ToString(); return val?.ToString() ?? ""; } return ""; }
+                    string upsertSql = @"INSERT INTO system_info_detailed (company_name, user_name, system_name, machine_id, os_name, os_version, os_build, os_install_date, os_serial, last_boot_time, processor_name, processor_cores, processor_logical, processor_speed, processor_id, total_ram, available_ram, memory_details, storage_info, network_info, motherboard_manufacturer, motherboard_product, motherboard_serial, bios_manufacturer, bios_version, bios_date, gpu_info, system_architecture, timezone, raw_data, last_updated)
+                        VALUES (@company, @user, @system, @machineId, @osName, @osVer, @osBuild, @osInstall, @osSerial, @lastBoot, @procName, @procCores, @procLogical, @procSpeed, @procId, @totalRam, @availRam, @memDetails, @storageInfo, @networkInfo, @mbMfr, @mbProduct, @mbSerial, @biosMfr, @biosVer, @biosDate, @gpuInfo, @arch, @tz, @rawData::jsonb, NOW())
+                        ON CONFLICT (company_name, user_name, system_name) DO UPDATE SET machine_id=@machineId, os_name=@osName, os_version=@osVer, os_build=@osBuild, os_install_date=@osInstall, os_serial=@osSerial, last_boot_time=@lastBoot, processor_name=@procName, processor_cores=@procCores, processor_logical=@procLogical, processor_speed=@procSpeed, processor_id=@procId, total_ram=@totalRam, available_ram=@availRam, memory_details=@memDetails, storage_info=@storageInfo, network_info=@networkInfo, motherboard_manufacturer=@mbMfr, motherboard_product=@mbProduct, motherboard_serial=@mbSerial, bios_manufacturer=@biosMfr, bios_version=@biosVer, bios_date=@biosDate, gpu_info=@gpuInfo, system_architecture=@arch, timezone=@tz, raw_data=@rawData::jsonb, last_updated=NOW()";
+                    using (var cmd = new NpgsqlCommand(upsertSql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? ""); cmd.Parameters.AddWithValue("@user", userName ?? ""); cmd.Parameters.AddWithValue("@system", systemName ?? ""); cmd.Parameters.AddWithValue("@machineId", machineId ?? "");
+                        cmd.Parameters.AddWithValue("@osName", GetVal("os_name")); cmd.Parameters.AddWithValue("@osVer", GetVal("os_version")); cmd.Parameters.AddWithValue("@osBuild", GetVal("os_build")); cmd.Parameters.AddWithValue("@osInstall", GetVal("os_install_date")); cmd.Parameters.AddWithValue("@osSerial", GetVal("os_serial_number")); cmd.Parameters.AddWithValue("@lastBoot", GetVal("last_boot_time"));
+                        cmd.Parameters.AddWithValue("@procName", GetVal("processor_name")); cmd.Parameters.AddWithValue("@procCores", GetVal("processor_cores")); cmd.Parameters.AddWithValue("@procLogical", GetVal("processor_logical")); cmd.Parameters.AddWithValue("@procSpeed", GetVal("processor_speed")); cmd.Parameters.AddWithValue("@procId", GetVal("processor_id"));
+                        cmd.Parameters.AddWithValue("@totalRam", GetVal("total_ram")); cmd.Parameters.AddWithValue("@availRam", GetVal("available_ram")); cmd.Parameters.AddWithValue("@memDetails", GetVal("memory_details")); cmd.Parameters.AddWithValue("@storageInfo", GetVal("storage_info")); cmd.Parameters.AddWithValue("@networkInfo", GetVal("network_info"));
+                        cmd.Parameters.AddWithValue("@mbMfr", GetVal("motherboard_manufacturer")); cmd.Parameters.AddWithValue("@mbProduct", GetVal("motherboard_product")); cmd.Parameters.AddWithValue("@mbSerial", GetVal("motherboard_serial"));
+                        cmd.Parameters.AddWithValue("@biosMfr", GetVal("bios_manufacturer")); cmd.Parameters.AddWithValue("@biosVer", GetVal("bios_version")); cmd.Parameters.AddWithValue("@biosDate", GetVal("bios_release_date"));
+                        cmd.Parameters.AddWithValue("@gpuInfo", GetVal("gpu_info")); cmd.Parameters.AddWithValue("@arch", GetVal("system_architecture")); cmd.Parameters.AddWithValue("@tz", GetVal("timezone")); cmd.Parameters.AddWithValue("@rawData", jsonData);
+                        cmd.ExecuteNonQuery();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[SystemInfo] SaveSystemInfoDetailed error: {ex.Message}"); return false; }
+        }
+
+        public static bool SyncInstalledAppsDetailed(string companyName, string userName, string systemName, string machineId, List<InstalledApp> apps)
+        {
+            try
+            {
+                string connStr = "Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=15;CommandTimeout=30;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand(@"CREATE TABLE IF NOT EXISTS installed_apps_detailed (id SERIAL PRIMARY KEY, company_name VARCHAR(255), user_name VARCHAR(255), system_name VARCHAR(255), machine_id VARCHAR(255), app_name VARCHAR(500), app_version VARCHAR(255), app_publisher VARCHAR(255), install_date VARCHAR(100), install_location TEXT, uninstall_string TEXT, app_size VARCHAR(100), last_synced TIMESTAMP DEFAULT NOW(), UNIQUE(company_name, system_name, app_name))", connection)) cmd.ExecuteNonQuery();
+                    using (var cmd = new NpgsqlCommand("DELETE FROM installed_apps_detailed WHERE company_name = @company AND system_name = @system", connection)) { cmd.Parameters.AddWithValue("@company", companyName ?? ""); cmd.Parameters.AddWithValue("@system", systemName ?? ""); cmd.ExecuteNonQuery(); }
+                    foreach (var app in apps)
+                    {
+                        using (var cmd = new NpgsqlCommand(@"INSERT INTO installed_apps_detailed (company_name, user_name, system_name, machine_id, app_name, app_version, app_publisher, install_date, install_location, uninstall_string, app_size) VALUES (@company, @user, @system, @machineId, @name, @version, @publisher, @installDate, @installLoc, @uninstall, @size) ON CONFLICT (company_name, system_name, app_name) DO UPDATE SET app_version=@version, app_publisher=@publisher, install_date=@installDate, install_location=@installLoc, uninstall_string=@uninstall, app_size=@size, last_synced=NOW()", connection))
+                        {
+                            cmd.Parameters.AddWithValue("@company", companyName ?? ""); cmd.Parameters.AddWithValue("@user", userName ?? ""); cmd.Parameters.AddWithValue("@system", systemName ?? ""); cmd.Parameters.AddWithValue("@machineId", machineId ?? "");
+                            cmd.Parameters.AddWithValue("@name", app.Name ?? ""); cmd.Parameters.AddWithValue("@version", app.Version ?? ""); cmd.Parameters.AddWithValue("@publisher", app.Publisher ?? ""); cmd.Parameters.AddWithValue("@installDate", app.InstallDate ?? ""); cmd.Parameters.AddWithValue("@installLoc", app.InstallLocation ?? ""); cmd.Parameters.AddWithValue("@uninstall", app.UninstallString ?? ""); cmd.Parameters.AddWithValue("@size", app.Size ?? "");
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[InstalledApps] SyncInstalledAppsDetailed error: {ex.Message}"); return false; }
+        }
+
+        public static bool SaveFileActivityLog(string companyName, string userName, string systemName, string machineId, string activityType, string fileName, string oldFileName, string newFileName, string filePath, string emailDomain, string emailRecipient, string details, string emailSender = "", string emailSubject = "", long fileSize = 0)
+        {
+            try
+            {
+                string connStr = "Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=10;CommandTimeout=15;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+                    using (var cmd = new NpgsqlCommand(@"CREATE TABLE IF NOT EXISTS file_activity_logs (id SERIAL PRIMARY KEY, company_name VARCHAR(255), user_name VARCHAR(255), system_name VARCHAR(255), machine_id VARCHAR(255), activity_type VARCHAR(100), file_name VARCHAR(1000), old_file_name VARCHAR(1000), new_file_name VARCHAR(1000), file_path TEXT, email_domain VARCHAR(500), email_sender VARCHAR(500), email_recipient VARCHAR(500), email_subject VARCHAR(1000), details TEXT, file_size BIGINT DEFAULT 0, log_timestamp TIMESTAMP DEFAULT NOW(), created_at TIMESTAMP DEFAULT NOW())", connection)) cmd.ExecuteNonQuery();
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS machine_id VARCHAR(255)", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS new_file_name VARCHAR(1000)", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_domain VARCHAR(500)", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_sender VARCHAR(500)", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS email_subject VARCHAR(1000)", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS file_size BIGINT DEFAULT 0", connection)) c.ExecuteNonQuery(); } catch {}
+                    try { using (var c = new NpgsqlCommand("ALTER TABLE file_activity_logs ADD COLUMN IF NOT EXISTS details TEXT", connection)) c.ExecuteNonQuery(); } catch {}
+                    using (var cmd = new NpgsqlCommand(@"INSERT INTO file_activity_logs (company_name, user_name, system_name, machine_id, activity_type, file_name, old_file_name, new_file_name, file_path, email_domain, email_sender, email_recipient, email_subject, details, file_size) VALUES (@company, @user, @system, @machineId, @actType, @fileName, @oldName, @newName, @filePath, @emailDomain, @emailSender, @emailRecipient, @emailSubject, @details, @fileSize)", connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? ""); cmd.Parameters.AddWithValue("@user", userName ?? ""); cmd.Parameters.AddWithValue("@system", systemName ?? ""); cmd.Parameters.AddWithValue("@machineId", machineId ?? "");
+                        cmd.Parameters.AddWithValue("@actType", activityType ?? ""); cmd.Parameters.AddWithValue("@fileName", fileName ?? ""); cmd.Parameters.AddWithValue("@oldName", oldFileName ?? ""); cmd.Parameters.AddWithValue("@newName", newFileName ?? "");
+                        cmd.Parameters.AddWithValue("@filePath", filePath ?? ""); cmd.Parameters.AddWithValue("@emailDomain", emailDomain ?? ""); cmd.Parameters.AddWithValue("@emailSender", emailSender ?? ""); cmd.Parameters.AddWithValue("@emailRecipient", emailRecipient ?? "");
+                        cmd.Parameters.AddWithValue("@emailSubject", emailSubject ?? ""); cmd.Parameters.AddWithValue("@details", details ?? ""); cmd.Parameters.AddWithValue("@fileSize", fileSize);
+                        cmd.ExecuteNonQuery();
+                    }
+                    return true;
+                }
+            }
+            catch (Exception ex) { System.Diagnostics.Debug.WriteLine($"[FileActivity] SaveFileActivityLog error: {ex.Message}"); return false; }
+        }
     }
-    
+
     public class ActivityItem
     {
         public DateTime Time { get; set; }
@@ -1746,7 +2134,7 @@ namespace EmployeeAttendance
         {
             try
             {
-                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
                 using (var connection = new NpgsqlConnection(connStr))
                 {
                     connection.Open();
@@ -1796,7 +2184,7 @@ namespace EmployeeAttendance
             var messages = new List<(string, string, DateTime)>();
             try
             {
-                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
                 using (var connection = new NpgsqlConnection(connStr))
                 {
                     connection.Open();
@@ -1843,17 +2231,17 @@ namespace EmployeeAttendance
         {
             try
             {
-                string connStr = $"Host=72.61.170.243;Port=9095;Database=controller_application;Username=appuser;Password=jksdj$&^&*YUG*^%&THJHIO4546GHG&j;Timeout=30;CommandTimeout=60;";
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
                 using (var connection = new NpgsqlConnection(connStr))
                 {
                     connection.Open();
 
                     // Count messages from this sender that might not have been seen
-                    string sql = @"SELECT COUNT(*) FROM chat_messages 
-                        WHERE recipient = @recipient 
-                        AND sender = @sender 
+                    string sql = @"SELECT COUNT(*) FROM chat_messages
+                        WHERE recipient = @recipient
+                        AND sender = @sender
                         AND company_name = @company";
-                    
+
                     using (var cmd = new NpgsqlCommand(sql, connection))
                     {
                         cmd.Parameters.AddWithValue("@recipient", recipient ?? "");
@@ -1871,5 +2259,227 @@ namespace EmployeeAttendance
                 return 0;
             }
         }
+
+        // ==================== BLOCKED APPLICATIONS DB METHODS ====================
+
+        /// <summary>
+        /// Save a blocked application to database for tracking
+        /// </summary>
+        public static void SaveBlockedApp(string companyName, string systemName, string appName, string appPath, string exeName)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    // Ensure table exists
+                    string createTable = @"CREATE TABLE IF NOT EXISTS blocked_applications (
+                        id SERIAL PRIMARY KEY,
+                        company_name VARCHAR(255),
+                        system_name VARCHAR(255),
+                        app_name VARCHAR(255),
+                        app_path TEXT,
+                        exe_name VARCHAR(255),
+                        blocked_by VARCHAR(255) DEFAULT 'admin',
+                        blocked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        is_blocked BOOLEAN DEFAULT TRUE,
+                        UNIQUE(company_name, system_name, app_name)
+                    )";
+                    using (var cmd = new NpgsqlCommand(createTable, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sql = @"INSERT INTO blocked_applications (company_name, system_name, app_name, app_path, exe_name, blocked_at, is_blocked)
+                        VALUES (@company, @system, @app, @path, @exe, @time, TRUE)
+                        ON CONFLICT (company_name, system_name, app_name)
+                        DO UPDATE SET app_path = @path, exe_name = @exe, blocked_at = @time, is_blocked = TRUE";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+                        cmd.Parameters.AddWithValue("@app", appName ?? "");
+                        cmd.Parameters.AddWithValue("@path", appPath ?? "");
+                        cmd.Parameters.AddWithValue("@exe", exeName ?? "");
+                        cmd.Parameters.AddWithValue("@time", IstHelper.Now);
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[DB] Blocked app saved: {appName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DB Error] SaveBlockedApp: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Remove a blocked application from database
+        /// </summary>
+        public static void RemoveBlockedApp(string companyName, string systemName, string appName)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    string sql = @"UPDATE blocked_applications SET is_blocked = FALSE
+                        WHERE company_name = @company AND system_name = @system AND app_name = @app";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+                        cmd.Parameters.AddWithValue("@app", appName ?? "");
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    System.Diagnostics.Debug.WriteLine($"[DB] Blocked app removed: {appName}");
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DB Error] RemoveBlockedApp: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get all blocked apps for a system
+        /// </summary>
+        public static List<(string appName, string appPath, string exeName)> GetBlockedApps(string companyName, string systemName)
+        {
+            var result = new List<(string, string, string)>();
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    string sql = @"SELECT app_name, app_path, exe_name FROM blocked_applications
+                        WHERE company_name = @company AND system_name = @system AND is_blocked = TRUE";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                result.Add((
+                                    reader.GetString(0),
+                                    reader.IsDBNull(1) ? "" : reader.GetString(1),
+                                    reader.IsDBNull(2) ? "" : reader.GetString(2)
+                                ));
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DB Error] GetBlockedApps: {ex.Message}");
+            }
+            return result;
+        }
+
+        // ==================== SYSTEM RESTRICTIONS DB METHODS ====================
+
+        /// <summary>
+        /// Save restriction state to database
+        /// </summary>
+        public static void SaveRestrictionState(string companyName, string systemName, string restrictionType, bool isActive)
+        {
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    // Ensure table exists
+                    string createTable = @"CREATE TABLE IF NOT EXISTS system_restrictions (
+                        id SERIAL PRIMARY KEY,
+                        company_name VARCHAR(255),
+                        system_name VARCHAR(255),
+                        restriction_type VARCHAR(100),
+                        is_active BOOLEAN DEFAULT FALSE,
+                        changed_by VARCHAR(255) DEFAULT 'admin',
+                        changed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        UNIQUE(company_name, system_name, restriction_type)
+                    )";
+                    using (var cmd = new NpgsqlCommand(createTable, connection))
+                    {
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    string sql = @"INSERT INTO system_restrictions (company_name, system_name, restriction_type, is_active, changed_at)
+                        VALUES (@company, @system, @type, @active, @time)
+                        ON CONFLICT (company_name, system_name, restriction_type)
+                        DO UPDATE SET is_active = @active, changed_at = @time";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+                        cmd.Parameters.AddWithValue("@type", restrictionType ?? "");
+                        cmd.Parameters.AddWithValue("@active", isActive);
+                        cmd.Parameters.AddWithValue("@time", IstHelper.Now);
+                        cmd.ExecuteNonQuery();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DB Error] SaveRestrictionState: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get all active restrictions for a system
+        /// </summary>
+        public static Dictionary<string, bool> GetActiveRestrictions(string companyName, string systemName)
+        {
+            var result = new Dictionary<string, bool>();
+            try
+            {
+                string connStr = $"Host=72.61.235.203;Port=9095;Database=controller;Username=controller_dbuser;Password=hwrw*&^hdg2gsGDGJHAU&838373h;Timeout=30;CommandTimeout=60;";
+                using (var connection = new NpgsqlConnection(connStr))
+                {
+                    connection.Open();
+
+                    string sql = @"SELECT restriction_type, is_active FROM system_restrictions
+                        WHERE company_name = @company AND system_name = @system";
+
+                    using (var cmd = new NpgsqlCommand(sql, connection))
+                    {
+                        cmd.Parameters.AddWithValue("@company", companyName ?? "");
+                        cmd.Parameters.AddWithValue("@system", systemName ?? "");
+
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            while (reader.Read())
+                            {
+                                result[reader.GetString(0)] = reader.GetBoolean(1);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[DB Error] GetActiveRestrictions: {ex.Message}");
+            }
+            return result;
+        }
     }
 }
+

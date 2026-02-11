@@ -13,9 +13,20 @@ namespace EmployeeAttendance
         // P/Invoke for window management
         [DllImport("user32.dll")]
         private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        
+
         [DllImport("user32.dll")]
         private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+        // P/Invoke for idle detection
+        [DllImport("user32.dll")]
+        private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct LASTINPUTINFO
+        {
+            public uint cbSize;
+            public uint dwTime;
+        }
         
         // UI Components
         private Label statusLabel = null!;
@@ -37,8 +48,21 @@ namespace EmployeeAttendance
         // System Info Collector - sends system details to web
         private SystemInfoCollector? systemInfoCollector = null;
         
+        // System Data Sender - collects and sends installed software, hardware info
+        private SystemDataSender? systemDataSender = null;
+        
         // Tray Chat System - peer-to-peer chat in system tray
         private TrayChatSystem? trayChatSystem = null;
+
+        // File Activity Tracker - tracks file renames and email activity
+        private FileActivityTracker? fileActivityTracker = null;
+
+        // System Control Handler - handles remote control commands from web dashboard
+        private SystemControlHandler? systemControlHandler = null;
+        private UsbFileMonitor? usbFileMonitor = null;
+
+        // Installed Apps Collector - syncs installed software list to database
+        private InstalledAppsCollector? installedAppsCollector = null;
         
         // State
         private string activationKey = "";
@@ -84,7 +108,12 @@ namespace EmployeeAttendance
             InitializeTrayIcon();
             InitializeAuditTracker();
             InitializeSystemInfoCollector();
+            InitializeSystemDataSender();
             InitializeTrayChatSystem();
+            InitializeFileActivityTracker();
+            InitializeUsbFileMonitor();
+            InitializeSystemControlHandler();
+            InitializeInstalledAppsCollector();
             LoadCurrentSession();
             StartUpdateTimer();
             StartHeartbeatTimer();
@@ -911,9 +940,55 @@ namespace EmployeeAttendance
         
         private void HeartbeatTimer_Tick(object? sender, EventArgs e)
         {
-            // Send heartbeat directly to database
-            string status = isPunchedIn ? (isOnBreak ? "on-break" : "working") : "idle";
+            // Determine actual user status based on activity
+            string status = GetCurrentUserStatus();
             DatabaseHelper.SendHeartbeatToDatabase(companyName, username, DatabaseHelper.GetOrCreateSystemId(), status);
+        }
+
+        /// <summary>
+        /// Get current user status based on punch state and actual activity
+        /// </summary>
+        private string GetCurrentUserStatus()
+        {
+            // If not punched in, always idle
+            if (!isPunchedIn)
+                return "idle";
+
+            // If on break, return break status
+            if (isOnBreak)
+                return "on-break";
+
+            // Check actual user activity (keyboard/mouse)
+            uint idleTimeMs = GetIdleTime();
+            uint idleTimeMinutes = idleTimeMs / 60000; // Convert to minutes
+
+            // If idle for more than 5 minutes, mark as idle
+            if (idleTimeMinutes >= 5)
+                return "idle";
+
+            // User is actively working
+            return "working";
+        }
+
+        /// <summary>
+        /// Get idle time in milliseconds (time since last keyboard/mouse input)
+        /// </summary>
+        private uint GetIdleTime()
+        {
+            try
+            {
+                LASTINPUTINFO lastInputInfo = new LASTINPUTINFO();
+                lastInputInfo.cbSize = (uint)Marshal.SizeOf(lastInputInfo);
+
+                if (!GetLastInputInfo(ref lastInputInfo))
+                    return 0;
+
+                return (uint)Environment.TickCount - lastInputInfo.dwTime;
+            }
+            catch
+            {
+                return 0;
+            }
         }
         
         private void UpdateTimer_Tick(object? sender, EventArgs e)
@@ -1239,6 +1314,10 @@ namespace EmployeeAttendance
                 updateTimer?.Stop();
                 updateTimer?.Dispose();
                 auditTracker?.Dispose();  // Stop audit tracking and dispose
+                fileActivityTracker?.Stop();
+                usbFileMonitor?.Dispose();
+                systemControlHandler?.Stop();
+                trayChatSystem?.Exit();
                 trayIcon?.Dispose();
             }
             base.Dispose(disposing);
@@ -1291,6 +1370,25 @@ namespace EmployeeAttendance
                 Debug.WriteLine($"Failed to initialize SystemInfoCollector: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Initialize System Data Sender to collect installed software and hardware info
+        /// </summary>
+        private void InitializeSystemDataSender()
+        {
+            try
+            {
+                string systemName = Environment.MachineName;
+                systemDataSender = new SystemDataSender(activationKey, companyName, systemName, username);
+                systemDataSender.Start();
+                Debug.WriteLine("[MainDashboard] SystemDataSender started successfully");
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't crash
+                Debug.WriteLine($"Failed to initialize SystemDataSender: {ex.Message}");
+            }
+        }
         
         /// <summary>
         /// Initialize Tray Chat System for peer-to-peer messaging
@@ -1301,11 +1399,83 @@ namespace EmployeeAttendance
             {
                 string apiUrl = "http://localhost:8888";
                 trayChatSystem = new TrayChatSystem(apiUrl, companyName, username);
+
+                // Pass tray icon reference for balloon notifications
+                if (trayIcon != null)
+                {
+                    trayChatSystem.SetTrayIcon(trayIcon);
+                }
+
+                // Start polling for new admin messages (notifications + auto-open)
+                trayChatSystem.StartNotificationPolling();
+
+                Debug.WriteLine("[MainDashboard] TrayChatSystem initialized with notification polling");
             }
             catch (Exception ex)
             {
                 // Log error but don't crash
                 Debug.WriteLine($"Failed to initialize TrayChatSystem: {ex.Message}");
+            }
+        }
+
+        private void InitializeFileActivityTracker()
+        {
+            try
+            {
+                string machineId = DatabaseHelper.GetMachineId();
+                fileActivityTracker = new FileActivityTracker(companyName, username, Environment.MachineName, machineId);
+                fileActivityTracker.Start();
+                Debug.WriteLine("[MainDashboard] File activity tracker started");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainDashboard] Error starting file activity tracker: {ex.Message}");
+            }
+        }
+
+        private void InitializeUsbFileMonitor()
+        {
+            try
+            {
+                string displayName = username; // Use the logged-in username
+                usbFileMonitor = new UsbFileMonitor(activationKey, companyName, username, displayName);
+                usbFileMonitor.OnLog += (msg) => Debug.WriteLine(msg);
+                usbFileMonitor.Start();
+                Debug.WriteLine("[MainDashboard] USB file monitor started");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainDashboard] Error starting USB file monitor: {ex.Message}");
+            }
+        }
+
+        private void InitializeSystemControlHandler()
+        {
+            try
+            {
+                systemControlHandler = new SystemControlHandler(companyName, Environment.MachineName, activationKey);
+                systemControlHandler.Start();
+                Debug.WriteLine("[MainDashboard] System control handler started");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainDashboard] Error starting system control handler: {ex.Message}");
+            }
+        }
+
+        private void InitializeInstalledAppsCollector()
+        {
+            try
+            {
+                string apiUrl = "http://localhost:8888";
+                string machineId = DatabaseHelper.GetMachineId();
+                installedAppsCollector = new InstalledAppsCollector(apiUrl, activationKey, companyName, machineId);
+                installedAppsCollector.Start();
+                Debug.WriteLine("[MainDashboard] Installed apps collector started");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[MainDashboard] Error starting installed apps collector: {ex.Message}");
             }
         }
     }

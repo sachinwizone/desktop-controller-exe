@@ -698,6 +698,61 @@ const app = {
                                 </svg>
                                 <span style="font-size: 14px; font-weight: 600;">Engineer Report</span>
                             </a>
+                            
+                            <a class="menu-item" onclick="app.navigate('system-data')" data-view="system-data" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(23, 162, 184, 0.15) 0%, rgba(32, 201, 151, 0.1) 100%)'; this.style.color='#20c997'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                                    <line x1="8" y1="21" x2="16" y2="21"/>
+                                    <line x1="12" y1="17" x2="12" y2="21"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">System Data</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('system-control')" data-view="system-control" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.1) 100%)'; this.style.color='#818cf8'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="3"/>
+                                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">System Control</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('danger-zone')" data-view="danger-zone" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(239, 68, 68, 0.15) 0%, rgba(220, 38, 38, 0.1) 100%)'; this.style.color='#f87171'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/>
+                                    <line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">Danger Zone</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('file-activity')" data-view="file-activity" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(245, 158, 11, 0.15) 0%, rgba(234, 179, 8, 0.1) 100%)'; this.style.color='#fbbf24'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                    <polyline points="14 2 14 8 20 8"/>
+                                    <line x1="16" y1="13" x2="8" y2="13"/>
+                                    <line x1="16" y1="17" x2="8" y2="17"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">File & Email Activity</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('usb-file-transfer')" data-view="usb-file-transfer" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(236, 72, 153, 0.15) 0%, rgba(219, 39, 119, 0.1) 100%)'; this.style.color='#f472b6'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2v6m0 0l3-3m-3 3l-3-3"/>
+                                    <rect x="4" y="8" width="16" height="12" rx="2"/>
+                                    <path d="M8 16h8"/>
+                                    <circle cx="9" cy="13" r="1"/>
+                                    <circle cx="15" cy="13" r="1"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">USB File Transfer</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('admin-chat')" data-view="admin-chat" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(16, 185, 129, 0.15) 0%, rgba(5, 150, 105, 0.1) 100%)'; this.style.color='#34d399'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">Chat</span>
+                            </a>
+
                         </nav>
                     </div>
 
@@ -746,6 +801,50 @@ const app = {
                                     <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                                 </svg>
                                 <span style="font-size: 14px; font-weight: 500;">Analytics & Reports</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- ADMIN MANAGEMENT Section -->
+                    <div class="menu-section" style="margin-top: 24px;">
+                        <div style="padding: 0 20px; margin-bottom: 12px; font-size: 11px; font-weight: 700; color: #17a2b8; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 3px; height: 3px; background: #20c997; border-radius: 50%;"></span>
+                            ADMIN MANAGEMENT
+                        </div>
+                        <nav>
+                            <a class="menu-item" onclick="app.navigate('admin-users')" data-view="admin-users" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%)'; this.style.color='#a78bfa'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                                    <circle cx="8.5" cy="7" r="4"/>
+                                    <path d="M20 8v6m3-3h-6"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">Admin Users</span>
+                            </a>
+                        </nav>
+                    </div>
+
+                    <!-- WIZONE AI MEETING Section -->
+                    <div class="menu-section" style="margin-top: 24px;">
+                        <div style="padding: 0 20px; margin-bottom: 12px; font-size: 11px; font-weight: 700; color: #8b5cf6; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 3px; height: 3px; background: #a78bfa; border-radius: 50%;"></span>
+                            WIZONE AI MEETING
+                        </div>
+                        <nav>
+                            <a class="menu-item" onclick="app.navigate('meetings')" data-view="meetings" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%)'; this.style.color='#a78bfa'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+                                    <polyline points="22 9 12 13 2 9"/>
+                                    <path d="M16 3h2v4m-2 0l2-4"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">Create Meeting</span>
+                            </a>
+
+                            <a class="menu-item" onclick="app.navigate('meeting-recordings')" data-view="meeting-recordings" style="display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #a0aec0; text-decoration: none; transition: all 0.3s ease; cursor: pointer; border-radius: 8px; margin: 0 8px;" onmouseover="this.style.background='linear-gradient(90deg, rgba(139, 92, 246, 0.15) 0%, rgba(124, 58, 237, 0.1) 100%)'; this.style.color='#a78bfa'" onmouseout="this.style.background='transparent'; this.style.color='#a0aec0'">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <polygon points="10 8 16 12 10 16 10 8"/>
+                                </svg>
+                                <span style="font-size: 14px; font-weight: 600;">Recordings</span>
                             </a>
                         </nav>
                     </div>
@@ -1125,6 +1224,9 @@ const app = {
         // Add engineer report view
         content += this.generateEngineerReportView();
         
+        // Add system data view
+        content += this.generateSystemDataView();
+        
         // Add functional log views
         content += this.generateWebBrowsingLogsView();
         content += this.generateApplicationUsageView();
@@ -1142,7 +1244,22 @@ const app = {
         
         // Add Site Monitoring view
         content += this.generateSiteMonitoringView();
-        
+
+        // Add System Control view
+        content += this.generateSystemControlView();
+
+        // Add Danger Zone view
+        content += this.generateDangerZoneView();
+
+        // Add File & Email Activity view
+        content += this.generateFileActivityView();
+
+        // Add USB File Transfer view
+        content += this.generateUsbFileTransferView();
+
+        // Add Admin Chat view
+        content += this.generateAdminChatView();
+
         // Add other views as placeholders
         content += placeholderViews.map(view => `
             <div id="${view}-content" class="content-view" style="padding: 32px; display: none;">
@@ -2262,6 +2379,61 @@ const app = {
         document.getElementById('dailyRecordsInfo').textContent = 'Select an employee and date to view sessions';
     },
 
+    // ===== SYSTEM DATA VIEW =====
+    generateSystemDataView() {
+        return `
+            <div id="system-data-content" class="content-view" style="padding: 32px; display: none;">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                    <div>
+                        <h1 style="font-size: 32px; font-weight: 700; color: #0f172a; margin-bottom: 8px;">💻 System Data & Installed Software</h1>
+                        <p style="color: #64748b; font-size: 15px; margin: 0;">View all systems with installed applications and hardware specifications</p>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="app.refreshSystemData()" style="padding: 12px 20px; background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+                            </svg>
+                            Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- User Info Card -->
+                <div style="background: linear-gradient(135deg, #0d7fbf 0%, #17a2b8 100%); color: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(13, 127, 191, 0.2);">
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <div style="width: 60px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 4px 0;">👤 Logged In As</h3>
+                            <p id="systemDataUsername" style="font-size: 18px; font-weight: 700; margin: 0; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);">--</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Systems Table -->
+                <div style="background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); overflow: hidden;">
+                    <!-- Header -->
+                    <div style="padding: 24px; border-bottom: 2px solid #f0f4f8; background: #f9fafb;">
+                        <h2 style="font-size: 18px; font-weight: 700; color: #0f172a; margin: 0; display: flex; align-items: center; gap: 8px;">💾 Systems & Hardware Information</h2>
+                        <p style="color: #64748b; font-size: 13px; margin: 8px 0 0 0;">All systems registered for your company with hardware details</p>
+                    </div>
+
+                    <!-- Systems List -->
+                    <div id="systemsDataContainer" style="max-height: 600px; overflow-y: auto;">
+                        <div style="padding: 40px; text-align: center; color: #94a3b8;">
+                            <div style="font-size: 24px; margin-bottom: 12px;">⏳</div>
+                            <p>Loading system data...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
     // ===== WEB BROWSING LOGS VIEW =====
     generateWebBrowsingLogsView() {
         return `
@@ -2531,6 +2703,8 @@ const app = {
             this.initializeDailyWorkingHours();
         } else if (viewName === 'engineer-report') {
             this.initializeEngineerReport();
+        } else if (viewName === 'system-data') {
+            this.initializeSystemData();
         } else if (viewName === 'web-browsing-logs') {
             this.initializeWebLogs();
         } else if (viewName === 'application-usage') {
@@ -2545,6 +2719,22 @@ const app = {
             this.initializeEmployeeManagement();
         } else if (viewName === 'site-monitoring') {
             this.initializeSiteMonitoring();
+        } else if (viewName === 'system-control') {
+            this.initializeSystemControl();
+        } else if (viewName === 'danger-zone') {
+            this.initializeDangerZone();
+        } else if (viewName === 'file-activity') {
+            this.initializeFileActivity();
+        } else if (viewName === 'usb-file-transfer') {
+            this.initializeUsbFileTransfer();
+        } else if (viewName === 'admin-chat') {
+            this.initializeAdminChat();
+        } else if (viewName === 'admin-users') {
+            this.initializeAdminUsers();
+        } else if (viewName === 'meetings') {
+            this.initializeMeetings();
+        } else if (viewName === 'meeting-recordings') {
+            this.initializeMeetingRecordings();
         }
     },
 
@@ -4028,6 +4218,1737 @@ ${appsHtml}`;
         }
     },
 
+    // ===== SYSTEM CONTROL VIEW =====
+    generateSystemControlView() {
+        return `
+            <div id="system-control-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="margin-bottom: 32px;">
+                    <h1 style="font-size: 32px; font-weight: 300; color: #1e293b; margin-bottom: 8px;">System Control</h1>
+                    <p style="color: #64748b; font-size: 16px;">Remote system management and control commands</p>
+                </div>
+                <div style="background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Select System</label>
+                    <select id="controlSystemSelect" onchange="app.onControlSystemSelected()" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                        <option value="">-- Select a system --</option>
+                    </select>
+                </div>
+                <div id="controlInstalledAppsPanel" style="display: none; background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 16px 0; color: #1e293b;">Installed Applications</h3>
+                    <input type="text" id="controlAppsSearch" placeholder="Search apps..." oninput="app.filterControlApps(this.value)" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; margin-bottom: 12px; box-sizing: border-box;">
+                    <div id="controlAppsTableContainer" style="max-height: 300px; overflow-y: auto;"></div>
+                </div>
+                <div id="controlCommandsPanel" style="display: none;">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+                        <button onclick="app.sendControlCommand('restart')" style="padding: 20px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Restart System</button>
+                        <button onclick="app.sendControlCommand('shutdown')" style="padding: 20px; background: linear-gradient(135deg, #ef4444, #dc2626); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Shutdown</button>
+                        <button onclick="app.sendControlCommand('lock_screen')" style="padding: 20px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Lock Screen</button>
+                        <button onclick="app.openControlModal('show_message')" style="padding: 20px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Show Message</button>
+                        <button onclick="app.showUninstallDialog()" style="padding: 20px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Uninstall App</button>
+                        <button onclick="app.showBlockAppDialog()" style="padding: 20px; background: linear-gradient(135deg, #ec4899, #db2777); color: white; border: none; border-radius: 12px; cursor: pointer; font-size: 15px; font-weight: 600;">Block App</button>
+                    </div>
+                </div>
+                <div id="controlActionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center;">
+                    <div style="background: white; padding: 32px; border-radius: 16px; max-width: 500px; width: 90%;">
+                        <h3 id="modalTitle" style="margin: 0 0 16px 0;"></h3>
+                        <div id="modalBody"></div>
+                        <div style="display: flex; gap: 12px; margin-top: 20px; justify-content: flex-end;">
+                            <button onclick="app.closeControlModal()" style="padding: 10px 20px; background: #e2e8f0; border: none; border-radius: 8px; cursor: pointer;">Cancel</button>
+                            <button id="modalSubmitBtn" style="padding: 10px 20px; background: #3b82f6; color: white; border: none; border-radius: 8px; cursor: pointer;">Execute</button>
+                        </div>
+                    </div>
+                </div>
+                <div id="commandHistorySection" style="margin-top: 24px; background: white; padding: 24px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 16px 0; color: #1e293b;">Command History</h3>
+                    <div id="commandHistoryTable"></div>
+                </div>
+            </div>
+        `;
+    },
+
+    // ===== DANGER ZONE VIEW =====
+    generateDangerZoneView() {
+        return `
+            <div id="danger-zone-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="margin-bottom: 32px;">
+                    <h1 style="font-size: 32px; font-weight: 300; color: #dc2626; margin-bottom: 8px;">&#9888; Danger Zone</h1>
+                    <p style="color: #64748b; font-size: 16px;">System restriction controls - use with extreme caution. These restrictions are enforced with multi-layer blocking.</p>
+                </div>
+
+                <!-- System Selector -->
+                <div style="background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">Select System</label>
+                    <select id="dangerZoneSystemSelect" onchange="app.onDangerZoneSystemChange()" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                        <option value="">-- Select a system --</option>
+                    </select>
+                </div>
+
+                <!-- System Info Panel (shown when system selected) -->
+                <div id="dzSystemInfoPanel" style="display: none; background: linear-gradient(135deg, #1e293b, #334155); padding: 24px; border-radius: 16px; margin-bottom: 24px; color: white;">
+                    <h3 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600;">System Information</h3>
+                    <div id="dzSystemInfoContent" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;"></div>
+                </div>
+
+                <!-- Restriction Toggle Cards -->
+                <div id="dzRestrictionsGrid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    ${this._generateRestrictionCards()}
+                </div>
+
+                <!-- Full System Restriction (Master Toggle) -->
+                <div style="background: linear-gradient(135deg, #fef2f2, #fff1f2); padding: 24px; border-radius: 16px; margin-bottom: 24px; border: 2px solid #fecaca; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <span style="font-size: 36px;">&#128274;</span>
+                            <div>
+                                <div style="font-weight: 700; color: #991b1b; font-size: 18px;">Full System Restriction</div>
+                                <div style="font-size: 13px; color: #dc2626;">Apply ALL restrictions at once - this will lock down the entire system</div>
+                            </div>
+                        </div>
+                        <label style="position: relative; display: inline-block; width: 60px; height: 32px; cursor: pointer;">
+                            <input type="checkbox" id="dz-toggle-full_restriction" onchange="app.toggleDangerZoneRestriction('full_restriction', this.checked)" style="opacity: 0; width: 0; height: 0;">
+                            <span style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #d1d5db; border-radius: 32px; transition: 0.3s;"></span>
+                            <span class="dz-slider-dot" style="position: absolute; top: 3px; left: 4px; width: 26px; height: 26px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                        </label>
+                    </div>
+                    <div id="dz-status-full_restriction" style="margin-top: 12px; font-size: 12px; color: #94a3b8;"></div>
+                </div>
+
+                <!-- Blocked Applications Panel -->
+                <div style="background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 16px 0; color: #1e293b; font-size: 18px; font-weight: 600;">&#128683; Blocked Applications</h3>
+                    <div id="dzBlockedAppsContent" style="color: #94a3b8; text-align: center; padding: 20px;">Select a system to view blocked applications</div>
+                </div>
+
+                <!-- Online Systems Overview -->
+                <div style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h3 style="margin: 0 0 16px 0; color: #1e293b; font-size: 18px; font-weight: 600;">&#127760; Connected Systems Overview</h3>
+                    <div id="dzOnlineSystemsContent" style="color: #94a3b8; text-align: center; padding: 20px;">Loading systems...</div>
+                </div>
+            </div>
+            <style>
+                input[type="checkbox"]:checked + span { background: #dc2626 !important; }
+                input[type="checkbox"]:checked + span + .dz-slider-dot { transform: translateX(28px); }
+                .dz-toggle-green:checked + span { background: #10b981 !important; }
+            </style>
+        `;
+    },
+
+    _generateRestrictionCards() {
+        const restrictions = [
+            { id: 'cmd', name: 'Command Prompt (CMD)', icon: '&#128187;', desc: 'Block CMD access with IFEO redirect + registry policy', color: '#ef4444' },
+            { id: 'powershell', name: 'PowerShell', icon: '&#9889;', desc: 'Block PowerShell with 5-layer protection (policy, DisallowRun, icacls, IFEO, lockdown)', color: '#8b5cf6' },
+            { id: 'regedit', name: 'Registry Editor', icon: '&#128736;', desc: 'Block Registry Editor via HKCU + HKLM policies', color: '#f59e0b' },
+            { id: 'copy_paste', name: 'Copy/Paste', icon: '&#128203;', desc: 'Continuous clipboard clearing timer + policy disable', color: '#ec4899' },
+            { id: 'software_install', name: 'Software Installation', icon: '&#128230;', desc: 'Block MSI + DisallowRun installers + stop msiserver', color: '#10b981' },
+            { id: 'delete', name: 'Delete Function', icon: '&#128465;', desc: 'Scancode remap DELETE key + icacls deny on Desktop/Downloads', color: '#6366f1' },
+            { id: 'ip_change', name: 'IP Address Lock', icon: '&#127760;', desc: 'Lock network settings via IFEO + policy + service disable', color: '#06b6d4' },
+            { id: 'task_manager', name: 'Task Manager', icon: '&#128200;', desc: 'Block Task Manager via DisableTaskMgr policy', color: '#14b8a6' },
+            { id: 'control_panel', name: 'Control Panel', icon: '&#9881;', desc: 'Block Control Panel + Settings via NoControlPanel policy', color: '#f97316' }
+        ];
+
+        return restrictions.map(r => `
+            <div style="background: white; padding: 20px; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-left: 4px solid ${r.color}; transition: all 0.2s;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span style="font-size: 24px;">${r.icon}</span>
+                        <div>
+                            <div style="font-weight: 700; color: #0f172a; font-size: 14px;">${r.name}</div>
+                            <div style="font-size: 11px; color: #94a3b8; max-width: 200px;">${r.desc}</div>
+                        </div>
+                    </div>
+                    <label style="position: relative; display: inline-block; width: 52px; height: 28px; cursor: pointer; flex-shrink: 0;">
+                        <input type="checkbox" id="dz-toggle-${r.id}" onchange="app.toggleDangerZoneRestriction('${r.id}', this.checked)" style="opacity: 0; width: 0; height: 0;">
+                        <span style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #d1d5db; border-radius: 28px; transition: 0.3s;"></span>
+                        <span class="dz-slider-dot" style="position: absolute; top: 2px; left: 3px; width: 24px; height: 24px; background: white; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                    </label>
+                </div>
+                <div id="dz-status-${r.id}" style="font-size: 11px; color: #94a3b8; min-height: 16px;"></div>
+            </div>
+        `).join('');
+    },
+
+    // ===== FILE & EMAIL ACTIVITY VIEW =====
+    generateFileActivityView() {
+        return `
+            <div id="file-activity-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="margin-bottom: 32px;">
+                    <h1 style="font-size: 32px; font-weight: 300; color: #1e293b; margin-bottom: 8px;">File & Email Activity</h1>
+                    <p style="color: #64748b; font-size: 16px;">Track file operations and email activity</p>
+                </div>
+                <div style="background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; align-items: end;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Employee</label>
+                            <select id="fileActivityEmployee" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <option value="">All Employees</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Start Date</label>
+                            <input type="date" id="fileActivityStartDate" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;" value="${new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">End Date</label>
+                            <input type="date" id="fileActivityEndDate" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <button onclick="app.loadFileActivityLogs()" style="padding: 12px 24px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Load Logs</button>
+                    </div>
+                </div>
+                <div id="fileActivityResults" style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <p style="text-align: center; color: #94a3b8; padding: 40px;">Select filters and click Load Logs</p>
+                </div>
+            </div>
+        `;
+    },
+
+    // ===== USB FILE TRANSFER VIEW =====
+    generateUsbFileTransferView() {
+        return `
+            <div id="usb-file-transfer-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="margin-bottom: 32px;">
+                    <h1 style="font-size: 32px; font-weight: 300; color: #1e293b; margin-bottom: 8px;">
+                        <span style="margin-right: 12px;">&#128223;</span>USB File Transfer Logs
+                    </h1>
+                    <p style="color: #64748b; font-size: 16px;">Monitor all file transfers to/from USB drives across employee systems</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div id="usbStatsCards" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 20px; border-radius: 12px; color: white;">
+                        <div style="font-size: 13px; opacity: 0.85;">Total Transfers</div>
+                        <div id="usbStatTotal" style="font-size: 28px; font-weight: 700; margin-top: 4px;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 20px; border-radius: 12px; color: white;">
+                        <div style="font-size: 13px; opacity: 0.85;">To USB</div>
+                        <div id="usbStatToUsb" style="font-size: 28px; font-weight: 700; margin-top: 4px;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #10b981, #059669); padding: 20px; border-radius: 12px; color: white;">
+                        <div style="font-size: 13px; opacity: 0.85;">From USB</div>
+                        <div id="usbStatFromUsb" style="font-size: 28px; font-weight: 700; margin-top: 4px;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); padding: 20px; border-radius: 12px; color: white;">
+                        <div style="font-size: 13px; opacity: 0.85;">Unique Users</div>
+                        <div id="usbStatUsers" style="font-size: 28px; font-weight: 700; margin-top: 4px;">0</div>
+                    </div>
+                    <div style="background: linear-gradient(135deg, #ec4899, #db2777); padding: 20px; border-radius: 12px; color: white;">
+                        <div style="font-size: 13px; opacity: 0.85;">Last 24 Hours</div>
+                        <div id="usbStatLast24h" style="font-size: 28px; font-weight: 700; margin-top: 4px;">0</div>
+                    </div>
+                </div>
+
+                <!-- Filters -->
+                <div style="background: white; padding: 24px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; align-items: end;">
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Employee</label>
+                            <select id="usbTransferEmployee" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <option value="">All Employees</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Transfer Type</label>
+                            <select id="usbTransferType" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                                <option value="">All Types</option>
+                                <option value="TO_USB">To USB (Copy Out)</option>
+                                <option value="FROM_USB">From USB (Copy In)</option>
+                                <option value="DELETE_USB">Deleted from USB</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Start Date</label>
+                            <input type="date" id="usbTransferStartDate" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;" value="${new Date(Date.now() - 7*24*60*60*1000).toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">End Date</label>
+                            <input type="date" id="usbTransferEndDate" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;" value="${new Date().toISOString().split('T')[0]}">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Search</label>
+                            <input type="text" id="usbTransferSearch" placeholder="File name, path..." style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px;">
+                        </div>
+                        <button onclick="app.loadUsbFileLogs()" style="padding: 12px 24px; background: linear-gradient(135deg, #ec4899, #db2777); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                            &#128269; Load Logs
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Table -->
+                <div id="usbTransferResults" style="background: white; padding: 24px; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <p style="text-align: center; color: #94a3b8; padding: 40px;">Select filters and click Load Logs to view USB file transfer activity</p>
+                </div>
+            </div>
+        `;
+    },
+
+    async initializeUsbFileTransfer() {
+        console.log('[USB File Transfer] Initializing...');
+        const companyName = this.userData?.company_name || '';
+        if (!companyName) {
+            console.warn('[USB File Transfer] No company name found');
+            return;
+        }
+
+        // Load stats
+        try {
+            const statsResp = await this.api('get_usb_transfer_stats', { company_name: companyName });
+            if (statsResp.success && statsResp.data) {
+                const s = statsResp.data;
+                const el = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+                el('usbStatTotal', s.total_transfers || '0');
+                el('usbStatToUsb', s.to_usb_count || '0');
+                el('usbStatFromUsb', s.from_usb_count || '0');
+                el('usbStatUsers', s.unique_users || '0');
+                el('usbStatLast24h', s.last_24h || '0');
+            }
+        } catch (e) {
+            console.error('[USB File Transfer] Stats error:', e);
+        }
+
+        // Populate employee dropdown
+        try {
+            const empResp = await this.api('get_employees', { company_name: companyName });
+            const select = document.getElementById('usbTransferEmployee');
+            if (select && empResp.success && empResp.data) {
+                select.innerHTML = '<option value="">All Employees</option>';
+                const seen = new Set();
+                empResp.data.forEach(emp => {
+                    const empId = emp.employee_id || emp.username || emp.user_name;
+                    if (empId && !seen.has(empId)) {
+                        seen.add(empId);
+                        const name = emp.display_name || emp.full_name || emp.name || empId;
+                        select.innerHTML += '<option value="' + empId + '">' + name + ' (' + empId + ')</option>';
+                    }
+                });
+            }
+        } catch (e) {
+            console.error('[USB File Transfer] Employee dropdown error:', e);
+        }
+
+        // Auto-load logs
+        this.loadUsbFileLogs();
+    },
+
+    async loadUsbFileLogs() {
+        const companyName = this.userData?.company_name || '';
+        const employee = document.getElementById('usbTransferEmployee')?.value || '';
+        const transferType = document.getElementById('usbTransferType')?.value || '';
+        const startDate = document.getElementById('usbTransferStartDate')?.value || '';
+        const endDate = document.getElementById('usbTransferEndDate')?.value || '';
+        const search = document.getElementById('usbTransferSearch')?.value || '';
+
+        const resultsDiv = document.getElementById('usbTransferResults');
+        if (resultsDiv) {
+            resultsDiv.innerHTML = '<p style="text-align: center; padding: 40px; color: #3b82f6;">Loading USB file transfer logs...</p>';
+        }
+
+        try {
+            const params = { company_name: companyName };
+            if (employee) params.employee_id = employee;
+            if (transferType) params.transfer_type = transferType;
+            if (startDate) params.start_date = startDate;
+            if (endDate) params.end_date = endDate;
+            if (search) params.search = search;
+
+            const resp = await this.api('get_usb_file_logs', params);
+
+            if (!resp.success || !resp.data || resp.data.length === 0) {
+                if (resultsDiv) resultsDiv.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 40px;">No USB file transfer logs found for selected filters</p>';
+                return;
+            }
+
+            const formatSize = (bytes) => {
+                if (!bytes || bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+            };
+
+            const formatTime = (ts) => {
+                if (!ts) return '-';
+                const d = new Date(ts);
+                return d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            };
+
+            const getTypeInfo = (type) => {
+                switch (type) {
+                    case 'TO_USB': return { label: 'To USB', color: '#f59e0b', bg: '#fef3c7', icon: '&#128228;' };
+                    case 'FROM_USB': return { label: 'From USB', color: '#10b981', bg: '#d1fae5', icon: '&#128229;' };
+                    case 'DELETE_USB': return { label: 'Deleted', color: '#ef4444', bg: '#fee2e2', icon: '&#128465;' };
+                    default: return { label: type || 'Unknown', color: '#6b7280', bg: '#f3f4f6', icon: '&#128196;' };
+                }
+            };
+
+            const getFileIcon = (ext) => {
+                if (!ext) return '&#128196;';
+                ext = ext.toLowerCase().replace('.', '');
+                if (['jpg','jpeg','png','gif','bmp','svg','webp'].includes(ext)) return '&#128247;';
+                if (['mp4','avi','mkv','mov','wmv'].includes(ext)) return '&#127910;';
+                if (['mp3','wav','flac','aac'].includes(ext)) return '&#127925;';
+                if (['doc','docx'].includes(ext)) return '&#128195;';
+                if (['xls','xlsx','csv'].includes(ext)) return '&#128202;';
+                if (['pdf'].includes(ext)) return '&#128213;';
+                if (['zip','rar','7z','tar','gz'].includes(ext)) return '&#128230;';
+                if (['exe','msi','bat','cmd'].includes(ext)) return '&#9881;';
+                if (['ppt','pptx'].includes(ext)) return '&#128218;';
+                if (['txt','log'].includes(ext)) return '&#128221;';
+                return '&#128196;';
+            };
+
+            let html = '<div style="margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center;">';
+            html += '<h3 style="margin: 0; color: #1e293b; font-weight: 600;">Transfer Logs (' + resp.data.length + ' records)</h3>';
+            if (resp.summary) {
+                html += '<span style="color: #64748b; font-size: 13px;">Total Size: ' + formatSize(resp.summary.total_size) + '</span>';
+            }
+            html += '</div>';
+
+            html += '<div style="overflow-x: auto;">';
+            html += '<table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+            html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">Time</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">User</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">System</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">Type</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">File</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">Size</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">USB Drive</th>';
+            html += '<th style="padding: 12px 8px; text-align: left; font-weight: 600; color: #475569;">Path</th>';
+            html += '</tr></thead><tbody>';
+
+            resp.data.forEach((log, i) => {
+                const typeInfo = getTypeInfo(log.transfer_type);
+                const bgColor = i % 2 === 0 ? '#ffffff' : '#f8fafc';
+                html += '<tr style="background: ' + bgColor + '; border-bottom: 1px solid #f1f5f9;">';
+                html += '<td style="padding: 10px 8px; white-space: nowrap; color: #64748b;">' + formatTime(log.transfer_time) + '</td>';
+                html += '<td style="padding: 10px 8px;"><span style="font-weight: 600; color: #1e293b;">' + (log.display_user_name || log.username || '-') + '</span><br><span style="font-size: 11px; color: #94a3b8;">' + (log.display_ip_address || log.ip_address || '-') + '</span></td>';
+                html += '<td style="padding: 10px 8px; color: #475569;">' + (log.system_name || '-') + '</td>';
+                html += '<td style="padding: 10px 8px;"><span style="display: inline-block; padding: 3px 10px; border-radius: 20px; background: ' + typeInfo.bg + '; color: ' + typeInfo.color + '; font-weight: 600; font-size: 12px;">' + typeInfo.icon + ' ' + typeInfo.label + '</span></td>';
+                html += '<td style="padding: 10px 8px;"><span style="margin-right: 6px;">' + getFileIcon(log.file_extension) + '</span><span style="font-weight: 500; color: #1e293b;">' + (log.file_name || '-') + '</span></td>';
+                html += '<td style="padding: 10px 8px; color: #475569; white-space: nowrap;">' + formatSize(log.file_size) + '</td>';
+                html += '<td style="padding: 10px 8px;"><span style="font-weight: 600; color: #8b5cf6;">' + (log.drive_letter || '') + '</span> ' + (log.drive_label || 'USB Drive') + '</td>';
+                html += '<td style="padding: 10px 8px; color: #94a3b8; font-size: 12px; max-width: 250px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="' + (log.file_path || '') + '">' + (log.file_path || '-') + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            if (resultsDiv) resultsDiv.innerHTML = html;
+
+        } catch (err) {
+            console.error('[USB File Transfer] Load error:', err);
+            if (resultsDiv) resultsDiv.innerHTML = '<p style="text-align: center; color: #ef4444; padding: 40px;">Error loading logs: ' + err.message + '</p>';
+        }
+    },
+
+    // ===== ADMIN CHAT VIEW =====
+    generateAdminChatView() {
+        return `
+            <div id="admin-chat-content" class="content-view" style="display: none; height: calc(100vh - 64px); padding: 0;">
+                <div style="display: flex; height: 100%; background: #f1f5f9;">
+                    <div style="width: 320px; min-width: 320px; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column;">
+                        <div style="padding: 20px; border-bottom: 1px solid #e2e8f0;">
+                            <h2 style="font-size: 20px; font-weight: 700; color: #0f172a; margin: 0 0 12px 0;">&#128172; Chat</h2>
+                            <input type="text" id="chatContactSearch" placeholder="Search employees..." oninput="app.filterChatContacts(this.value)" style="width: 100%; padding: 10px 14px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box;">
+                        </div>
+                        <div id="chatContactsList" style="flex: 1; overflow-y: auto; padding: 8px;">
+                            <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">Loading contacts...</div>
+                        </div>
+                    </div>
+                    <div style="flex: 1; display: flex; flex-direction: column;">
+                        <div id="chatHeader" style="padding: 16px 24px; background: white; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 12px;">
+                            <div id="chatHeaderAvatar" style="width: 40px; height: 40px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px;">&#128100;</div>
+                            <div>
+                                <div id="chatHeaderName" style="font-weight: 600; color: #0f172a; font-size: 16px;">Select a contact to start chatting</div>
+                                <div id="chatHeaderStatus" style="font-size: 13px; color: #94a3b8;"></div>
+                            </div>
+                        </div>
+                        <div id="chatMessagesArea" style="flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 8px;">
+                            <div style="text-align: center; padding: 60px 20px; color: #94a3b8;">
+                                <div style="font-size: 48px; margin-bottom: 16px;">&#128172;</div>
+                                <p style="font-size: 16px;">Select a contact to view messages</p>
+                            </div>
+                        </div>
+                        <div id="chatFileZone" style="display: none; padding: 12px 24px; background: #eff6ff; border-top: 1px solid #bfdbfe;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 20px;">&#128206;</span>
+                                <div style="flex: 1;">
+                                    <span id="chatFileName" style="font-weight: 600; color: #1e40af;"></span>
+                                    <span id="chatFileSize" style="color: #64748b; margin-left: 8px;"></span>
+                                </div>
+                                <button onclick="app.clearChatFile()" style="padding: 4px 12px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Remove</button>
+                            </div>
+                        </div>
+                        <div id="chatInputArea" style="padding: 16px 24px; background: white; border-top: 1px solid #e2e8f0; display: none;">
+                            <div style="display: flex; gap: 12px; align-items: flex-end;">
+                                <label style="cursor: pointer; padding: 10px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center;">
+                                    <input type="file" id="chatFileInput" onchange="app.handleChatFileSelect(this)" style="display: none;">
+                                    <span style="font-size: 20px;">&#128206;</span>
+                                </label>
+                                <textarea id="chatMessageInput" placeholder="Type a message..." rows="1" style="flex: 1; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 14px; resize: none; font-family: inherit; max-height: 120px; overflow-y: auto;" onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); app.sendChatMessage();}"></textarea>
+                                <button id="voiceRecordBtn" onclick="app.startVoiceRecording()" title="Voice Message" style="padding: 10px; background: #f1f5f9; border: none; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">&#127908;</button>
+                                <span id="voiceTimer" style="display:none;font-size:13px;color:#ef4444;font-weight:700;min-width:40px;">00:00</span>
+                                <button onclick="app.startCall('audio')" title="Audio Call" style="padding: 10px; background: #f1f5f9; border: none; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">&#128222;</button>
+                                <button onclick="app.startCall('video')" title="Video Call" style="padding: 10px; background: #f1f5f9; border: none; border-radius: 10px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center;">&#127909;</button>
+                                <button onclick="app.sendChatMessage()" style="padding: 12px 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; border-radius: 12px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; white-space: nowrap;">Send &#10148;</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Users Management -->
+            <div id="admin-users-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h1 style="font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px;">👤 Admin Users Management</h1>
+                            <p style="color: #64748b; margin: 0;">Manage company admin users with login access</p>
+                        </div>
+                        <button onclick="app.showCreateAdminUserModal()" style="padding: 12px 24px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">+</span> Create Admin User
+                        </button>
+                    </div>
+
+                    <div style="background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+                        <div id="adminUsersTableContainer">
+                            <p style="text-align: center; padding: 40px; color: #94a3b8;">Loading admin users...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wizone AI Meetings -->
+            <div id="meetings-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <div style="margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h1 style="font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px;">🎥 Wizone AI Meeting</h1>
+                            <p style="color: #64748b; margin: 0;">Create and manage video meetings with recording</p>
+                        </div>
+                        <button onclick="app.showCreateMeetingModal()" style="padding: 12px 24px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 18px;">+</span> Create Meeting
+                        </button>
+                    </div>
+
+                    <div style="background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+                        <div id="meetingsTableContainer">
+                            <p style="text-align: center; padding: 40px; color: #94a3b8;">Loading meetings...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Meeting Recordings -->
+            <div id="meeting-recordings-content" class="content-view" style="padding: 32px; display: none;">
+                <div style="max-width: 1400px; margin: 0 auto;">
+                    <div style="margin-bottom: 32px;">
+                        <h1 style="font-size: 32px; font-weight: 700; color: #0f172a; margin: 0 0 8px;">📹 Meeting Recordings</h1>
+                        <p style="color: #64748b; margin: 0;">View and playback recorded meetings</p>
+                    </div>
+
+                    <div style="background: white; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); overflow: hidden;">
+                        <div id="recordingsTableContainer">
+                            <p style="text-align: center; padding: 40px; color: #94a3b8;">Loading recordings...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    },
+
+    // ===== SYSTEM CONTROL FUNCTIONS =====
+    _controlApps: [],
+    _filteredControlApps: [],
+
+    async initializeSystemControl() {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_connected_systems', { company_name: companyName });
+            const select = document.getElementById('controlSystemSelect');
+            if (select && response.success && response.data) {
+                const onlineSystems = response.data.filter(sys => sys.is_online === true);
+                select.innerHTML = '<option value="">-- Select a system --</option>';
+                onlineSystems.forEach(sys => {
+                    const displayName = sys.display_name || sys.employee_id || '';
+                    const machineName = sys.machine_name || sys.system_name || '';
+                    select.innerHTML += `<option value="${machineName}" data-employee="${sys.employee_id || ''}">${displayName} - ${machineName}</option>`;
+                });
+                if (onlineSystems.length === 0) {
+                    select.innerHTML += '<option value="" disabled>No online systems found</option>';
+                }
+            }
+            this.loadCommandHistory();
+        } catch (error) { console.error('[SystemControl] Init error:', error); }
+    },
+
+    async onControlSystemSelected() {
+        const select = document.getElementById('controlSystemSelect');
+        const panel = document.getElementById('controlCommandsPanel');
+        const appsPanel = document.getElementById('controlInstalledAppsPanel');
+        if (select && select.value) {
+            if (panel) panel.style.display = 'block';
+            this.loadInstalledAppsForSystem(select.value);
+        } else {
+            if (panel) panel.style.display = 'none';
+            if (appsPanel) appsPanel.style.display = 'none';
+        }
+    },
+
+    async loadInstalledAppsForSystem(systemName) {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_installed_apps_detailed', { company_name: companyName, system_name: systemName });
+            const panel = document.getElementById('controlInstalledAppsPanel');
+            if (response.success && response.data && response.data.length > 0) {
+                this._controlApps = response.data;
+                this._filteredControlApps = response.data;
+                if (panel) panel.style.display = 'block';
+                this.renderControlAppsTable();
+            } else {
+                if (panel) panel.style.display = 'none';
+            }
+        } catch (error) { console.error('[SystemControl] Load apps error:', error); }
+    },
+
+    renderControlAppsTable() {
+        const container = document.getElementById('controlAppsTableContainer');
+        if (!container) return;
+        const apps = this._filteredControlApps;
+        if (apps.length === 0) { container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No apps found</p>'; return; }
+        let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">App Name</th><th style="padding: 8px; text-align: left; border-bottom: 1px solid #e2e8f0;">Version</th><th style="padding: 8px; text-align: right; border-bottom: 1px solid #e2e8f0;">Actions</th></tr></thead><tbody>';
+        apps.forEach(app => {
+            const name = app.app_name || app.name || '';
+            const ver = app.app_version || app.version || '';
+            html += `<tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${name}</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${ver}</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9; text-align: right;"><button onclick="app.uninstallAppDirect('${name.replace(/'/g, "\\'")}')" style="padding: 4px 10px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; margin-right: 4px;">Uninstall</button><button onclick="app.blockAppDirect('${name.replace(/'/g, "\\'")}')" style="padding: 4px 10px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px;">Block</button></td></tr>`;
+        });
+        html += '</tbody></table>';
+        container.innerHTML = html;
+    },
+
+    filterControlApps(term) {
+        if (!term) { this._filteredControlApps = this._controlApps; } else { const t = term.toLowerCase(); this._filteredControlApps = this._controlApps.filter(a => (a.app_name || a.name || '').toLowerCase().includes(t)); }
+        this.renderControlAppsTable();
+    },
+
+    async sendControlCommand(commandType, params = {}) {
+        const select = document.getElementById('controlSystemSelect');
+        if (!select || !select.value) { this.showToast('Please select a system', 'warning'); return; }
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('send_system_command', { company_name: companyName, system_name: select.value, command_type: commandType, parameters: params, created_by: this.userData?.username || 'admin' });
+            if (response.success) { this.showToast(`Command '${commandType}' sent successfully`, 'success'); this.loadCommandHistory(); } else { this.showToast('Failed: ' + (response.error || ''), 'error'); }
+        } catch (error) { this.showToast('Error sending command', 'error'); }
+    },
+
+    openControlModal(type) {
+        const modal = document.getElementById('controlActionModal');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        if (!modal) return;
+        if (type === 'show_message') {
+            title.textContent = 'Send Message to User';
+            body.innerHTML = '<textarea id="modalMessageText" placeholder="Enter message..." rows="4" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box;"></textarea>';
+            submitBtn.onclick = () => { const msg = document.getElementById('modalMessageText')?.value; if (msg) { this.sendControlCommand('show_message', { message: msg }); this.closeControlModal(); } };
+        }
+        modal.style.display = 'flex';
+    },
+
+    closeControlModal() { const modal = document.getElementById('controlActionModal'); if (modal) modal.style.display = 'none'; },
+
+    showUninstallDialog() {
+        const modal = document.getElementById('controlActionModal');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        if (!modal) return;
+        title.textContent = 'Uninstall Application';
+        let options = this._controlApps.map(a => `<option value="${(a.app_name || a.name || '').replace(/"/g, '&quot;')}">${a.app_name || a.name}</option>`).join('');
+        body.innerHTML = `<select id="modalAppSelect" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;"><option value="">-- Select app --</option>${options}</select>`;
+        submitBtn.onclick = () => { const app = document.getElementById('modalAppSelect')?.value; if (app) { this.sendControlCommand('uninstall_app', { appName: app }); this.closeControlModal(); } };
+        modal.style.display = 'flex';
+    },
+
+    showBlockAppDialog() {
+        const modal = document.getElementById('controlActionModal');
+        const title = document.getElementById('modalTitle');
+        const body = document.getElementById('modalBody');
+        const submitBtn = document.getElementById('modalSubmitBtn');
+        if (!modal) return;
+        title.textContent = 'Block Application';
+        let options = this._controlApps.map(a => `<option value="${(a.app_name || a.name || '').replace(/"/g, '&quot;')}">${a.app_name || a.name}</option>`).join('');
+        body.innerHTML = `<select id="modalAppSelect" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;"><option value="">-- Select app --</option>${options}</select>`;
+        submitBtn.onclick = () => { const app = document.getElementById('modalAppSelect')?.value; if (app) { this.sendControlCommand('block_application', { appName: app }); this.closeControlModal(); } };
+        modal.style.display = 'flex';
+    },
+
+    uninstallAppDirect(appName) { if (confirm('Uninstall "' + appName + '"?')) this.sendControlCommand('uninstall_app', { appName }); },
+    blockAppDirect(appName) { if (confirm('Block "' + appName + '"?')) this.sendControlCommand('block_application', { appName }); },
+
+    async loadCommandHistory() {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_command_history', { company_name: companyName });
+            const container = document.getElementById('commandHistoryTable');
+            if (!container || !response.success) return;
+            if (!response.data || response.data.length === 0) { container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No commands sent yet</p>'; return; }
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;"><thead><tr style="background: #f8fafc;"><th style="padding: 8px; text-align: left;">System</th><th style="padding: 8px; text-align: left;">Command</th><th style="padding: 8px; text-align: left;">Status</th><th style="padding: 8px; text-align: left;">Time</th></tr></thead><tbody>';
+            response.data.forEach(cmd => {
+                const statusColor = cmd.status === 'completed' ? '#10b981' : cmd.status === 'pending' ? '#f59e0b' : '#ef4444';
+                html += `<tr><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${cmd.system_name || ''}</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${cmd.command_type || ''}</td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;"><span style="color: ${statusColor}; font-weight: 600;">${cmd.status || ''}</span></td><td style="padding: 8px; border-bottom: 1px solid #f1f5f9;">${cmd.created_at ? new Date(cmd.created_at).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) : ''}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) { console.error('[SystemControl] Load history error:', error); }
+    },
+
+    // ===== DANGER ZONE FUNCTIONS =====
+
+    _dzSystemsCache: [],
+
+    async initializeDangerZone() {
+        try {
+            console.log('[DangerZone] Initializing...');
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+
+            // Fetch systems
+            const response = await this.api('get_online_systems', { company_name: companyName });
+            const fallback = await this.api('get_connected_systems', { company_name: companyName });
+
+            let select = null;
+            for (let i = 0; i < 10; i++) {
+                select = document.getElementById('dangerZoneSystemSelect');
+                if (select) break;
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+
+            // Build systems list from both sources
+            const systemsMap = {};
+            if (response.success && response.data) {
+                response.data.forEach(sys => {
+                    const name = sys.system_name || '';
+                    if (name) systemsMap[name] = { ...sys, source: 'detailed' };
+                });
+            }
+            if (fallback.success && fallback.data) {
+                fallback.data.forEach(sys => {
+                    const name = sys.machine_name || sys.system_name || '';
+                    if (name && !systemsMap[name]) {
+                        systemsMap[name] = { system_name: name, ip_address: sys.ip_address, is_online: sys.is_online, os_name: sys.os_info, source: 'basic' };
+                    } else if (name && systemsMap[name]) {
+                        systemsMap[name].is_online = sys.is_online || systemsMap[name].is_online;
+                        systemsMap[name].display_name = sys.display_name || systemsMap[name].display_name;
+                        systemsMap[name].employee_id = sys.employee_id;
+                    }
+                });
+            }
+
+            this._dzSystemsCache = Object.values(systemsMap);
+
+            if (select) {
+                const onlineSystems = this._dzSystemsCache.filter(s => s.is_online);
+                const offlineSystems = this._dzSystemsCache.filter(s => !s.is_online);
+
+                let options = '<option value="">-- Select a system --</option>';
+                if (onlineSystems.length > 0) {
+                    options += '<optgroup label="Online Systems">';
+                    onlineSystems.forEach(sys => {
+                        const name = sys.system_name || '';
+                        const displayName = sys.display_name || sys.employee_id || name;
+                        options += `<option value="${name}">&#128994; ${displayName} - ${name}</option>`;
+                    });
+                    options += '</optgroup>';
+                }
+                if (offlineSystems.length > 0) {
+                    options += '<optgroup label="Offline Systems">';
+                    offlineSystems.forEach(sys => {
+                        const name = sys.system_name || '';
+                        const displayName = sys.display_name || sys.employee_id || name;
+                        options += `<option value="${name}">&#128308; ${displayName} - ${name}</option>`;
+                    });
+                    options += '</optgroup>';
+                }
+                select.innerHTML = options;
+            }
+
+            // Load online systems overview
+            this.loadDZOnlineSystems();
+
+        } catch (error) { console.error('[DangerZone] Init error:', error); }
+    },
+
+    async onDangerZoneSystemChange() {
+        const select = document.getElementById('dangerZoneSystemSelect');
+        const systemName = select?.value;
+        const infoPanel = document.getElementById('dzSystemInfoPanel');
+
+        if (!systemName) {
+            if (infoPanel) infoPanel.style.display = 'none';
+            // Reset all toggles
+            const restrictions = ['cmd','powershell','regedit','copy_paste','software_install','delete','ip_change','task_manager','control_panel','full_restriction'];
+            restrictions.forEach(r => {
+                const toggle = document.getElementById('dz-toggle-' + r);
+                if (toggle) toggle.checked = false;
+                const status = document.getElementById('dz-status-' + r);
+                if (status) status.innerHTML = '';
+            });
+            return;
+        }
+
+        // Show system info
+        const sys = this._dzSystemsCache.find(s => s.system_name === systemName);
+        if (sys && infoPanel) {
+            infoPanel.style.display = 'block';
+            const infoContent = document.getElementById('dzSystemInfoContent');
+            if (infoContent) {
+                let storageText = '';
+                if (Array.isArray(sys.storage_info) && sys.storage_info.length > 0) {
+                    storageText = sys.storage_info.map(s => `${s.name || s.caption || 'Drive'}: ${s.size || s.total_size || 'N/A'}`).join(', ');
+                }
+                let gpuText = '';
+                if (Array.isArray(sys.gpu_info) && sys.gpu_info.length > 0) {
+                    gpuText = sys.gpu_info.map(g => g.name || g.caption || 'GPU').join(', ');
+                }
+
+                // Build detailed network info
+                let networkText = '';
+                try {
+                    const netInfo = typeof sys.network_info === 'string' ? JSON.parse(sys.network_info || '[]') : (sys.network_info || []);
+                    if (Array.isArray(netInfo) && netInfo.length > 0) {
+                        networkText = netInfo.map(n => `${n.name || n.description || 'NIC'}: ${n.ip_address || n.ip || 'N/A'}`).join('<br>');
+                    }
+                } catch(e) {}
+
+                // Build motherboard text
+                const mbText = [sys.motherboard_manufacturer, sys.motherboard_product].filter(Boolean).join(' ') || sys.motherboard_info || '';
+
+                infoContent.innerHTML = `
+                    <div><div style="font-size: 11px; opacity: 0.7;">System Name</div><div style="font-size: 15px; font-weight: 600;">${sys.system_name || 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Employee</div><div style="font-size: 15px; font-weight: 600;">${sys.display_name || sys.employee_id || 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">IP Address</div><div style="font-size: 15px; font-weight: 600;">${sys.ip_address || 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Status</div><div style="font-size: 15px; font-weight: 600;">${sys.is_online ? '&#128994; Online' : '&#128308; Offline'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">CPU Usage</div><div style="font-size: 15px; font-weight: 600;">${sys.cpu_usage ? Math.round(sys.cpu_usage) + '%' : 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">RAM Usage</div><div style="font-size: 15px; font-weight: 600;">${sys.ram_usage ? Math.round(sys.ram_usage) + '%' : 'N/A'}</div></div>
+                    <div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">Operating System</div><div style="font-size: 14px; font-weight: 600;">${sys.os_name || 'N/A'} ${sys.os_version ? '(' + sys.os_version + ')' : ''} ${sys.os_build ? 'Build ' + sys.os_build : ''}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Install Date</div><div style="font-size: 13px; font-weight: 500;">${sys.os_install_date || 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Last Boot</div><div style="font-size: 13px; font-weight: 500;">${sys.last_boot_time || 'N/A'}</div></div>
+                    <div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">Processor</div><div style="font-size: 14px; font-weight: 600;">${sys.processor_name || 'N/A'}</div><div style="font-size: 12px; opacity: 0.8;">${sys.processor_cores ? sys.processor_cores + ' Cores' : ''} ${sys.processor_logical ? '/ ' + sys.processor_logical + ' Threads' : ''} ${sys.processor_speed ? '@ ' + sys.processor_speed : ''}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Total RAM</div><div style="font-size: 15px; font-weight: 600;">${sys.total_ram || 'N/A'}</div></div>
+                    <div><div style="font-size: 11px; opacity: 0.7;">Available RAM</div><div style="font-size: 15px; font-weight: 600;">${sys.available_ram || 'N/A'}</div></div>
+                    ${storageText ? `<div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">Storage</div><div style="font-size: 13px; font-weight: 500;">${storageText}</div></div>` : ''}
+                    ${gpuText ? `<div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">GPU</div><div style="font-size: 13px; font-weight: 500;">${gpuText}</div></div>` : ''}
+                    ${mbText ? `<div><div style="font-size: 11px; opacity: 0.7;">Motherboard</div><div style="font-size: 13px; font-weight: 500;">${mbText}</div></div>` : ''}
+                    <div><div style="font-size: 11px; opacity: 0.7;">MB Serial</div><div style="font-size: 13px; font-weight: 500;">${sys.motherboard_serial || 'N/A'}</div></div>
+                    <div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">BIOS</div><div style="font-size: 13px; font-weight: 500;">${sys.bios_version || sys.bios_info || 'N/A'}</div></div>
+                    ${networkText ? `<div style="grid-column: span 2;"><div style="font-size: 11px; opacity: 0.7;">Network</div><div style="font-size: 12px; font-weight: 500;">${networkText}</div></div>` : ''}
+                    ${sys.os_serial ? `<div><div style="font-size: 11px; opacity: 0.7;">Product ID</div><div style="font-size: 12px; font-weight: 500;">${sys.os_serial}</div></div>` : ''}
+                `;
+            }
+        }
+
+        // Load restriction states for this system
+        await this.loadDZRestrictionStates(systemName);
+
+        // Load blocked apps for this system
+        await this.loadDZBlockedApps(systemName);
+    },
+
+    async loadDZRestrictionStates(systemName) {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_system_restrictions', { company_name: companyName, system_name: systemName });
+
+            // Reset all toggles first
+            const allRestrictions = ['cmd','powershell','regedit','copy_paste','software_install','delete','ip_change','task_manager','control_panel','full_restriction'];
+            allRestrictions.forEach(r => {
+                const toggle = document.getElementById('dz-toggle-' + r);
+                if (toggle) toggle.checked = false;
+                const status = document.getElementById('dz-status-' + r);
+                if (status) status.innerHTML = '';
+            });
+
+            if (response.success && response.data) {
+                let activeCount = 0;
+                response.data.forEach(r => {
+                    const toggle = document.getElementById('dz-toggle-' + r.restriction_type);
+                    if (toggle) {
+                        toggle.checked = r.is_active;
+                        if (r.is_active) activeCount++;
+                    }
+                    const status = document.getElementById('dz-status-' + r.restriction_type);
+                    if (status && r.is_active) {
+                        const time = r.changed_at ? new Date(r.changed_at).toLocaleString('en-IN') : '';
+                        status.innerHTML = `<span style="color: #ef4444;">Active since ${time}</span>`;
+                    }
+                });
+
+                // If all 9 individual restrictions are active, check full restriction
+                if (activeCount >= 9) {
+                    const fullToggle = document.getElementById('dz-toggle-full_restriction');
+                    if (fullToggle) fullToggle.checked = true;
+                }
+            }
+        } catch (err) {
+            console.error('[DangerZone] loadRestrictionStates error:', err);
+        }
+    },
+
+    async loadDZBlockedApps(systemName) {
+        const container = document.getElementById('dzBlockedAppsContent');
+        if (!container) return;
+
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_blocked_apps', { company_name: companyName, system_name: systemName });
+
+            if (response.success && response.data && response.data.length > 0) {
+                const activeBlocks = response.data.filter(a => a.is_blocked);
+                if (activeBlocks.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No blocked applications for this system</p>';
+                    return;
+                }
+
+                let html = '<div style="display: grid; gap: 8px;">';
+                activeBlocks.forEach(app => {
+                    const time = app.blocked_at ? new Date(app.blocked_at).toLocaleString('en-IN') : '';
+                    html += `
+                        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: #fef2f2; border-radius: 10px; border: 1px solid #fecaca;">
+                            <div>
+                                <div style="font-weight: 600; color: #991b1b;">${app.app_name}</div>
+                                <div style="font-size: 12px; color: #94a3b8;">${app.exe_name || ''} | Blocked: ${time}</div>
+                            </div>
+                            <span style="background: #dc2626; color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">BLOCKED</span>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 20px;">No blocked applications for this system</p>';
+            }
+        } catch (err) {
+            container.innerHTML = '<p style="text-align: center; color: #ef4444;">Error loading blocked apps</p>';
+        }
+    },
+
+    loadDZOnlineSystems() {
+        const container = document.getElementById('dzOnlineSystemsContent');
+        if (!container) return;
+
+        if (this._dzSystemsCache.length === 0) {
+            container.innerHTML = '<p style="text-align: center; color: #94a3b8;">No systems found</p>';
+            return;
+        }
+
+        let html = '<div style="overflow-x: auto;"><table style="width: 100%; border-collapse: collapse; font-size: 13px;">';
+        html += '<thead><tr style="border-bottom: 2px solid #e2e8f0;">';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">Status</th>';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">System Name</th>';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">IP Address</th>';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">OS</th>';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">CPU</th>';
+        html += '<th style="text-align: left; padding: 10px; color: #64748b; font-weight: 600;">RAM</th>';
+        html += '</tr></thead><tbody>';
+
+        this._dzSystemsCache.forEach(sys => {
+            const statusDot = sys.is_online ? '&#128994;' : '&#128308;';
+            html += `<tr style="border-bottom: 1px solid #f1f5f9; cursor: pointer;" onclick="document.getElementById('dangerZoneSystemSelect').value='${sys.system_name}'; app.onDangerZoneSystemChange();">
+                <td style="padding: 10px;">${statusDot} ${sys.is_online ? 'Online' : 'Offline'}</td>
+                <td style="padding: 10px; font-weight: 600; color: #1e293b;">${sys.system_name || 'N/A'}</td>
+                <td style="padding: 10px;">${sys.ip_address || 'N/A'}</td>
+                <td style="padding: 10px;">${sys.os_name || sys.os_info || 'N/A'}</td>
+                <td style="padding: 10px; font-size: 12px;">${sys.processor_name || 'N/A'}</td>
+                <td style="padding: 10px;">${sys.total_ram || 'N/A'}</td>
+            </tr>`;
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    },
+
+    async toggleDangerZoneRestriction(restrictionId, isActive) {
+        const select = document.getElementById('dangerZoneSystemSelect');
+        if (!select || !select.value) {
+            this.showToast('Please select a system first', 'warning');
+            // Reset toggle
+            const toggle = document.getElementById('dz-toggle-' + restrictionId);
+            if (toggle) toggle.checked = !isActive;
+            return;
+        }
+
+        const systemName = select.value;
+        const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+        const statusEl = document.getElementById('dz-status-' + restrictionId);
+
+        if (statusEl) statusEl.innerHTML = '<span style="color: #f59e0b;">&#9203; Sending command...</span>';
+
+        try {
+            let response;
+            if (restrictionId === 'full_restriction') {
+                response = await this.api('toggle_full_restriction', {
+                    company_name: companyName,
+                    system_name: systemName,
+                    is_active: isActive ? 'true' : 'false',
+                    changed_by: this.userData?.username || 'admin'
+                });
+
+                // Update all individual toggles to match
+                if (response.success) {
+                    const allRestrictions = ['cmd','powershell','regedit','copy_paste','software_install','delete','ip_change','task_manager','control_panel'];
+                    allRestrictions.forEach(r => {
+                        const toggle = document.getElementById('dz-toggle-' + r);
+                        if (toggle) toggle.checked = isActive;
+                        const st = document.getElementById('dz-status-' + r);
+                        if (st) st.innerHTML = isActive
+                            ? `<span style="color: #ef4444;">Active (via full restriction)</span>`
+                            : '';
+                    });
+                }
+            } else {
+                response = await this.api('toggle_system_restriction', {
+                    company_name: companyName,
+                    system_name: systemName,
+                    restriction_type: restrictionId,
+                    is_active: isActive ? 'true' : 'false',
+                    changed_by: this.userData?.username || 'admin'
+                });
+            }
+
+            if (response.success) {
+                const now = new Date().toLocaleString('en-IN');
+                if (statusEl) statusEl.innerHTML = isActive
+                    ? `<span style="color: #ef4444;">Active since ${now}</span>`
+                    : `<span style="color: #10b981;">Disabled at ${now}</span>`;
+                this.showToast(`${restrictionId.replace(/_/g, ' ')} ${isActive ? 'enabled' : 'disabled'}`, 'success');
+            } else {
+                if (statusEl) statusEl.innerHTML = `<span style="color: #ef4444;">Failed: ${response.error || ''}</span>`;
+                // Revert toggle
+                const toggle = document.getElementById('dz-toggle-' + restrictionId);
+                if (toggle) toggle.checked = !isActive;
+                this.showToast('Failed: ' + (response.error || ''), 'error');
+            }
+        } catch (error) {
+            if (statusEl) statusEl.innerHTML = `<span style="color: #ef4444;">Error sending command</span>`;
+            const toggle = document.getElementById('dz-toggle-' + restrictionId);
+            if (toggle) toggle.checked = !isActive;
+            this.showToast('Error sending command', 'error');
+        }
+    },
+
+    // Keep backward compatibility
+    async sendDangerZoneCommand(restrictionId, action) {
+        const isBlock = action === 'block';
+        const toggle = document.getElementById('dz-toggle-' + restrictionId);
+        if (toggle) toggle.checked = isBlock;
+        await this.toggleDangerZoneRestriction(restrictionId, isBlock);
+    },
+
+    // ===== FILE & EMAIL ACTIVITY FUNCTIONS =====
+
+    async initializeFileActivity() {
+        try {
+            console.log('[FileActivity] Initializing...');
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            console.log('[FileActivity] Company:', companyName);
+            const response = await this.api('get_connected_systems', { company_name: companyName });
+            console.log('[FileActivity] API response:', response.success, 'systems:', response.data?.length);
+
+            // Wait for DOM to be ready
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const select = document.getElementById('fileActivityEmployee');
+            console.log('[FileActivity] Select element found:', !!select);
+            if (select && response.success && response.data) {
+                // Deduplicate by employee_id to show unique employees
+                const seen = new Set();
+                let options = '<option value="">All Employees</option>';
+                response.data.forEach(sys => {
+                    const empId = sys.employee_id || '';
+                    if (empId && !seen.has(empId)) {
+                        seen.add(empId);
+                        options += `<option value="${empId}">${sys.display_name || empId} (${sys.machine_name || ''})</option>`;
+                    }
+                });
+                select.innerHTML = options;
+                console.log('[FileActivity] Employee options set:', select.options.length);
+            }
+            this.loadFileActivityLogs();
+        } catch (error) { console.error('[FileActivity] Init error:', error); }
+    },
+
+    async loadFileActivityLogs() {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const employee = document.getElementById('fileActivityEmployee')?.value || '';
+            const startDate = document.getElementById('fileActivityStartDate')?.value || '';
+            const endDate = document.getElementById('fileActivityEndDate')?.value || '';
+            const response = await this.api('get_file_activity_logs', { company_name: companyName, employee_id: employee, start_date: startDate, end_date: endDate });
+            const container = document.getElementById('fileActivityResults');
+            if (!container) return;
+            if (!response.success || !response.data || response.data.length === 0) { container.innerHTML = '<p style="text-align: center; color: #94a3b8; padding: 40px;">No file activity logs found</p>'; return; }
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 13px;"><thead><tr style="background: #f8fafc;"><th style="padding: 10px; text-align: left;">User</th><th style="padding: 10px; text-align: left;">System</th><th style="padding: 10px; text-align: left;">Activity</th><th style="padding: 10px; text-align: left;">Details</th><th style="padding: 10px; text-align: left;">Time</th></tr></thead><tbody>';
+            response.data.forEach(log => {
+                const actType = log.activity_type || '';
+                const actColors = { file_rename: '#f59e0b', email_attachment: '#8b5cf6', email_sent: '#10b981', email_received: '#3b82f6', file_created: '#22c55e', file_deleted: '#ef4444', file_modified: '#6366f1' };
+                const actColor = actColors[actType] || '#3b82f6';
+                let details = '';
+                if (actType === 'file_rename') {
+                    details = `<div><span style="color:#ef4444;text-decoration:line-through;">${log.old_file_name || log.old_name || ''}</span> &rarr; <span style="color:#10b981;font-weight:600;">${log.new_file_name || log.file_name || ''}</span></div><div style="color:#94a3b8;font-size:11px;margin-top:2px;">${log.file_path || ''}</div>`;
+                } else if (actType === 'email_attachment' || actType === 'email_sent' || actType === 'email_received') {
+                    details = `<div style="font-weight:600;">${log.file_name || ''}</div>`;
+                    if (log.email_sender) details += `<div style="color:#64748b;font-size:11px;">From: ${log.email_sender}</div>`;
+                    if (log.email_recipient) details += `<div style="color:#64748b;font-size:11px;">To: ${log.email_recipient}</div>`;
+                    if (log.email_subject) details += `<div style="color:#94a3b8;font-size:11px;">Subject: ${log.email_subject}</div>`;
+                    if (log.file_path) details += `<div style="color:#94a3b8;font-size:11px;">${log.file_path}</div>`;
+                } else {
+                    details = `<div>${log.file_name || ''}</div><div style="color:#94a3b8;font-size:11px;">${log.file_path || ''}</div>`;
+                }
+                const displayUser = log.display_user_name || log.user_name || '';
+                const displayIP = log.ip_address || '-';
+                html += `<tr><td style="padding: 10px; border-bottom: 1px solid #f1f5f9;"><span style="font-weight: 600;">${displayUser}</span><br><span style="font-size: 11px; color: #94a3b8;">${displayIP}</span></td><td style="padding: 10px; border-bottom: 1px solid #f1f5f9;">${log.system_name || ''}</td><td style="padding: 10px; border-bottom: 1px solid #f1f5f9;"><span style="background: ${actColor}20; color: ${actColor}; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600;">${actType.replace(/_/g, ' ')}</span></td><td style="padding: 10px; border-bottom: 1px solid #f1f5f9;">${details}</td><td style="padding: 10px; border-bottom: 1px solid #f1f5f9; white-space: nowrap;">${log.created_at ? new Date(log.created_at).toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) : ''}</td></tr>`;
+            });
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) { console.error('[FileActivity] Load error:', error); }
+    },
+
+    // ===== ADMIN CHAT FUNCTIONS =====
+
+    _chatContacts: [],
+    _filteredChatContacts: [],
+    _selectedChatRecipient: null,
+    _chatMessages: [],
+    _chatPollTimer: null,
+    _chatPendingFile: null,
+    _chatAdminUser: 'admin',
+
+    async initializeAdminChat() {
+        try {
+            this._chatAdminUser = this.userData?.username || 'admin';
+            if (this._chatPollTimer) { clearInterval(this._chatPollTimer); this._chatPollTimer = null; }
+            await this.loadChatContacts();
+        } catch (error) { console.error('[Chat] Init error:', error); }
+    },
+
+    async loadChatContacts() {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_chat_contacts', { company_name: companyName, current_user: this._chatAdminUser });
+            if (response.success && response.data) { this._chatContacts = response.data; this._filteredChatContacts = response.data; this.renderChatContacts(); }
+        } catch (error) { console.error('[Chat] Load contacts error:', error); }
+    },
+
+    renderChatContacts() {
+        const container = document.getElementById('chatContactsList');
+        if (!container) return;
+        if (this._filteredChatContacts.length === 0) { container.innerHTML = '<div style="text-align: center; padding: 40px 20px; color: #94a3b8;">No contacts found</div>'; return; }
+        container.innerHTML = this._filteredChatContacts.map(contact => {
+            const isOnline = contact.is_online;
+            const isSelected = this._selectedChatRecipient && this._selectedChatRecipient.employee_id === contact.employee_id;
+            const unread = parseInt(contact.unread_count) || 0;
+            const lastMsg = contact.last_message ? (contact.last_message.length > 30 ? contact.last_message.substring(0, 30) + '...' : contact.last_message) : 'No messages yet';
+            const initial = (contact.display_name || contact.employee_id || '?')[0].toUpperCase();
+            return `<div onclick="app.selectChatContact('${contact.employee_id}')" style="display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; cursor: pointer; margin-bottom: 4px; ${isSelected ? 'background: #eff6ff; border: 1px solid #bfdbfe;' : 'background: white; border: 1px solid transparent;'}"><div style="position: relative; width: 44px; height: 44px; min-width: 44px;"><div style="width: 44px; height: 44px; background: ${isSelected ? '#3b82f6' : '#e2e8f0'}; color: ${isSelected ? 'white' : '#64748b'}; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px;">${initial}</div><div style="position: absolute; bottom: 0; right: 0; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; background: ${isOnline ? '#22c55e' : '#94a3b8'};"></div></div><div style="flex: 1; min-width: 0;"><div style="display: flex; justify-content: space-between;"><span style="font-weight: 600; color: #0f172a; font-size: 14px;">${contact.display_name || contact.employee_id}</span>${unread > 0 ? `<span style="background: #ef4444; color: white; border-radius: 50%; min-width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;">${unread}</span>` : ''}</div><div style="color: #94a3b8; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${lastMsg}</div></div></div>`;
+        }).join('');
+    },
+
+    filterChatContacts(searchTerm) {
+        if (!searchTerm) { this._filteredChatContacts = this._chatContacts; } else { const term = searchTerm.toLowerCase(); this._filteredChatContacts = this._chatContacts.filter(c => (c.display_name || '').toLowerCase().includes(term) || (c.employee_id || '').toLowerCase().includes(term)); }
+        this.renderChatContacts();
+    },
+
+    async selectChatContact(employeeId) {
+        const contact = this._chatContacts.find(c => c.employee_id === employeeId);
+        if (!contact) return;
+        this._selectedChatRecipient = contact;
+        this._chatMessages = [];
+        this._chatPendingFile = null;
+        // Stop existing poll timer to prevent old contact messages loading
+        if (this._chatPollTimer) { clearInterval(this._chatPollTimer); this._chatPollTimer = null; }
+        const headerName = document.getElementById('chatHeaderName');
+        const headerStatus = document.getElementById('chatHeaderStatus');
+        const headerAvatar = document.getElementById('chatHeaderAvatar');
+        if (headerName) headerName.textContent = contact.display_name || contact.employee_id;
+        if (headerStatus) headerStatus.innerHTML = contact.is_online ? '<span style="color: #22c55e;">&#11044;</span> Online' : '<span style="color: #94a3b8;">&#11044;</span> Offline';
+        if (headerAvatar) { headerAvatar.innerHTML = (contact.display_name || contact.employee_id || '?')[0].toUpperCase(); headerAvatar.style.background = '#3b82f6'; headerAvatar.style.color = 'white'; }
+        const inputArea = document.getElementById('chatInputArea');
+        if (inputArea) inputArea.style.display = 'block';
+        const fileZone = document.getElementById('chatFileZone');
+        if (fileZone) fileZone.style.display = 'none';
+        // Immediately clear messages area to prevent showing old contact's messages
+        const msgArea = document.getElementById('chatMessagesArea');
+        if (msgArea) msgArea.innerHTML = '<div style="text-align: center; padding: 40px; color: #94a3b8;">Loading messages...</div>';
+        this.renderChatContacts();
+        try { const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD'; await this.api('mark_chat_read', { sender: employeeId, recipient: this._chatAdminUser, company_name: companyName }); } catch (e) {}
+        await this.loadChatMessages();
+        this._chatPollTimer = setInterval(() => { this.pollChatMessages(); this.refreshContactUnreadCounts(); }, 3000);
+    },
+
+    async loadChatMessages() {
+        if (!this._selectedChatRecipient) return;
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_chat_messages', { sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, company_name: companyName, limit: 200 });
+            if (response.success && response.data) { this._chatMessages = response.data; this.renderChatMessages(); }
+        } catch (error) { console.error('[Chat] Load messages error:', error); }
+    },
+
+    renderChatMessages() {
+        const container = document.getElementById('chatMessagesArea');
+        if (!container) return;
+        if (this._chatMessages.length === 0) { container.innerHTML = '<div style="text-align: center; padding: 60px 20px; color: #94a3b8;"><div style="font-size: 48px; margin-bottom: 16px;">&#128172;</div><p>No messages yet. Start the conversation!</p></div>'; return; }
+        let html = '';
+        this._chatMessages.forEach(msg => {
+            const isAdmin = msg.sender === this._chatAdminUser;
+            const time = new Date(msg.created_at).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', hour12: true });
+            let content = '';
+            if (msg.message_type === 'voice') {
+                content = '<div style="display:flex;align-items:center;gap:10px;"><span style="font-size:24px;">&#127908;</span><div><div style="font-weight:600;">' + (msg.message || 'Voice message') + '</div>';
+                if (msg.id && msg.file_name) { content += '<button onclick="app.downloadChatFile(' + msg.id + ', \'' + (msg.file_name || 'voice.webm').replace(/'/g, "\\'") + '\')" style="padding:4px 12px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:6px;cursor:pointer;font-size:12px;color:inherit;margin-top:4px;">Play/Download</button>'; }
+                content += '</div></div>';
+            } else if (msg.message_type === 'file') {
+                content = '<div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;"><span style="font-size: 24px;">&#128206;</span><div><div style="font-weight: 600;">' + (msg.file_name || 'File') + '</div></div></div><button onclick="app.downloadChatFile(' + msg.id + ', \'' + (msg.file_name || 'file').replace(/'/g, "\\'") + '\')" style="padding: 6px 14px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; cursor: pointer; font-size: 13px; color: inherit;">Download</button>' + (msg.message ? '<div style="margin-top: 6px;">' + msg.message + '</div>' : '');
+            } else {
+                content = (msg.message || '').replace(/\n/g, '<br>');
+            }
+            html += `<div style="display: flex; justify-content: ${isAdmin ? 'flex-end' : 'flex-start'}; margin-bottom: 4px;"><div style="max-width: 65%; padding: 12px 16px; border-radius: ${isAdmin ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; background: ${isAdmin ? 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)' : 'white'}; color: ${isAdmin ? 'white' : '#0f172a'}; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">${content}<div style="text-align: right; font-size: 11px; margin-top: 4px; opacity: 0.7;">${time}</div></div></div>`;
+        });
+        container.innerHTML = html;
+        container.scrollTop = container.scrollHeight;
+    },
+
+    async pollChatMessages() {
+        if (!this._selectedChatRecipient) return;
+        try {
+            const lastId = this._chatMessages.length > 0 ? this._chatMessages[this._chatMessages.length - 1].id : 0;
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_chat_messages', { sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, company_name: companyName, after_id: lastId });
+            if (response.success && response.data && response.data.length > 0) {
+                this._chatMessages.push(...response.data);
+                this.renderChatMessages();
+                if (response.data.some(m => m.sender !== this._chatAdminUser)) {
+                    await this.api('mark_chat_read', { sender: this._selectedChatRecipient.employee_id, recipient: this._chatAdminUser, company_name: companyName });
+                }
+            }
+        } catch (error) {}
+    },
+
+    async refreshContactUnreadCounts() {
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('get_chat_contacts', { company_name: companyName, current_user: this._chatAdminUser });
+            if (response.success && response.data) { this._chatContacts = response.data; this._filteredChatContacts = response.data; this.renderChatContacts(); }
+        } catch (error) {}
+    },
+
+    async sendChatMessage() {
+        if (!this._selectedChatRecipient) return;
+        const input = document.getElementById('chatMessageInput');
+        const message = input?.value?.trim() || '';
+        if (this._chatPendingFile) { await this.uploadChatFile(message); return; }
+        if (!message) return;
+        try {
+            const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+            const response = await this.api('send_chat_message', { sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, message: message, company_name: companyName });
+            if (response.success) {
+                input.value = '';
+                this._chatMessages.push({ id: response.data?.id || Date.now(), sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, message: message, message_type: 'text', is_read: false, created_at: new Date().toISOString() });
+                this.renderChatMessages();
+            } else { this.showToast('Failed to send: ' + (response.error || ''), 'error'); }
+        } catch (error) { this.showToast('Error sending message', 'error'); }
+    },
+
+    handleChatFileSelect(input) {
+        if (!input.files || input.files.length === 0) return;
+        const file = input.files[0];
+        if (file.size > 10 * 1024 * 1024) { this.showToast('File must be under 10MB', 'error'); input.value = ''; return; }
+        this._chatPendingFile = file;
+        const fileZone = document.getElementById('chatFileZone');
+        const fileName = document.getElementById('chatFileName');
+        const fileSize = document.getElementById('chatFileSize');
+        if (fileZone) fileZone.style.display = 'block';
+        if (fileName) fileName.textContent = file.name;
+        if (fileSize) fileSize.textContent = `(${(file.size / 1024).toFixed(1)} KB)`;
+    },
+
+    clearChatFile() {
+        this._chatPendingFile = null;
+        const fileZone = document.getElementById('chatFileZone');
+        if (fileZone) fileZone.style.display = 'none';
+        const fileInput = document.getElementById('chatFileInput');
+        if (fileInput) fileInput.value = '';
+    },
+
+    async uploadChatFile(message) {
+        if (!this._chatPendingFile || !this._selectedChatRecipient) return;
+        const file = this._chatPendingFile;
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            try {
+                const base64 = e.target.result.split(',')[1];
+                const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+                const response = await this.api('send_chat_message', { sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, message: message || '', company_name: companyName, message_type: 'file', file_name: file.name, file_data: base64, file_size: file.size });
+                if (response.success) {
+                    document.getElementById('chatMessageInput').value = '';
+                    this.clearChatFile();
+                    this._chatMessages.push({ id: response.data?.id || Date.now(), sender: this._chatAdminUser, recipient: this._selectedChatRecipient.employee_id, message: message || '', message_type: 'file', file_name: file.name, file_size: file.size, created_at: new Date().toISOString() });
+                    this.renderChatMessages();
+                    this.showToast('File sent', 'success');
+                } else { this.showToast('Failed: ' + (response.error || ''), 'error'); }
+            } catch (err) { this.showToast('Error uploading file', 'error'); }
+        };
+        reader.readAsDataURL(file);
+    },
+
+    async downloadChatFile(messageId, fileName) {
+        try {
+            const response = await this.api('download_chat_file', { message_id: messageId });
+            if (response.success && response.data) {
+                const byteString = atob(response.data.file_data);
+                const ab = new ArrayBuffer(byteString.length);
+                const ia = new Uint8Array(ab);
+                for (let i = 0; i < byteString.length; i++) ia[i] = byteString.charCodeAt(i);
+                const blob = new Blob([ab]);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = fileName || 'download';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else { this.showToast('Failed to download', 'error'); }
+        } catch (error) { this.showToast('Error downloading file', 'error'); }
+    },
+
+    // ===== VOICE MESSAGE RECORDING =====
+    _voiceRecorder: null,
+    _voiceChunks: [],
+    _voiceRecording: false,
+    _voiceStartTime: null,
+
+    async startVoiceRecording() {
+        if (!this._selectedChatRecipient) { this.showToast('Select a contact first', 'error'); return; }
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this._voiceRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
+            this._voiceChunks = [];
+            this._voiceStartTime = Date.now();
+            this._voiceRecording = true;
+
+            this._voiceRecorder.ondataavailable = (e) => { if (e.data.size > 0) this._voiceChunks.push(e.data); };
+            this._voiceRecorder.onstop = () => { stream.getTracks().forEach(t => t.stop()); this.sendVoiceMessage(); };
+            this._voiceRecorder.start();
+
+            // Update UI
+            const btn = document.getElementById('voiceRecordBtn');
+            if (btn) { btn.innerHTML = '&#9632; Stop'; btn.style.background = '#ef4444'; btn.onclick = () => app.stopVoiceRecording(); }
+
+            // Timer display
+            this._voiceTimerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - this._voiceStartTime) / 1000);
+                const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const secs = (elapsed % 60).toString().padStart(2, '0');
+                const timer = document.getElementById('voiceTimer');
+                if (timer) timer.textContent = mins + ':' + secs;
+            }, 1000);
+
+            const timerEl = document.getElementById('voiceTimer');
+            if (timerEl) { timerEl.style.display = 'inline'; timerEl.textContent = '00:00'; }
+        } catch (err) {
+            this.showToast('Microphone access denied', 'error');
+            console.error('Voice recording error:', err);
+        }
+    },
+
+    stopVoiceRecording() {
+        if (this._voiceRecorder && this._voiceRecording) {
+            this._voiceRecording = false;
+            this._voiceRecorder.stop();
+            if (this._voiceTimerInterval) clearInterval(this._voiceTimerInterval);
+            const btn = document.getElementById('voiceRecordBtn');
+            if (btn) { btn.innerHTML = '&#127908;'; btn.style.background = '#f1f5f9'; btn.onclick = () => app.startVoiceRecording(); }
+            const timerEl = document.getElementById('voiceTimer');
+            if (timerEl) timerEl.style.display = 'none';
+        }
+    },
+
+    async sendVoiceMessage() {
+        if (this._voiceChunks.length === 0 || !this._selectedChatRecipient) return;
+        try {
+            const blob = new Blob(this._voiceChunks, { type: 'audio/webm' });
+            const duration = Math.floor((Date.now() - this._voiceStartTime) / 1000);
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result.split(',')[1];
+                const companyName = this.userData?.company_name || '';
+                const resp = await this.api('send_voice_message', {
+                    sender: this._chatAdminUser,
+                    recipient: this._selectedChatRecipient.employee_id,
+                    company_name: companyName,
+                    voice_data: base64,
+                    duration: duration
+                });
+                if (resp.success) {
+                    this._chatMessages.push({ sender: this._chatAdminUser, message: 'Voice message (' + duration + 's)', message_type: 'voice', created_at: new Date().toISOString() });
+                    this.renderChatMessages();
+                    this.showToast('Voice message sent', 'success');
+                }
+            };
+            reader.readAsDataURL(blob);
+        } catch (err) { this.showToast('Error sending voice message', 'error'); }
+    },
+
+    // ===== VIDEO / AUDIO CALLING (WebRTC) =====
+    _currentCall: null,
+    _peerConnection: null,
+    _localStream: null,
+    _callCheckInterval: null,
+
+    async startCall(callType) {
+        if (!this._selectedChatRecipient) { this.showToast('Select a contact first', 'error'); return; }
+        const callee = this._selectedChatRecipient.employee_id;
+        const companyName = this.userData?.company_name || '';
+
+        try {
+            // Get user media
+            const constraints = callType === 'video' ? { audio: true, video: true } : { audio: true, video: false };
+            this._localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+            // Create peer connection
+            this._peerConnection = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }]
+            });
+
+            this._localStream.getTracks().forEach(t => this._peerConnection.addTrack(t, this._localStream));
+
+            // Handle remote stream
+            this._peerConnection.ontrack = (event) => {
+                const remoteAudio = document.getElementById('callRemoteAudio');
+                const remoteVideo = document.getElementById('callRemoteVideo');
+                if (callType === 'video' && remoteVideo) { remoteVideo.srcObject = event.streams[0]; remoteVideo.style.display = 'block'; }
+                else if (remoteAudio) { remoteAudio.srcObject = event.streams[0]; }
+            };
+
+            // ICE candidates
+            this._peerConnection.onicecandidate = async (event) => {
+                if (event.candidate && this._currentCall) {
+                    await this.api('update_call_signal', { call_id: this._currentCall.id, ice_candidate: event.candidate });
+                }
+            };
+
+            // Create offer
+            const offer = await this._peerConnection.createOffer();
+            await this._peerConnection.setLocalDescription(offer);
+
+            // Initiate call
+            const resp = await this.api('initiate_call', { caller: this._chatAdminUser, callee, company_name: companyName, call_type: callType });
+            if (!resp.success) { this.endCall(); this.showToast('Call failed', 'error'); return; }
+            this._currentCall = { id: resp.call_id, type: callType, caller: this._chatAdminUser, callee };
+
+            // Send offer
+            await this.api('update_call_signal', { call_id: resp.call_id, signal_data: offer });
+
+            // Show call UI
+            this.showCallUI(callType, callee, true);
+
+            // Poll for answer
+            this._callCheckInterval = setInterval(async () => {
+                try {
+                    const signal = await this.api('get_call_signal', { call_id: this._currentCall.id });
+                    if (signal.success && signal.data) {
+                        if (signal.data.status === 'answered' && signal.data.signal_data && !this._peerConnection.remoteDescription) {
+                            await this._peerConnection.setRemoteDescription(new RTCSessionDescription(signal.data.signal_data));
+                            // Add ICE candidates
+                            if (signal.data.ice_candidates) {
+                                signal.data.ice_candidates.forEach(async (c) => {
+                                    try { await this._peerConnection.addIceCandidate(new RTCIceCandidate(c)); } catch(e) {}
+                                });
+                            }
+                            this.updateCallStatus('Connected');
+                        } else if (signal.data.status === 'rejected' || signal.data.status === 'ended' || signal.data.status === 'missed') {
+                            this.endCall();
+                            this.showToast('Call ' + signal.data.status, 'info');
+                        }
+                    }
+                } catch(e) {}
+            }, 2000);
+
+        } catch (err) {
+            console.error('Call error:', err);
+            this.showToast(err.message === 'Permission denied' ? 'Camera/Mic access denied' : 'Call failed: ' + err.message, 'error');
+            this.endCall();
+        }
+    },
+
+    showCallUI(callType, remoteName, isOutgoing) {
+        // Remove existing UI
+        const existing = document.getElementById('callOverlay');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'callOverlay';
+        overlay.innerHTML = `
+            <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.8);z-index:9999;display:flex;align-items:center;justify-content:center;">
+                <div style="background:white;border-radius:24px;padding:40px;text-align:center;min-width:350px;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+                    <div style="width:80px;height:80px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;color:white;">
+                        ${callType === 'video' ? '&#127909;' : '&#128222;'}
+                    </div>
+                    <h3 style="margin:0 0 8px;font-size:20px;color:#1e293b;">${remoteName}</h3>
+                    <p id="callStatusText" style="color:#64748b;margin:0 0 8px;">${isOutgoing ? 'Calling...' : 'Incoming call...'}</p>
+                    <p id="callTimer" style="color:#3b82f6;font-size:18px;font-weight:700;margin:0 0 24px;">00:00</p>
+                    ${callType === 'video' ? '<video id="callRemoteVideo" autoplay playsinline style="width:300px;height:225px;border-radius:12px;background:#000;margin-bottom:16px;display:none;"></video>' : ''}
+                    <audio id="callRemoteAudio" autoplay></audio>
+                    <div style="display:flex;gap:16px;justify-content:center;">
+                        <button onclick="app.endCall()" style="padding:16px 32px;background:#ef4444;color:white;border:none;border-radius:50px;cursor:pointer;font-size:16px;font-weight:700;">
+                            &#128308; End Call
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+
+        // Start timer
+        this._callTimerStart = Date.now();
+        this._callTimerInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - this._callTimerStart) / 1000);
+            const el = document.getElementById('callTimer');
+            if (el) el.textContent = Math.floor(elapsed/60).toString().padStart(2,'0') + ':' + (elapsed%60).toString().padStart(2,'0');
+        }, 1000);
+    },
+
+    updateCallStatus(text) {
+        const el = document.getElementById('callStatusText');
+        if (el) el.textContent = text;
+    },
+
+    endCall() {
+        if (this._callCheckInterval) { clearInterval(this._callCheckInterval); this._callCheckInterval = null; }
+        if (this._callTimerInterval) { clearInterval(this._callTimerInterval); this._callTimerInterval = null; }
+        if (this._peerConnection) { this._peerConnection.close(); this._peerConnection = null; }
+        if (this._localStream) { this._localStream.getTracks().forEach(t => t.stop()); this._localStream = null; }
+        if (this._currentCall) {
+            this.api('update_call_signal', { call_id: this._currentCall.id, status: 'ended' }).catch(() => {});
+            this._currentCall = null;
+        }
+        const overlay = document.getElementById('callOverlay');
+        if (overlay) overlay.remove();
+    },
+
+    // ===== SYSTEM DATA FUNCTIONS =====
+
+    // Initialize system data view
+    async initializeSystemData() {
+        try {
+            console.log('[System Data] Initializing with detailed view...');
+            const companyName = this.userData?.company_name || '';
+            if (!companyName) { console.warn('[System Data] No company name'); return; }
+            await this.loadSystemData();
+        } catch (error) {
+            console.error('[System Data] Error:', error);
+            this.showToast('Error loading system data', 'error');
+        }
+    },
+
+    async loadSystemData() {
+        const container = document.getElementById('systemsDataContainer');
+        if (container) container.innerHTML = '<p style="text-align:center;padding:40px;color:#3b82f6;">Loading system data...</p>';
+        try {
+            const companyName = this.userData?.company_name || '';
+            // Try detailed table first, fallback to basic
+            let resp = await this.api('get_system_data_detailed', { company_name: companyName });
+            if (!resp.success || !resp.data || resp.data.length === 0) {
+                resp = await this.api('get_system_data', { company_name: companyName });
+                if (resp.success && resp.data) { this.displaySystemDataBasic(resp.data); return; }
+            }
+            if (resp.success && resp.data && resp.data.length > 0) {
+                this.displaySystemDataDetailed(resp.data);
+            } else {
+                if (container) container.innerHTML = '<p style="text-align:center;padding:40px;color:#94a3b8;">No system data found</p>';
+            }
+        } catch (err) {
+            console.error('[System Data] Load error:', err);
+            if (container) container.innerHTML = '<p style="text-align:center;padding:40px;color:#ef4444;">Error: ' + err.message + '</p>';
+        }
+    },
+
+    displaySystemDataDetailed(systems) {
+        const container = document.getElementById('systemsDataContainer');
+        if (!container) return;
+        const byUser = {};
+        systems.forEach(s => {
+            const u = s.user_name || 'Unknown';
+            if (!byUser[u]) byUser[u] = { systems: [], displayName: s.display_name || s.user_name, ipAddress: s.ip_address || '-' };
+            byUser[u].systems.push(s);
+        });
+
+        const fmtSize = (gb) => { if (!gb) return '-'; return gb; };
+        const fmtTime = (ts) => { if (!ts) return '-'; try { return new Date(ts).toLocaleString('en-IN',{timeZone:'Asia/Kolkata'}); } catch(e) { return ts; } };
+
+        let html = '';
+        Object.entries(byUser).forEach(([user, userData]) => {
+            const sysList = userData.systems;
+            const displayName = userData.displayName;
+            const ipAddress = userData.ipAddress;
+            html += `<div style="margin-bottom:24px;background:white;border-radius:16px;box-shadow:0 1px 3px rgba(0,0,0,0.1);overflow:hidden;">`;
+            html += `<div style="padding:16px 24px;background:linear-gradient(135deg,#1e293b,#334155);color:white;display:flex;align-items:center;gap:12px;">
+                <span style="font-size:24px;">&#128100;</span>
+                <div><h3 style="margin:0;font-size:16px;font-weight:700;">${displayName}</h3>
+                <span style="font-size:12px;opacity:0.8;">IP: ${ipAddress} | ${sysList.length} system(s)</span></div></div>`;
+
+            sysList.forEach((s, idx) => {
+                const sysId = 'sysdet_' + (s.id || idx);
+                // Storage parsing
+                let storageHtml = '';
+                const storage = Array.isArray(s.storage_info) ? s.storage_info : [];
+                storage.forEach(d => {
+                    if (d.Model || d.DriveLetter) {
+                        const label = d.DriveLetter ? d.DriveLetter + (d.VolumeName ? ' (' + d.VolumeName + ')' : '') : (d.Model || 'Drive');
+                        const total = d.TotalSizeGB ? d.TotalSizeGB + ' GB' : '-';
+                        const free = d.FreeSpaceGB ? d.FreeSpaceGB + ' GB' : '-';
+                        const itype = d.InterfaceType || d.FileSystem || '';
+                        storageHtml += '<div style="background:#f8fafc;padding:8px 12px;border-radius:8px;border-left:3px solid #8b5cf6;margin-bottom:6px;">'
+                            + '<div style="font-weight:600;font-size:13px;color:#1e293b;">' + label + '</div>'
+                            + '<div style="font-size:12px;color:#64748b;">Total: ' + total + ' | Free: ' + free + (itype ? ' | ' + itype : '') + (d.Model ? ' | ' + d.Model : '') + '</div></div>';
+                    }
+                });
+
+                // GPU parsing
+                let gpuHtml = '';
+                const gpus = Array.isArray(s.gpu_info) ? s.gpu_info : [];
+                gpus.forEach(g => {
+                    const vram = g.VideoMemory && g.VideoMemory !== 'Unknown' ? ' (' + Math.round(parseInt(g.VideoMemory)/(1024*1024*1024)) + ' GB VRAM)' : '';
+                    gpuHtml += '<span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:600;margin-right:6px;">' + (g.Name || 'Unknown') + vram + '</span>';
+                });
+
+                // Memory details
+                let memHtml = '';
+                const mems = Array.isArray(s.memory_details) ? s.memory_details : [];
+                mems.forEach(m => {
+                    memHtml += '<span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:6px;font-size:11px;margin-right:4px;">' + (m.CapacityGB || '?') + 'GB ' + (m.Speed || '') + 'MHz ' + (m.Manufacturer || '') + '</span>';
+                });
+
+                html += `<div style="padding:20px 24px;border-bottom:1px solid #f1f5f9;">`;
+                html += `<div style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" onclick="app.toggleSystemDetails('${sysId}')">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div style="width:44px;height:44px;background:linear-gradient(135deg,#3b82f6,#2563eb);border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;">&#128187;</div>
+                        <div><h4 style="margin:0;font-size:15px;font-weight:700;color:#0f172a;">${s.system_name || s.computer_name || 'Unknown'}</h4>
+                        <p style="margin:0;font-size:12px;color:#64748b;">Updated: ${fmtTime(s.last_updated)}</p></div>
+                    </div>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>`;
+
+                // Quick stats row (always visible)
+                html += `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:16px;">`;
+                // OS
+                html += `<div style="background:#eff6ff;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#3b82f6;text-transform:uppercase;">OS</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.os_name || s.os_version || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">${s.os_version || ''} ${s.os_build ? 'Build ' + s.os_build : ''}</div></div>`;
+                // CPU
+                html += `<div style="background:#fef3c7;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#d97706;text-transform:uppercase;">CPU</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.processor_name || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">${s.processor_cores || '?'} Cores / ${s.processor_logical || '?'} Threads ${s.processor_speed ? '@ ' + s.processor_speed + ' MHz' : ''}</div></div>`;
+                // RAM
+                html += `<div style="background:#d1fae5;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#059669;text-transform:uppercase;">RAM</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.total_ram || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">Free: ${s.available_ram || '-'} GB</div></div>`;
+                // Motherboard
+                html += `<div style="background:#fce7f3;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#db2777;text-transform:uppercase;">Motherboard</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.motherboard_manufacturer || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">${s.motherboard_product || ''} ${s.motherboard_serial ? '(S/N: ' + s.motherboard_serial + ')' : ''}</div></div>`;
+                // BIOS
+                html += `<div style="background:#e0e7ff;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#4f46e5;text-transform:uppercase;">BIOS</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.bios_manufacturer || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">${s.bios_version || ''} ${s.bios_date || ''}</div></div>`;
+                // Architecture
+                html += `<div style="background:#f1f5f9;padding:10px 14px;border-radius:10px;">
+                    <div style="font-size:11px;font-weight:600;color:#475569;text-transform:uppercase;">Architecture</div>
+                    <div style="font-size:13px;font-weight:600;color:#1e293b;margin-top:2px;">${s.system_architecture || '-'}</div>
+                    <div style="font-size:11px;color:#64748b;">${s.timezone || ''}</div></div>`;
+                html += `</div>`;
+
+                // Expandable detailed section
+                html += `<div id="${sysId}" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;">`;
+
+                // Storage / HDD / SSD
+                if (storageHtml) {
+                    html += `<div style="margin-bottom:16px;"><h5 style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1e293b;">&#128190; Storage / HDD / SSD</h5>${storageHtml}</div>`;
+                }
+
+                // GPU
+                if (gpuHtml) {
+                    html += `<div style="margin-bottom:16px;"><h5 style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1e293b;">&#127918; GPU / Graphics</h5><div>${gpuHtml}</div></div>`;
+                }
+
+                // Memory details
+                if (memHtml) {
+                    html += `<div style="margin-bottom:16px;"><h5 style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1e293b;">&#128204; RAM Modules</h5><div>${memHtml}</div></div>`;
+                }
+
+                // OS Details
+                html += `<div style="margin-bottom:16px;"><h5 style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1e293b;">&#128736; OS Details</h5>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;">
+                    <div style="background:#f8fafc;padding:8px 12px;border-radius:6px;"><span style="color:#94a3b8;font-size:11px;">Install Date:</span><br><span style="font-size:12px;font-weight:600;">${s.os_install_date || '-'}</span></div>
+                    <div style="background:#f8fafc;padding:8px 12px;border-radius:6px;"><span style="color:#94a3b8;font-size:11px;">Last Boot:</span><br><span style="font-size:12px;font-weight:600;">${s.last_boot_time || '-'}</span></div>
+                    <div style="background:#f8fafc;padding:8px 12px;border-radius:6px;"><span style="color:#94a3b8;font-size:11px;">OS Serial:</span><br><span style="font-size:12px;font-weight:600;">${s.os_serial || '-'}</span></div>
+                    <div style="background:#f8fafc;padding:8px 12px;border-radius:6px;"><span style="color:#94a3b8;font-size:11px;">Processor ID:</span><br><span style="font-size:12px;font-weight:600;">${s.processor_id || '-'}</span></div>
+                    </div></div>`;
+
+                html += `</div>`; // end expandable
+                html += `</div>`; // end system card
+            });
+            html += `</div>`; // end user card
+        });
+
+        container.innerHTML = html;
+    },
+
+    // Fallback for basic system_info table
+    displaySystemDataBasic(systems) {
+        const container = document.getElementById('systemsDataContainer');
+        if (!container) return;
+        const byUser = {};
+        systems.forEach(s => {
+            const u = s.user_name || 'Unknown';
+            if (!byUser[u]) byUser[u] = { systems: [], displayName: s.display_name || s.user_name, ipAddress: s.ip_address || '-' };
+            byUser[u].systems.push(s);
+        });
+        let html = '';
+        Object.entries(byUser).forEach(([user, userData]) => {
+            const sysList = userData.systems;
+            const displayName = userData.displayName;
+            const ipAddress = userData.ipAddress;
+            html += '<div style="margin-bottom:16px;background:white;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,0.1);overflow:hidden;">';
+            html += '<div style="padding:12px 20px;background:#1e293b;color:white;"><h3 style="margin:0;font-size:15px;">&#128100; ' + displayName + ' <span style="font-size:12px;opacity:0.8;">(IP: ' + ipAddress + ' | ' + sysList.length + ' systems)</span></h3></div>';
+            sysList.forEach(sys => {
+                html += '<div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;">';
+                html += '<h4 style="margin:0 0 8px;font-size:14px;color:#1e293b;">&#128187; ' + (sys.system_name || 'Unknown') + '</h4>';
+                html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">';
+                html += '<div style="background:#eff6ff;padding:8px;border-radius:8px;"><div style="font-size:11px;color:#3b82f6;font-weight:600;">OS</div><div style="font-size:12px;font-weight:600;">' + (sys.os_version || '-') + '</div></div>';
+                html += '<div style="background:#fef3c7;padding:8px;border-radius:8px;"><div style="font-size:11px;color:#d97706;font-weight:600;">CPU</div><div style="font-size:12px;font-weight:600;">' + (sys.processor_info || '-') + '</div></div>';
+                html += '<div style="background:#d1fae5;padding:8px;border-radius:8px;"><div style="font-size:11px;color:#059669;font-weight:600;">RAM</div><div style="font-size:12px;font-weight:600;">' + (sys.total_memory || '-') + '</div></div>';
+                html += '</div></div>';
+            });
+            html += '</div>';
+        });
+        container.innerHTML = html || '<p style="text-align:center;padding:40px;color:#94a3b8;">No data found</p>';
+    },
+
+    toggleSystemDetails(systemId) {
+        const el = document.getElementById(systemId);
+        if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    },
+
+    async refreshSystemData() {
+        try {
+            this.showToast('Refreshing system data...', 'info');
+            await this.loadSystemData();
+            this.showToast('System data refreshed', 'success');
+        } catch (error) {
+            this.showToast('Error refreshing', 'error');
+        }
+    },
     // Load employees list for filter dropdown
     async loadEmployeesListForDaily() {
         try {
@@ -8614,7 +10535,8 @@ ${appsHtml}`;
     async deleteEmployee(id) {
         if (confirm('Are you sure you want to delete this employee?')) {
             try {
-                const response = await this.api('delete_employee', { id });
+                const companyName = this.userData?.company_name || 'WIZONE IT NETWORK INDIA PVT LTD';
+                const response = await this.api('delete_employee', { id, company_name: companyName });
                 if (response.success) {
                     this.showToast('Employee deleted successfully', 'success');
                     this.loadEmployeesList();
@@ -8795,6 +10717,383 @@ ${appsHtml}`;
                 if (modal) modal.remove();
             }
         });
+    },
+
+    // ===== ADMIN USERS MANAGEMENT =====
+
+    async initializeAdminUsers() {
+        try {
+            const companyName = this.userData?.company_name || '';
+            await this.loadAdminUsers();
+        } catch (error) {
+            console.error('[AdminUsers] Init error:', error);
+        }
+    },
+
+    async loadAdminUsers() {
+        try {
+            const companyName = this.userData?.company_name || '';
+            const response = await this.api('get_admin_users', { company_name: companyName });
+            const container = document.getElementById('adminUsersTableContainer');
+
+            if (!response.success || !response.data || response.data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #94a3b8;">No admin users found. Click "Create Admin User" to add one.</p>';
+                return;
+            }
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Username</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Full Name</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Email</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Phone</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Status</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Last Login</th>';
+            html += '<th style="padding: 16px; text-align: center; font-weight: 600; color: #475569;">Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            response.data.forEach(user => {
+                const statusBadge = user.is_active
+                    ? '<span style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Active</span>'
+                    : '<span style="background: #fee2e2; color: #dc2626; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Inactive</span>';
+
+                const lastLogin = user.last_login
+                    ? new Date(user.last_login).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                    : 'Never';
+
+                html += '<tr style="border-bottom: 1px solid #f1f5f9;">';
+                html += `<td style="padding: 16px; font-weight: 600; color: #0f172a;">${user.username}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${user.full_name || '-'}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${user.email || '-'}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${user.phone || '-'}</td>`;
+                html += `<td style="padding: 16px;">${statusBadge}</td>`;
+                html += `<td style="padding: 16px; color: #64748b; font-size: 13px;">${lastLogin}</td>`;
+                html += `<td style="padding: 16px; text-align: center;">
+                    <button onclick="app.editAdminUser(${user.id})" style="padding: 6px 14px; background: #eff6ff; color: #3b82f6; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 6px;">Edit</button>
+                    <button onclick="app.deleteAdminUser(${user.id}, '${user.username}')" style="padding: 6px 14px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Delete</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('[AdminUsers] Load error:', error);
+        }
+    },
+
+    showCreateAdminUserModal() {
+        const modalHTML = `
+            <div id="createAdminUserModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+                    <h2 style="margin: 0 0 24px; font-size: 24px; font-weight: 700; color: #0f172a;">Create Admin User</h2>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Username *</label>
+                        <input type="text" id="adminUsername" placeholder="Enter username" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Password *</label>
+                        <input type="password" id="adminPassword" placeholder="Enter password" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Full Name</label>
+                        <input type="text" id="adminFullName" placeholder="Enter full name" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Email</label>
+                        <input type="email" id="adminEmail" placeholder="Enter email" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Phone</label>
+                        <input type="tel" id="adminPhone" placeholder="Enter phone" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="app.createAdminUser()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Create</button>
+                        <button onclick="document.getElementById('createAdminUserModal').remove()" style="flex: 1; padding: 12px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    },
+
+    async createAdminUser() {
+        try {
+            const username = document.getElementById('adminUsername').value.trim();
+            const password = document.getElementById('adminPassword').value;
+            const full_name = document.getElementById('adminFullName').value.trim();
+            const email = document.getElementById('adminEmail').value.trim();
+            const phone = document.getElementById('adminPhone').value.trim();
+
+            if (!username || !password) {
+                this.showToast('Username and password are required', 'error');
+                return;
+            }
+
+            const companyName = this.userData?.company_name || '';
+            const response = await this.api('create_admin_user', {
+                company_name: companyName,
+                username,
+                password,
+                full_name,
+                email,
+                phone,
+                created_by: this.userData?.username || 'admin'
+            });
+
+            if (response.success) {
+                this.showToast('Admin user created successfully', 'success');
+                document.getElementById('createAdminUserModal').remove();
+                await this.loadAdminUsers();
+            } else {
+                this.showToast(response.error || 'Failed to create admin user', 'error');
+            }
+        } catch (error) {
+            console.error('[AdminUsers] Create error:', error);
+            this.showToast('Error creating admin user', 'error');
+        }
+    },
+
+    async deleteAdminUser(userId, username) {
+        if (!confirm(`Are you sure you want to delete admin user "${username}"?`)) {
+            return;
+        }
+
+        try {
+            const response = await this.api('delete_admin_user', { id: userId });
+
+            if (response.success) {
+                this.showToast('Admin user deleted successfully', 'success');
+                await this.loadAdminUsers();
+            } else {
+                this.showToast(response.error || 'Failed to delete admin user', 'error');
+            }
+        } catch (error) {
+            console.error('[AdminUsers] Delete error:', error);
+            this.showToast('Error deleting admin user', 'error');
+        }
+    },
+
+    // ===== WIZONE AI MEETING SYSTEM =====
+
+    async initializeMeetings() {
+        try {
+            await this.loadMeetings();
+        } catch (error) {
+            console.error('[Meetings] Init error:', error);
+        }
+    },
+
+    async loadMeetings() {
+        try {
+            const companyName = this.userData?.company_name || '';
+            const response = await this.api('get_company_meetings', { company_name: companyName });
+            const container = document.getElementById('meetingsTableContainer');
+
+            if (!response.success || !response.data || response.data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #94a3b8;">No meetings found. Click "Create Meeting" to start one.</p>';
+                return;
+            }
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Meeting Name</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Meeting ID</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Created By</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Participants</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Status</th>';
+            html += '<th style="padding: 16px; text-align: center; font-weight: 600; color: #475569;">Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            response.data.forEach(meeting => {
+                const statusBadge = meeting.status === 'active'
+                    ? '<span style="background: #d1fae5; color: #059669; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Active</span>'
+                    : '<span style="background: #e2e8f0; color: #64748b; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">Ended</span>';
+
+                html += '<tr style="border-bottom: 1px solid #f1f5f9;">';
+                html += `<td style="padding: 16px; font-weight: 600; color: #0f172a;">${meeting.meeting_name}</td>`;
+                html += `<td style="padding: 16px; color: #8b5cf6; font-family: monospace; font-size: 12px;">${meeting.meeting_id}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${meeting.created_by_name || meeting.created_by}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${meeting.active_participants || 0} active</td>`;
+                html += `<td style="padding: 16px;">${statusBadge}</td>`;
+                html += `<td style="padding: 16px; text-align: center;">
+                    <button onclick="app.joinMeeting('${meeting.meeting_id}')" style="padding: 6px 14px; background: #ddd6fe; color: #8b5cf6; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 6px;">Join</button>
+                    <button onclick="app.copyMeetingLink('${meeting.meeting_link}')" style="padding: 6px 14px; background: #eff6ff; color: #3b82f6; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; margin-right: 6px;">Copy Link</button>
+                    ${meeting.status === 'active' ? `<button onclick="app.endMeeting('${meeting.meeting_id}')" style="padding: 6px 14px; background: #fee2e2; color: #dc2626; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">End</button>` : ''}
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('[Meetings] Load error:', error);
+        }
+    },
+
+    showCreateMeetingModal() {
+        const modalHTML = `
+            <div id="createMeetingModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;">
+                <div style="background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 500px;">
+                    <h2 style="margin: 0 0 24px; font-size: 24px; font-weight: 700; color: #0f172a;">Create New Meeting</h2>
+
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Meeting Name *</label>
+                        <input type="text" id="meetingName" placeholder="e.g., Team Standup" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px;">
+                    </div>
+
+                    <div style="margin-bottom: 24px;">
+                        <label style="display: block; margin-bottom: 6px; font-weight: 600; color: #475569;">Description (Optional)</label>
+                        <textarea id="meetingDescription" placeholder="Meeting description..." rows="3" style="width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 14px; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="app.createMeeting()" style="flex: 1; padding: 12px; background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Create Meeting</button>
+                        <button onclick="document.getElementById('createMeetingModal').remove()" style="flex: 1; padding: 12px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    },
+
+    async createMeeting() {
+        try {
+            const meeting_name = document.getElementById('meetingName').value.trim();
+            const meeting_description = document.getElementById('meetingDescription').value.trim();
+
+            if (!meeting_name) {
+                this.showToast('Meeting name is required', 'error');
+                return;
+            }
+
+            const companyName = this.userData?.company_name || '';
+            const response = await this.api('create_meeting', {
+                company_name: companyName,
+                meeting_name,
+                meeting_description,
+                created_by: this.userData?.username || 'admin',
+                created_by_name: this.userData?.full_name || this.userData?.username || 'Admin',
+                is_recording_enabled: true
+            });
+
+            if (response.success) {
+                this.showToast('Meeting created successfully!', 'success');
+                document.getElementById('createMeetingModal').remove();
+                await this.loadMeetings();
+
+                // Ask if user wants to join now
+                if (confirm('Meeting created! Do you want to join now?')) {
+                    this.joinMeeting(response.meeting_id);
+                }
+            } else {
+                this.showToast(response.error || 'Failed to create meeting', 'error');
+            }
+        } catch (error) {
+            console.error('[Meetings] Create error:', error);
+            this.showToast('Error creating meeting', 'error');
+        }
+    },
+
+    joinMeeting(meetingId) {
+        const meetingUrl = `meeting.html?id=${meetingId}`;
+        window.open(meetingUrl, '_blank', 'width=1200,height=800');
+    },
+
+    copyMeetingLink(meetingLink) {
+        navigator.clipboard.writeText(meetingLink).then(() => {
+            this.showToast('Meeting link copied to clipboard!', 'success');
+        }).catch(() => {
+            this.showToast('Failed to copy link', 'error');
+        });
+    },
+
+    async endMeeting(meetingId) {
+        if (!confirm('Are you sure you want to end this meeting?')) {
+            return;
+        }
+
+        try {
+            const response = await this.api('end_meeting', { meeting_id: meetingId });
+
+            if (response.success) {
+                this.showToast('Meeting ended successfully', 'success');
+                await this.loadMeetings();
+            } else {
+                this.showToast(response.error || 'Failed to end meeting', 'error');
+            }
+        } catch (error) {
+            console.error('[Meetings] End error:', error);
+            this.showToast('Error ending meeting', 'error');
+        }
+    },
+
+    // Meeting Recordings
+    async initializeMeetingRecordings() {
+        try {
+            await this.loadMeetingRecordings();
+        } catch (error) {
+            console.error('[Recordings] Init error:', error);
+        }
+    },
+
+    async loadMeetingRecordings() {
+        try {
+            const companyName = this.userData?.company_name || '';
+            const response = await this.api('get_meeting_recordings', { company_name: companyName });
+            const container = document.getElementById('recordingsTableContainer');
+
+            if (!response.success || !response.data || response.data.length === 0) {
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: #94a3b8;">No recordings found.</p>';
+                return;
+            }
+
+            let html = '<table style="width: 100%; border-collapse: collapse;">';
+            html += '<thead><tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Recording Name</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Meeting ID</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Duration</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Size</th>';
+            html += '<th style="padding: 16px; text-align: left; font-weight: 600; color: #475569;">Date</th>';
+            html += '<th style="padding: 16px; text-align: center; font-weight: 600; color: #475569;">Actions</th>';
+            html += '</tr></thead><tbody>';
+
+            response.data.forEach(rec => {
+                const duration = rec.recording_duration_minutes
+                    ? `${rec.recording_duration_minutes} min`
+                    : '-';
+
+                const size = rec.recording_size_mb
+                    ? `${rec.recording_size_mb} MB`
+                    : '-';
+
+                const date = rec.created_at
+                    ? new Date(rec.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })
+                    : '-';
+
+                html += '<tr style="border-bottom: 1px solid #f1f5f9;">';
+                html += `<td style="padding: 16px; font-weight: 600; color: #0f172a;">${rec.recording_name || 'Recording'}</td>`;
+                html += `<td style="padding: 16px; color: #8b5cf6; font-family: monospace; font-size: 12px;">${rec.meeting_id}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${duration}</td>`;
+                html += `<td style="padding: 16px; color: #64748b;">${size}</td>`;
+                html += `<td style="padding: 16px; color: #64748b; font-size: 13px;">${date}</td>`;
+                html += `<td style="padding: 16px; text-align: center;">
+                    <button onclick="app.showToast('Playback feature coming soon!', 'info')" style="padding: 6px 14px; background: #ddd6fe; color: #8b5cf6; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">Play</button>
+                </td>`;
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        } catch (error) {
+            console.error('[Recordings] Load error:', error);
+        }
     }
 };
 

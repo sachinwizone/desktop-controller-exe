@@ -18,14 +18,18 @@ namespace EmployeeAttendance
         private readonly HttpClient _httpClient;
         private readonly string _serverApiUrl;
         private readonly string _activationKey;
+        private readonly string _companyName;
+        private readonly string _machineId;
         private System.Threading.Timer? _syncTimer;
         private const int SYNC_INTERVAL_MINUTES = 10; // Sync every 10 minutes
 
-        public InstalledAppsCollector(string serverUrl, string activationKey)
+        public InstalledAppsCollector(string serverUrl, string activationKey, string companyName = "", string machineId = "")
         {
             _httpClient = new HttpClient();
             _serverApiUrl = serverUrl.TrimEnd('/') + "/api";
             _activationKey = activationKey;
+            _companyName = companyName;
+            _machineId = machineId;
         }
 
         /// <summary>
@@ -215,34 +219,56 @@ namespace EmployeeAttendance
         }
 
         /// <summary>
-        /// Sync installed apps to server
+        /// Sync installed apps to server (via HTTP API) and to database directly
         /// </summary>
         private async Task SyncInstalledApps()
         {
             try
             {
                 var apps = GetInstalledApps();
-                var data = new
-                {
-                    ActivationKey = _activationKey,
-                    ComputerName = Environment.MachineName,
-                    UserName = Environment.UserName,
-                    SyncedAt = DateTime.UtcNow,
-                    TotalApps = apps.Count,
-                    Applications = apps
-                };
 
-                var json = JsonSerializer.Serialize(data);
-                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{_serverApiUrl}/installed-apps/sync", content);
-
-                if (!response.IsSuccessStatusCode)
+                // Sync to database directly (installed_apps_detailed table)
+                try
                 {
-                    Debug.WriteLine($"Failed to sync installed apps: {response.StatusCode}");
+                    DatabaseHelper.SyncInstalledAppsDetailed(
+                        _companyName ?? "",
+                        Environment.UserName,
+                        Environment.MachineName,
+                        _machineId ?? "",
+                        apps
+                    );
+                    Debug.WriteLine($"Successfully synced {apps.Count} installed apps to database");
                 }
-                else
+                catch (Exception dbEx)
                 {
-                    Debug.WriteLine($"Successfully synced {apps.Count} installed apps");
+                    Debug.WriteLine($"DB sync installed apps error: {dbEx.Message}");
+                }
+
+                // Also sync via HTTP API (existing behavior)
+                try
+                {
+                    var data = new
+                    {
+                        ActivationKey = _activationKey,
+                        ComputerName = Environment.MachineName,
+                        UserName = Environment.UserName,
+                        SyncedAt = DateTime.UtcNow,
+                        TotalApps = apps.Count,
+                        Applications = apps
+                    };
+
+                    var json = JsonSerializer.Serialize(data);
+                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PostAsync($"{_serverApiUrl}/installed-apps/sync", content);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Debug.WriteLine($"HTTP sync installed apps failed: {response.StatusCode}");
+                    }
+                }
+                catch (Exception httpEx)
+                {
+                    Debug.WriteLine($"HTTP sync installed apps error: {httpEx.Message}");
                 }
             }
             catch (Exception ex)

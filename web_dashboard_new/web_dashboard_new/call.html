@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice/Video Call</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .call-container {
+            width: 90%;
+            max-width: 900px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .call-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 48px;
+        }
+
+        h2 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .status {
+            color: #64748b;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 24px;
+            color: #3b82f6;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .video-container {
+            position: relative;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .video-container.active {
+            display: block;
+        }
+
+        #remoteVideo {
+            width: 100%;
+            max-width: 640px;
+            height: auto;
+            border-radius: 16px;
+            background: #000;
+        }
+
+        #localVideo {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            border-radius: 12px;
+            background: #000;
+            border: 3px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .audio-indicator {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50%;
+            margin: 30px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-end {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-end:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-toggle {
+            background: #64748b;
+            color: white;
+        }
+
+        .btn-toggle:hover {
+            background: #475569;
+        }
+
+        .btn-toggle.active {
+            background: #3b82f6;
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 12px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="call-container">
+        <div class="call-icon" id="callIcon">📞</div>
+        <h2 id="remoteName">Connecting...</h2>
+        <div class="status" id="callStatus">Initializing call...</div>
+        <div class="timer" id="callTimer">00:00</div>
+
+        <div class="error-message" id="errorMessage"></div>
+
+        <!-- Video Container (for video calls) -->
+        <div class="video-container" id="videoContainer">
+            <video id="remoteVideo" autoplay playsinline></video>
+            <video id="localVideo" autoplay playsinline muted></video>
+        </div>
+
+        <!-- Audio Indicator (for audio calls) -->
+        <div class="audio-indicator" id="audioIndicator" style="display: none;">🎤</div>
+
+        <audio id="remoteAudio" autoplay></audio>
+
+        <div class="controls">
+            <button class="btn btn-toggle" id="muteBtn" onclick="toggleMute()">🔇 Mute</button>
+            <button class="btn btn-toggle" id="videoBtn" onclick="toggleVideo()" style="display: none;">📹 Video</button>
+            <button class="btn btn-end" onclick="endCall()">🔴 End Call</button>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const callId = urlParams.get('callId');
+        const currentUser = urlParams.get('user');
+        const remotePerson = urlParams.get('remote');
+        const callType = urlParams.get('type') || 'audio';
+        const role = urlParams.get('role'); // 'caller' or 'callee'
+
+        let peerConnection;
+        let localStream;
+        let timerInterval;
+        let startTime;
+        let signalCheckInterval;
+
+        const API_BASE = 'http://72.61.235.203:3000/api';
+
+        // Initialize
+        document.getElementById('remoteName').textContent = remotePerson;
+        document.getElementById('callIcon').textContent = callType === 'video' ? '📹' : '📞';
+
+        if (callType === 'video') {
+            document.getElementById('videoBtn').style.display = 'inline-block';
+            document.getElementById('videoContainer').classList.add('active');
+        } else {
+            document.getElementById('audioIndicator').style.display = 'flex';
+        }
+
+        // Start the call
+        initializeCall();
+
+        async function initializeCall() {
+            try {
+                // Get user media
+                const constraints = callType === 'video'
+                    ? { audio: true, video: { width: 1280, height: 720 } }
+                    : { audio: true, video: false };
+
+                localStream = await navigator.mediaDevices.getUserMedia(constraints);
+
+                // Setup local video preview
+                if (callType === 'video') {
+                    document.getElementById('localVideo').srcObject = localStream;
+                }
+
+                // Create peer connection
+                peerConnection = new RTCPeerConnection({
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                });
+
+                // Add local stream tracks to peer connection
+                localStream.getTracks().forEach(track => {
+                    peerConnection.addTrack(track, localStream);
+                });
+
+                // Handle remote stream
+                peerConnection.ontrack = (event) => {
+                    console.log('Received remote track');
+                    if (callType === 'video') {
+                        document.getElementById('remoteVideo').srcObject = event.streams[0];
+                    } else {
+                        document.getElementById('remoteAudio').srcObject = event.streams[0];
+                    }
+                    updateStatus('Connected');
+                    startTimer();
+                };
+
+                // Handle ICE candidates
+                peerConnection.onicecandidate = async (event) => {
+                    if (event.candidate) {
+                        console.log('Sending ICE candidate');
+                        await fetch(`${API_BASE}/update_call_signal`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                call_id: callId,
+                                ice_candidate: event.candidate
+                            })
+                        });
+                    }
+                };
+
+                // Connection state changes
+                peerConnection.onconnectionstatechange = () => {
+                    console.log('Connection state:', peerConnection.connectionState);
+                    if (peerConnection.connectionState === 'connected') {
+                        updateStatus('Connected');
+                    } else if (peerConnection.connectionState === 'disconnected' ||
+                               peerConnection.connectionState === 'failed') {
+                        updateStatus('Connection lost');
+                        showError('Connection lost. Please try again.');
+                    }
+                };
+
+                // If caller, create offer
+                if (role === 'caller') {
+                    updateStatus('Calling...');
+                    const offer = await peerConnection.createOffer();
+                    await peerConnection.setLocalDescription(offer);
+
+                    // Send offer to server
+                    await fetch(`${API_BASE}/update_call_signal`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            call_id: callId,
+                            signal_data: offer
+                        })
+                    });
+
+                    // Poll for answer
+                    checkForAnswer();
+                } else {
+                    // If callee, wait for offer then create answer
+                    updateStatus('Answering call...');
+                    await waitForOfferAndAnswer();
+                }
+
+            } catch (error) {
+                console.error('Call initialization error:', error);
+                showError(error.message === 'Permission denied'
+                    ? 'Camera/Microphone access denied'
+                    : 'Error initializing call: ' + error.message);
+            }
+        }
+
+        async function waitForOfferAndAnswer() {
+            try {
+                // Get offer signal from server
+                const response = await fetch(`${API_BASE}/get_call_signal?call_id=${callId}`);
+                const data = await response.json();
+
+                if (data.success && data.data && data.data.signal_data) {
+                    const offer = data.data.signal_data;
+
+                    // Set remote description (offer)
+                    await peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+
+                    // Create answer
+                    const answer = await peerConnection.createAnswer();
+                    await peerConnection.setLocalDescription(answer);
+
+                    // Send answer to server
+                    await fetch(`${API_BASE}/update_call_signal`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            call_id: callId,
+                            signal_data: answer,
+                            status: 'answered'
+                        })
+                    });
+
+                    // Get ICE candidates
+                    if (data.data.ice_candidates) {
+                        for (const candidate of data.data.ice_candidates) {
+                            try {
+                                await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                            } catch (e) {
+                                console.error('Error adding ICE candidate:', e);
+                            }
+                        }
+                    }
+
+                    updateStatus('Connected');
+                    startTimer();
+                }
+            } catch (error) {
+                console.error('Error answering call:', error);
+                showError('Error answering call: ' + error.message);
+            }
+        }
+
+        async function checkForAnswer() {
+            signalCheckInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/get_call_signal?call_id=${callId}`);
+                    const data = await response.json();
+
+                    if (data.success && data.data) {
+                        const callData = data.data;
+
+                        if (callData.status === 'answered' && callData.signal_data && !peerConnection.remoteDescription) {
+                            clearInterval(signalCheckInterval);
+
+                            // Set remote description (answer)
+                            await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.signal_data));
+
+                            // Add ICE candidates
+                            if (callData.ice_candidates) {
+                                for (const candidate of callData.ice_candidates) {
+                                    try {
+                                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+                                    } catch (e) {
+                                        console.error('Error adding ICE candidate:', e);
+                                    }
+                                }
+                            }
+
+                            updateStatus('Connected');
+                            startTimer();
+                        } else if (callData.status === 'rejected') {
+                            clearInterval(signalCheckInterval);
+                            showError('Call was rejected');
+                            setTimeout(() => window.close(), 2000);
+                        } else if (callData.status === 'ended') {
+                            clearInterval(signalCheckInterval);
+                            endCall();
+                        }
+                    }
+                } catch (error) {
+                    console.error('Error checking for answer:', error);
+                }
+            }, 1000);
+        }
+
+        function updateStatus(text) {
+            document.getElementById('callStatus').textContent = text;
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.classList.add('show');
+        }
+
+        function startTimer() {
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+                const seconds = (elapsed % 60).toString().padStart(2, '0');
+                document.getElementById('callTimer').textContent = `${minutes}:${seconds}`;
+            }, 1000);
+        }
+
+        function toggleMute() {
+            if (localStream) {
+                const audioTrack = localStream.getAudioTracks()[0];
+                if (audioTrack) {
+                    audioTrack.enabled = !audioTrack.enabled;
+                    const btn = document.getElementById('muteBtn');
+                    if (audioTrack.enabled) {
+                        btn.textContent = '🔇 Mute';
+                        btn.classList.remove('active');
+                    } else {
+                        btn.textContent = '🔊 Unmute';
+                        btn.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        function toggleVideo() {
+            if (localStream && callType === 'video') {
+                const videoTrack = localStream.getVideoTracks()[0];
+                if (videoTrack) {
+                    videoTrack.enabled = !videoTrack.enabled;
+                    const btn = document.getElementById('videoBtn');
+                    if (videoTrack.enabled) {
+                        btn.textContent = '📹 Video Off';
+                        btn.classList.remove('active');
+                    } else {
+                        btn.textContent = '📹 Video On';
+                        btn.classList.add('active');
+                    }
+                }
+            }
+        }
+
+        async function endCall() {
+            try {
+                // Stop timers
+                if (timerInterval) clearInterval(timerInterval);
+                if (signalCheckInterval) clearInterval(signalCheckInterval);
+
+                // Update call status
+                await fetch(`${API_BASE}/update_call_signal`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        call_id: callId,
+                        status: 'ended'
+                    })
+                });
+
+                // Close peer connection
+                if (peerConnection) {
+                    peerConnection.close();
+                }
+
+                // Stop local stream
+                if (localStream) {
+                    localStream.getTracks().forEach(track => track.stop());
+                }
+
+                updateStatus('Call ended');
+
+                // Close window after 1 second
+                setTimeout(() => window.close(), 1000);
+            } catch (error) {
+                console.error('Error ending call:', error);
+                window.close();
+            }
+        }
+
+        // Handle page unload
+        window.addEventListener('beforeunload', () => {
+            if (peerConnection) {
+                endCall();
+            }
+        });
+    </script>
+</body>
+</html>

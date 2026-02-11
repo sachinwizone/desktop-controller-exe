@@ -389,14 +389,57 @@ namespace EmployeeAttendance
             try
             {
                 var systemInfo = GatherSystemInfo();
-                var json = JsonSerializer.Serialize(systemInfo);
 
-                var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-                var response = await _httpClient.PostAsync($"{_serverApiUrl}/system-info/sync", content);
-
-                if (!response.IsSuccessStatusCode)
+                // Save directly to database (always works regardless of server location)
+                var dbData = new Dictionary<string, object>
                 {
-                    Debug.WriteLine($"Failed to sync system info: {response.StatusCode}");
+                    ["os_name"] = systemInfo.OperatingSystem?.Name ?? "",
+                    ["os_version"] = systemInfo.OperatingSystem?.Version ?? "",
+                    ["os_build"] = systemInfo.OperatingSystem?.BuildNumber ?? "",
+                    ["os_install_date"] = systemInfo.OperatingSystem?.InstallDate ?? "",
+                    ["os_serial_number"] = systemInfo.OperatingSystem?.SerialNumber ?? "",
+                    ["last_boot_time"] = systemInfo.OperatingSystem?.LastBootUpTime ?? "",
+                    ["processor_name"] = systemInfo.ProcessorInfo?.Name ?? "",
+                    ["processor_cores"] = systemInfo.ProcessorInfo?.Cores ?? "",
+                    ["processor_logical"] = systemInfo.ProcessorInfo?.LogicalProcessors ?? "",
+                    ["processor_speed"] = systemInfo.ProcessorInfo?.MaxClockSpeed ?? "",
+                    ["processor_id"] = systemInfo.ProcessorInfo?.ProcessorId ?? "",
+                    ["total_ram"] = systemInfo.MemoryInfo?.TotalMemoryGB.ToString() + " GB",
+                    ["available_ram"] = systemInfo.MemoryInfo?.AvailableMemoryGB ?? "",
+                    ["memory_details"] = JsonSerializer.Serialize(systemInfo.MemoryInfo?.MemoryDevices ?? new List<MemoryDevice>()),
+                    ["storage_info"] = JsonSerializer.Serialize(systemInfo.StorageInfo ?? new List<StorageInfo>()),
+                    ["network_info"] = JsonSerializer.Serialize(systemInfo.NetworkInfo ?? new List<NetworkAdapter>()),
+                    ["motherboard_manufacturer"] = systemInfo.MotherboardInfo?.Manufacturer ?? "",
+                    ["motherboard_product"] = systemInfo.MotherboardInfo?.Product ?? "",
+                    ["motherboard_serial"] = systemInfo.MotherboardInfo?.SerialNumber ?? "",
+                    ["bios_manufacturer"] = systemInfo.BiosInfo?.Manufacturer ?? "",
+                    ["bios_version"] = systemInfo.BiosInfo?.Version ?? "",
+                    ["bios_release_date"] = systemInfo.BiosInfo?.ReleaseDate ?? "",
+                    ["gpu_info"] = JsonSerializer.Serialize(systemInfo.DisplayInfo ?? new List<DisplayAdapter>()),
+                    ["system_architecture"] = systemInfo.SystemArchitecture ?? "",
+                    ["timezone"] = systemInfo.TimeZone ?? ""
+                };
+
+                bool dbSaved = DatabaseHelper.SaveSystemInfoDetailed(
+                    _companyName, _userName, Environment.MachineName, dbData);
+
+                if (dbSaved)
+                {
+                    Debug.WriteLine("[SystemInfo] System info saved to DB directly");
+                }
+
+                // Also try HTTP sync as backup
+                try
+                {
+                    var json = JsonSerializer.Serialize(systemInfo);
+                    var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                    var response = await _httpClient.PostAsync($"{_serverApiUrl}/system-info/sync", content);
+                    if (response.IsSuccessStatusCode)
+                        Debug.WriteLine("[SystemInfo] System info synced via HTTP");
+                }
+                catch (Exception httpEx)
+                {
+                    Debug.WriteLine($"[SystemInfo] HTTP sync failed (DB save used): {httpEx.Message}");
                 }
             }
             catch (Exception ex)

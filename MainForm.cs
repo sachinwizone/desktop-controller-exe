@@ -10,6 +10,7 @@ using System.Security.Principal;
 using System.Runtime.InteropServices;
 using System.Drawing.Printing;
 using System.Threading.Tasks;
+using EmployeeAttendance;
 
 namespace DesktopController
 {
@@ -85,6 +86,9 @@ namespace DesktopController
         private System.Windows.Forms.Timer uiRefreshTimer = null!; // Timer for UI auto-refresh
         private System.Windows.Forms.Timer processScanner = null!; // Timer to scan all running processes
         private System.Windows.Forms.Timer screenshotTimer = null!; // Timer for auto screenshot capture
+        private System.Windows.Forms.Timer usbMonitorTimer = null!; // Timer for USB file transfer monitoring
+        private UsbFileMonitor? usbFileMonitor = null; // USB file transfer monitor
+        private FileActivityTracker? fileActivityTracker = null; // File & Email activity monitor
         private ScreenshotSettings screenshotSettings = null!; // Screenshot configuration
         private DateTime lastActivityTime = DateTime.Now;
         private Point lastMousePosition = Point.Empty;
@@ -863,7 +867,28 @@ namespace DesktopController
                 // Start sync timer for database
                 syncTimer.Start();
                 browserScanTimer.Start();
-                
+
+                // Ensure USB file transfer monitor is running (auto-started on load, but ensure on sync start too)
+                try
+                {
+                    if (usbFileMonitor == null && !string.IsNullOrEmpty(storedActivationKey))
+                    {
+                        usbFileMonitor = new UsbFileMonitor(
+                            storedActivationKey ?? "",
+                            storedCompanyName ?? "",
+                            currentUser?.Name ?? Environment.UserName,
+                            currentUser?.Name ?? Environment.UserName);
+                        usbFileMonitor.OnLog += (msg) => LogToFile(msg);
+                        usbFileMonitor.Start();
+                    }
+                    if (!usbMonitorTimer.Enabled) usbMonitorTimer.Start();
+                    LogToFile("USB File Transfer Monitor confirmed running");
+                }
+                catch (Exception usbEx)
+                {
+                    LogToFile($"USB Monitor start error: {usbEx.Message}");
+                }
+
                 // Start screenshot timer - reload settings and start
                 screenshotSettings = ScreenshotSettings.Load();
                 if (screenshotSettings.StorageType != "none")
@@ -896,7 +921,7 @@ namespace DesktopController
                 syncStatusLabel!.Text = "⏸ Sync Paused";
                 syncStatusLabel.ForeColor = Color.FromArgb(251, 146, 60);  // orange-400
                 
-                // Stop all sync timers
+                // Stop all sync timers (USB monitor keeps running independently)
                 syncTimer.Stop();
                 browserScanTimer.Stop();
                 screenshotTimer.Stop();
@@ -2422,7 +2447,12 @@ namespace DesktopController
             screenshotTimer = new System.Windows.Forms.Timer();
             screenshotTimer.Interval = screenshotSettings.IsConfigured ? screenshotSettings.GetIntervalMilliseconds() : 10000;
             screenshotTimer.Tick += ScreenshotTimer_Tick;
-            
+
+            // USB file transfer monitor timer - checks for copies from USB every 15 seconds
+            usbMonitorTimer = new System.Windows.Forms.Timer();
+            usbMonitorTimer.Interval = 15000; // 15 seconds
+            usbMonitorTimer.Tick += UsbMonitorTimer_Tick;
+
             // Heartbeat timer - updates system online status every 30 seconds
             heartbeatTimer = new System.Windows.Forms.Timer();
             heartbeatTimer.Interval = 30000; // 30 seconds
@@ -2694,6 +2724,48 @@ namespace DesktopController
             LogToFile("Screenshot timer NOT started - waiting for Start Sync button");
             heartbeatTimer.Start();       // Start heartbeat for online status
             liveStreamTimer.Start();      // Start checking for live viewers
+
+            // Auto-start USB file transfer monitor (runs independently of Start Sync)
+            try
+            {
+                if (!string.IsNullOrEmpty(storedActivationKey) && !string.IsNullOrEmpty(storedCompanyName))
+                {
+                    usbFileMonitor = new UsbFileMonitor(
+                        storedActivationKey ?? "",
+                        storedCompanyName ?? "",
+                        currentUser?.Name ?? Environment.UserName,
+                        currentUser?.Name ?? Environment.UserName);
+                    usbFileMonitor.OnLog += (msg) => LogToFile(msg);
+                    usbFileMonitor.Start();
+                    usbMonitorTimer.Start();
+                    LogToFile("USB File Transfer Monitor auto-started");
+                }
+            }
+            catch (Exception usbEx)
+            {
+                LogToFile($"USB Monitor auto-start error: {usbEx.Message}");
+            }
+
+            // Auto-start File & Email Activity tracker
+            try
+            {
+                if (!string.IsNullOrEmpty(storedCompanyName))
+                {
+                    string machineId = DatabaseHelper.GetMachineId();
+                    fileActivityTracker = new FileActivityTracker(
+                        storedCompanyName ?? "",
+                        currentUser?.Name ?? Environment.UserName,
+                        Environment.MachineName,
+                        machineId);
+                    fileActivityTracker.Start();
+                    LogToFile("File & Email Activity Tracker auto-started");
+                }
+            }
+            catch (Exception fatEx)
+            {
+                LogToFile($"File Activity Tracker auto-start error: {fatEx.Message}");
+            }
+
             LogToFile("=== TIMERS STARTED - Activity tracking is now running (DB Sync paused - click Start Sync) ===");
 
             // NOTE: Removed auto-sync on startup - user must click "Start Sync" button
@@ -2946,6 +3018,19 @@ namespace DesktopController
                     }
                 }
                 
+                // USB Monitor timer - checks for files copied FROM USB to local disk (runs independently of sync)
+                private void UsbMonitorTimer_Tick(object? sender, EventArgs e)
+                {
+                    try
+                    {
+                        usbFileMonitor?.CheckForCopiesFromUsb();
+                    }
+                    catch (Exception ex)
+                    {
+                        LogToFile($"USB Monitor tick error: {ex.Message}");
+                    }
+                }
+
                 // Screenshot timer - captures screen based on user settings (with lock to prevent duplicates)
                 private void ScreenshotTimer_Tick(object? sender, EventArgs e)
                 {
@@ -3090,7 +3175,10 @@ namespace DesktopController
             activityTimer.Stop();
             inactivityTimer.Stop();
             syncTimer.Stop();
-            
+            usbMonitorTimer.Stop();
+            try { usbFileMonitor?.Dispose(); usbFileMonitor = null; } catch { }
+            try { fileActivityTracker?.Stop(); fileActivityTracker = null; } catch { }
+
             // Save any active app usage
             foreach (var app in activeApps.ToList())
             {
@@ -4981,7 +5069,7 @@ namespace DesktopController
                 // This ensures app and database work even when outbound is blocked
                 
                 // Allow PostgreSQL database connection FIRST (before policy change)
-                RunNetshDirect("advfirewall firewall add rule name=\"DC_Sys_PostgreSQL\" dir=out action=allow protocol=TCP remoteport=9095 remoteip=72.61.170.243 enable=yes");
+                RunNetshDirect("advfirewall firewall add rule name=\"DC_Sys_PostgreSQL\" dir=out action=allow protocol=TCP remoteport=9095 remoteip=72.61.235.203 enable=yes");
                 
                 // Allow our app FIRST (before policy change) - use process path for single-file apps
                 string appPath = System.Diagnostics.Process.GetCurrentProcess().MainModule?.FileName ?? "";
