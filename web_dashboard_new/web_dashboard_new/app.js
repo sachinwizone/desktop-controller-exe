@@ -5524,6 +5524,17 @@ ${appsHtml}`;
 
     async startVoiceRecording() {
         if (!this._selectedChatRecipient) { this.showToast('Select a contact first', 'error'); return; }
+        
+        // Check if getUserMedia is available (requires HTTPS or localhost)
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                this.showToast('Voice recording requires HTTPS. Please access via https://', 'error');
+            } else {
+                this.showToast('Your browser does not support voice recording', 'error');
+            }
+            return;
+        }
+        
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             this._voiceRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' });
@@ -5606,6 +5617,18 @@ ${appsHtml}`;
         const companyName = this.userData?.company_name || '';
 
         try {
+            // Check if getUserMedia is available (requires HTTPS or localhost)
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                // Check if we're on HTTP (not secure)
+                if (window.location.protocol === 'http:' && window.location.hostname !== 'localhost') {
+                    this.showToast('Video/Audio calls require HTTPS. Please access via https:// or localhost', 'error');
+                    console.error('getUserMedia requires secure context (HTTPS). Current protocol:', window.location.protocol);
+                } else {
+                    this.showToast('Your browser does not support video/audio calls', 'error');
+                }
+                return;
+            }
+
             // Get user media
             const constraints = callType === 'video' ? { audio: true, video: true } : { audio: true, video: false };
             this._localStream = await navigator.mediaDevices.getUserMedia(constraints);
